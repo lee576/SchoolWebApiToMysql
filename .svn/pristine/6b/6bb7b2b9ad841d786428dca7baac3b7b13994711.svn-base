@@ -1,0 +1,808 @@
+﻿using DbModel;
+using IService;
+using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
+using Models.ViewModels;
+using Newtonsoft.Json.Linq;
+using NPOI.SS.UserModel;
+using SchoolWebApi.Utility;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace SchoolWebApi.Controllers
+{
+    /// <summary>
+    /// elx导出明细表
+    /// </summary>
+    [Route("api/[controller]/[action]")]
+    [ApiController]
+    [Produces("application/json")]
+    [EnableCors("any")]
+    public class PaymentARController : Controller
+    {
+        private static NLog.Logger log = NLog.LogManager.GetCurrentClassLogger();
+        private IPayment_ARInfoService _tb_payment_ARInfoService;
+        private Itb_payment_ARService _tb_payment_ARService;
+        private IPaymentItemService _paymentItemService;
+        private ITransactionRecordService _transactionRecordService;
+        private Itb_school_InfoService _tb_school_InfoService;
+        private Itb_payment_itemService _tb_payment_itemService;
+        private Itb_payment_accountsService _tb_payment_accountsService;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tb_payment_ARInfoServic"></param>
+        /// <param name="tb_payment_ARService"></param>
+        /// <param name="paymentItemService"></param>
+        /// <param name="transactionRecordService"></param>
+        /// <param name="tb_school_InfoService"></param>
+        /// <param name="tb_payment_itemService"></param>
+        /// <param name="tb_payment_accountsService"></param>
+        public PaymentARController(IPayment_ARInfoService tb_payment_ARInfoServic,
+            Itb_payment_ARService tb_payment_ARService,
+            IPaymentItemService paymentItemService,
+            ITransactionRecordService transactionRecordService,
+            Itb_school_InfoService tb_school_InfoService,
+            Itb_payment_itemService tb_payment_itemService,
+            Itb_payment_accountsService tb_payment_accountsService)
+        {
+            _tb_payment_ARInfoService = tb_payment_ARInfoServic;
+            _paymentItemService = paymentItemService;
+            _transactionRecordService = transactionRecordService;
+            _tb_school_InfoService = tb_school_InfoService;
+            _tb_payment_ARService = tb_payment_ARService;
+            _tb_payment_itemService = tb_payment_itemService;
+            _tb_payment_accountsService = tb_payment_accountsService;
+        }
+
+        private string GetSchoolCode(string schoolCode)
+        {
+            var headers = HttpContext.Request.Headers;
+            if (headers.TryGetValue("schoolcode", out var headerValues))
+            {
+                schoolCode = headerValues.First();
+            }
+            return schoolCode;
+        }
+        private void FillCell(IRow row, PaymentARExcel[] list, int i)
+        {
+            row.CreateCell(0).SetCellValue(list[i].studentid);
+            row.CreateCell(1).SetCellValue(list[i].trade_no);
+            row.CreateCell(2).SetCellValue(list[i].username);
+            row.CreateCell(3).SetCellValue(list[i].passport);
+            row.CreateCell(4).SetCellValue(list[i].ARID);
+            row.CreateCell(5).SetCellValue(list[i].name);
+            row.CreateCell(6).SetCellValue(list[i].amount.ToString());
+            row.CreateCell(7).SetCellValue(list[i].fact_amount.ToString());
+            try
+            {
+                row.CreateCell(8).SetCellValue(DateTime.Parse(list[i].pay_time + "").ToString("yyyy-MM-dd hh:mm:ss"));
+            }
+            catch (Exception)
+            {
+                row.CreateCell(8).SetCellValue("");
+            }
+        }
+
+        #region 概览
+        /// <summary>
+        /// 获取应缴功能数据
+        /// </summary>
+        /// <param name="schoolcode"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public JsonResult GetFeePayable(string schoolcode)
+        {
+            if (string.IsNullOrWhiteSpace(schoolcode))
+                return Json(new
+                {
+                    return_code = JsonReturnMsg.FailCode,
+                    return_msg = JsonReturnMsg.GetFail,
+                });
+            FeePayable SumPaymentAr = _tb_payment_ARService.GetFeePayableBySchoolCode(schoolcode);
+            if (SumPaymentAr == null)
+                return Json(new
+                {
+                    return_code = JsonReturnMsg.FailCode,
+                    return_msg = JsonReturnMsg.GetFail,
+                });
+            return Json(new
+            {
+                return_code = JsonReturnMsg.SuccessCode,
+                return_msg = JsonReturnMsg.GetSuccess,
+                YJJE = SumPaymentAr.YJJE,
+                SJJE = SumPaymentAr.SJJE,
+                YJBS = SumPaymentAr.YJBS,
+                SJBS = SumPaymentAr.SJBS,
+                YJXM = SumPaymentAr.YJXM
+            });
+        }
+        #endregion
+
+        /// <summary>
+        /// 获取缴费信息详细数据 导出EXCEL
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public FileContentResult GetPanymentInfo(string schoolCode, string stime, string etime, string id)
+        {
+            try
+            {
+                //查询套餐
+                List<PaymentARExcel> data = null;
+                data = _tb_payment_ARInfoService.GetPaymentInfo(schoolCode, stime, etime, id) as List<PaymentARExcel>;
+                if (data == null)
+                {
+                    return null;
+                }
+                return ExcelHelper.ExportAction(@"应缴款明细.xls",
+                    new List<string> { "学号", "支付宝订单号", "姓名", "身份证", "缴费批号", "应缴项目名", "应缴金额", "实缴金额", "支付时间" }, data.ToArray(),
+                    FillCell);
+
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return null;
+            }
+        }
+        /// <summary>
+        /// 获取缴费信息详细数据 导出EXCEL
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetPanymentInfoEXCELToVue(string schoolCode, string stime, string etime, string id)
+        {
+            try
+            {
+                //查询套餐
+                List<PaymentARExcel> data = null;
+                data = _tb_payment_ARInfoService.GetPaymentInfo(schoolCode, stime, etime, id) as List<PaymentARExcel>;
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                    data = data
+                });
+
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        /// <summary>
+        /// 缴费查询外接接口（参数schoolcode，startDateTime）
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public JsonResult GetPaymentItemInfoAndTransactionRecord([FromBody]JObject obj)
+        {
+            string schoolcode = obj["schoolcode"].ToString();
+            string startDateTime = obj["startDateTime"].ToString();
+            string type = obj["type"].ToString(); //类型0是缴费查询，1是交易流水
+            string sign = obj["sign"].ToString();
+            var schoolinfo = _tb_school_InfoService.FindByClause(x => x.School_Code == schoolcode);
+            if (schoolinfo == null)
+            {
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+            string signs = MD5Helper.MD5Encrypt32(schoolinfo.School_Code + schoolinfo.publicKey);
+            if (sign != signs)
+            {
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = "md5验证失败！",
+                });
+            }
+            //md5 32 加密 schoolcode+publicKey
+            try
+            {
+                if (type.Equals("0"))//缴费查询
+                {
+                    var item = _paymentItemService.GetPaymentItemInfo(schoolcode, startDateTime);
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.SuccessCode,
+                        msg = JsonReturnMsg.GetSuccess,
+                        sign = signs,
+                        data = item
+                    });
+                }
+                else//交易流水
+                {
+                    var item = _transactionRecordService.GetTransactionRecord(schoolcode, startDateTime);
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.SuccessCode,
+                        msg = JsonReturnMsg.GetSuccess,
+                        sign = signs,
+                        data = item
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+
+        }
+        /// <summary>
+        /// 缴费大厅详情统计
+        /// </summary>
+        /// <param name="schoolcode"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetPaymentARAccount(string schoolcode)
+        {
+            try
+            {
+                var data = _tb_payment_ARService.GetPaymentARAccount(schoolcode);
+                data.YJXM = _tb_payment_ARService.GetPaymentARAccount_YJXM(schoolcode);
+                //var data2 = _tb_payment_ARService.GetPayment_recordAmountCount(schoolcode);
+                //var data3 = _tb_payment_itemService.FindListByClause(x => x.schoolcode == schoolcode && x.date_to >= DateTime.Now.Date && x.status == 0
+                //, t => t.id, SqlSugar.OrderByType.Asc);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                    resp = data,
+                    //jrsk = data2.pay_amount,
+                    //jrskrs = data2.count,
+                    //zzskxm = data3.Count()
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        /// <summary>
+        /// 今日缴费统计概览
+        /// </summary>
+        /// <param name="schoolcode"></param>
+        /// <returns></returns>
+        [HttpGet]
+
+        public IActionResult GetTodayRecord(string schoolcode)
+        {
+            try
+            {
+                var data = _tb_payment_ARService.GetPayment_recordAmountCount(schoolcode);
+                var data2 = _tb_payment_itemService.FindListByClause(x => x.schoolcode == schoolcode && x.date_to >= DateTime.Now.Date && x.status == 0
+                , t => t.id, SqlSugar.OrderByType.Asc);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                    jrsk = data.pay_amount,
+                    jrskrs = data.count,
+                    zzskxm = data2.Count()
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        /// <summary>
+        /// 柱形图 一周数据显示
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetWeekPayment_item(string schoolcode, string stime, string etime)
+        {
+            try
+            {
+
+                var data = _tb_payment_ARService.GetWeekPayment_item(schoolcode);
+                DateTime today = DateTime.Now;
+                List<WeekPayment_item> dataList = null;
+                List<string> array_alldays = new List<string>();
+                List<string> array_allmounts = new List<string>();
+                if (!string.IsNullOrWhiteSpace(stime) && !string.IsNullOrWhiteSpace(etime))
+                {
+                    DateTime Stime = Convert.ToDateTime(stime);
+                    DateTime Etime = Convert.ToDateTime(etime);
+                    int day = (Etime - Stime).Days;
+
+                    for (int c = 0; c <= day; c++)
+                    {
+                        array_alldays.Add(today.AddDays(-c).ToString("yyyy/MM/dd"));
+                        dataList = data.Where(x => x.pay_time == today.AddDays(-c)).ToList();
+                        if (dataList.Count > 0)
+                            array_allmounts.Add(dataList[0].pay_amount.ToString());
+                        else
+                            array_allmounts.Add("0");
+                    }
+                }
+                else
+                {
+                    for (int c = 0; c <= 6; c++)
+                    {
+                        array_alldays.Add(today.AddDays(-c).ToString("yyyy/MM/dd"));
+                        dataList = data.Where(x => x.pay_time == today.AddDays(-c)).ToList();
+                        if (dataList.Count > 0)
+                            array_allmounts.Add(dataList[0].pay_amount.ToString());
+                        else
+                            array_allmounts.Add("0");
+                    }
+                }
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                    rqs = array_alldays,
+                    amounts = array_allmounts
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        /// <summary>
+        /// 应缴款项列表数据显示接口
+        /// </summary>
+        /// <param name="sEcho"></param>
+        /// <param name="iDisplayStart"></param>
+        /// <param name="iDisplayLength"></param>
+        /// <param name="schoolcode"></param>
+        /// <param name="selectinfo"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetpaymentARList(int sEcho, int iDisplayStart, int iDisplayLength, string schoolcode,
+            string selectinfo = "")
+        {
+            try
+            {
+                int pageStart = iDisplayStart;
+                int pageSize = iDisplayLength;
+                int pageIndex = (pageStart / pageSize) + 1;
+                int totalRecordNum = default(int);
+                var lst = _tb_payment_ARService.Getpayment_ARList(sEcho, pageIndex, pageSize, ref totalRecordNum, schoolcode, selectinfo);
+                //var lst = JsonConvert.DeserializeObject <dynamic>(data);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                    sEcho = sEcho,
+                    iTotalRecords = totalRecordNum,
+                    iTotalDisplayRecords = totalRecordNum,
+                    data = lst,
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        /// <summary>
+        /// 应缴款项列表数据通过学生信息显示接口
+        /// </summary>
+        /// <param name="sEcho"></param>
+        /// <param name="iDisplayStart"></param>
+        /// <param name="iDisplayLength"></param>
+        /// <param name="schoolcode"></param>
+        /// <param name="selectinfo"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetpaymentARListToUser(int sEcho, int iDisplayStart, int iDisplayLength, string schoolcode,
+           string selectinfo = "")
+        {
+            try
+            {
+                int pageStart = iDisplayStart;
+                int pageSize = iDisplayLength;
+                int pageIndex = (pageStart / pageSize) + 1;
+                int totalRecordNum = default(int);
+                var lst = _tb_payment_ARService.Getpayment_ARListToUser(sEcho, pageIndex, pageSize, ref totalRecordNum, schoolcode, selectinfo);
+                //var lst = JsonConvert.DeserializeObject <dynamic>(data);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                    sEcho = sEcho,
+                    iTotalRecords = totalRecordNum,
+                    iTotalDisplayRecords = totalRecordNum,
+                    data = lst,
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        /// <summary>
+        /// 应缴款项详细信息通过ARID
+        /// </summary>
+        /// <param name="schoolcode"></param>
+        /// <param name="ARID"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult Getpayment_ARDetailed(string schoolcode, string ARID)
+        {
+            try
+            {
+                var lst = _tb_payment_ARService.Getpayment_ARDetailed(schoolcode, ARID);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                    data = lst,
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail//Getpayment_ARDetailed
+                });
+            }//Payment_ARisPayment
+        }
+        /// <summary>
+        /// 应缴列表信息通过schoolcode
+        /// </summary>
+        /// <param name="schoolcode"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetPaymentARToSchoolcode(string schoolcode)
+        {
+            try
+            {
+                var data = _tb_payment_ARService.FindListByClause(x => x.schoolcode == schoolcode, t => t.id, SqlSugar.OrderByType.Asc);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                    data = data
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail//Getpayment_ARDetailed
+                });
+            }
+        }
+        /// <summary>
+        /// 应缴款项缴费统计和未缴费统计
+        /// </summary>
+        /// <param name="sEcho"></param>
+        /// <param name="iDisplayStart"></param>
+        /// <param name="iDisplayLength"></param>
+        /// <param name="schoolcode"></param>
+        /// <param name="ARID"></param>
+        /// <param name="JSstatus"></param>
+        /// <param name="name"></param>
+        /// <param name="stime"></param>
+        /// <param name="etime"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetPayment_ARisPayment(int sEcho, int iDisplayStart, int iDisplayLength, string schoolcode, 
+            string ARID = "", string JSstatus = "", string name = "",string stime="",string etime="")
+        {
+            try
+            {
+                int pageStart = iDisplayStart;
+                int pageSize = iDisplayLength;
+                int pageIndex = (pageStart / pageSize) + 1;
+                int totalRecordNum = default(int);
+                var lst = _tb_payment_ARService.GetPayment_ARisPayment(sEcho, pageIndex, pageSize, ref totalRecordNum, schoolcode, ARID, JSstatus, name,stime,etime);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                    sEcho = sEcho,
+                    iTotalRecords = totalRecordNum,
+                    iTotalDisplayRecords = totalRecordNum,
+                    data = lst,
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail//Getpayment_ARDetailed
+                });
+            }
+        }
+        /// <summary>
+        /// 应缴款项 终止
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public IActionResult UpdatePayMentARToARID([FromBody]JObject obj)
+        {
+            try
+            {
+                _tb_payment_ARService.UpdateColumnsByConditon(a =>
+                          new tb_payment_ar { status = 1 },
+                          a => a.schoolcode == obj["schoolcode"].ToString() && a.ARID == obj["ARID"].ToString());
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.UpdateSuccess
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.UpdateFail
+                });
+            }
+        }
+        /// <summary>
+        /// 应缴款项 删除
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public IActionResult delPayMentARToARID([FromBody]JObject obj)
+        {
+            try
+            {
+                //var model = _tb_payment_ARService.FindByClause(x => x.schoolcode == obj["schoolcode"].ToString() && x.ARID == obj["ARID"].ToString());
+                //model.status = 1;
+                _tb_payment_ARService.Delete(x => x.schoolcode == obj["schoolcode"].ToString() && x.ARID == obj["ARID"].ToString());
+
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.DeleteSuccess
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.DeleteFail
+                });
+            }
+        }
+        /// <summary>
+        /// 收款账号列表
+        /// </summary>
+        /// <param name="schoolcode"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetPayMentAccounts(string schoolcode)
+        {
+            try
+            {
+                var data = _tb_payment_accountsService.GetPayMentAccounts(schoolcode);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                    data = data
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+
+        /// <summary>
+        /// 收款账号列表分页
+        /// </summary>
+        /// <param name="sEcho"></param>
+        /// <param name="iDisplayStart"></param>
+        /// <param name="iDisplayLength"></param>
+        /// <param name="schoolcode"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetPayMentAccountsPageList(int sEcho, int iDisplayStart, int iDisplayLength, string schoolcode)
+        {
+            try
+            {
+                int pageStart = iDisplayStart;
+                int pageSize = iDisplayLength;
+                int pageIndex = (pageStart / pageSize) + 1;
+                int totalRecordNum = default(int);
+                var data = _tb_payment_accountsService.GetPayMentAccountsPageList(sEcho,pageIndex,pageSize, ref totalRecordNum,schoolcode);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                    sEcho = sEcho,
+                    iTotalRecords = totalRecordNum,
+                    iTotalDisplayRecords = totalRecordNum,
+                    data = data,
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        /// <summary>
+        /// 获取收款账号信息 通过id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="schoolcode"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetPaymentAccountToid(int id, string schoolcode)
+        {
+            try
+            {
+                var data = _tb_payment_accountsService.FindByClause(x => x.schoolcode == schoolcode && x.id == id);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                    data = data
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+
+        /// <summary>
+        /// 添加收款账号
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public IActionResult AddPaymentAccount([FromBody]tb_payment_accounts obj)
+        {
+            try
+            {
+                _tb_payment_accountsService.Insert(obj);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+
+        /// <summary>
+        /// 修改收款账号 通过id
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public IActionResult UpdatePaymentAccount([FromBody]JObject obj)
+        {
+            try
+            {
+                var model = _tb_payment_accountsService.FindByClause(x => x.schoolcode == obj["schoolcode"].ToString() && x.id == Convert.ToInt32(obj["id"].ToString()));
+                model.alipay_public_key = obj["alipay_public_key"].ToString();
+                model.name = obj["name"].ToString();
+                model.appid = obj["appid"].ToString();
+                model.pid = obj["pid"].ToString();
+                model.private_key = obj["private_key"].ToString();
+                model.publickey = obj["publickey"].ToString();
+                model.schoolcode = obj["schoolcode"].ToString();
+                _tb_payment_accountsService.Update(model);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        /// <summary>
+        /// 删除收款账号 通过id
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public IActionResult DelPaymentAccount([FromBody]JObject obj)
+        {
+            try
+            {
+                var data = _tb_payment_accountsService.FindByClause(x => x.schoolcode == obj["schoolcode"].ToString() && x.id == Convert.ToInt32(obj["id"]));
+                _tb_payment_accountsService.Delete(data);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.DeleteSuccess,
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.DeleteFail
+                });
+            }
+        }
+    }
+}

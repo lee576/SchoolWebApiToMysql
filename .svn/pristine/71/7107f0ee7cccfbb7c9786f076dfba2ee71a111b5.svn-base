@@ -1,0 +1,18 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Models.ViewModels
+{
+    public class PaymentRecord
+    {
+        public int rn { get; set; }
+        public string name { get; set; }
+        public decimal pay_amount { get; set; }
+        public string student_id { get; set; }
+        public string pay_name { get; set; }
+        public string phone { get; set; }
+        public DateTime pay_time { get; set; }
+        public string order_no { get; set; }
+    }
+}

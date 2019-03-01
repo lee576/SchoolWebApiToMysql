@@ -1,0 +1,412 @@
+<template>
+    <div class="home">
+        <div class="nav-lead clearfix">
+            <div class="fl nav-lead-word"><a href="#">电费管理</a></div>
+            <div class="fr batch-operation">
+                <button class="operation-btn" @click="chargeVisible = true">收款账号</button>
+            </div>
+        </div>
+        <div class="page-content">
+            <div class="nav-tab-box">
+                <div class="nav-tab1 clearfix">
+                    <div class="fl on-part-search1">
+                        <div class="fl left-word-on1">缴费时间</div>
+                        <div class="fl form-timerange">
+                            <el-date-picker
+                                    v-model="dateArr"
+                                    value-format="yyyy-MM-dd"
+                                    type="daterange"
+                                    range-separator="至"
+                                    start-placeholder="开始日期"
+                                    end-placeholder="结束日期" style="width:250px" :picker-options="pickerOptions2">
+                            </el-date-picker>
+                        </div>
+                    </div>
+                    <div class="fl on-part-search2">
+                        <div class="fl left-word-on1">订单号</div>
+                        <div class="fl search-input">
+                            <input  type="text" placeholder="请输入订单号进行搜索" class="se-input" v-model="orderNo" @keyup.enter="search" >
+                        </div>
+                        <div class="fl search-button"><button class="btn-pro" @click="search">搜索</button></div>
+                        <div class="fl search-button"><button class="btn-pro" @click="reset">重置</button></div>
+                    </div>
+                </div>
+                <div class="nav-tab2 clearfix">
+                    <div class="fl on-part-search1">
+                        <div class="fl left-word-on1">楼层号</div>
+                        <div class="fl form-timerange">
+                            <el-select placeholder="请选择楼层号" style="width:200px" v-model="flloorStr" @change="floorChoose">
+                                <el-option v-for="item in floorArr" :label="item.name" :value="item.id" :key="item.id"></el-option>
+                            </el-select>
+                        </div>
+                    </div>
+                    <div class="fl on-part-search1">
+                        <div class="fl left-word-on1" style="width:42px">房间号</div>
+                        <div class="fl form-timerange">
+                            <el-select placeholder="请选择房间号" style="width:200px" v-model="roomStr" @change="roomChoose">
+                                <el-option v-for="item in roomArr" :label="item.name" :value="item.id" :key="item.id"></el-option>
+                            </el-select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="three-top-box clearfix">
+                <div class="on-border-box fl">
+                    <img :src="imageUrl1" class="fl on-border-img1">
+                    <div class="fl on-border-img2">
+                        <div class="border-word1">交易订单笔数</div>
+                        <div class="border-word2">{{ orderTotalNu | currency('',false) }}笔</div>
+                    </div>
+                </div>
+                <div class="on-border-box fl">
+                    <img :src="imageUrl3" class="fl on-border-img1">
+                    <div class="fl on-border-img2">
+                        <div class="border-word1">交易成功笔数</div>
+                        <div class="border-word2">{{orderSuccessNO | currency('',false) }}笔</div>
+                    </div>
+                </div>
+                <div class="on-border-box fl">
+                    <img :src="imageUrl4" class="fl on-border-img1">
+                    <div class="fl on-border-img2">
+                        <div class="border-word1">待支付笔数</div>
+                        <div class="border-word2">{{payoffNo | currency('',false) }}笔</div>
+                    </div>
+                </div>
+                <div class="two-border-box fl">
+                    <img :src="imageUrl2" class="fl on-border-img1">
+                    <div class="fl on-border-img2">
+                        <div class="border-word1">实收总金额</div>
+                        <div class="border-word3">{{ orderTotalAmount| currency('￥') }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="payment-item-table">
+                <div class="table-box">
+                    <template>
+                        <el-table :data="configTable.tableArr" stripe style="width: 100%">
+                            <el-table-column prop="ordernumber" label="订单编号" >
+                            </el-table-column>
+                            <el-table-column prop="room_name" label="宿舍">
+                            </el-table-column>
+                            <el-table-column prop="pay_amount" :formatter="moneyTable" label="缴费金额">
+                            </el-table-column>
+                            <el-table-column prop="pay_time" label="缴费时间">
+                            </el-table-column>
+                            <el-table-column prop="pay_status" :formatter="feeStateTable" label="缴费状态">
+                            </el-table-column>
+                        </el-table>
+                    </template>
+                </div>
+                <div class="block" style="text-align: right;">
+                    <el-pagination
+                            @size-change="handleSizeChange"
+                            @current-change="handleCurrentChange"
+                            :current-page.sync="configTable.currentPage"
+                            :page-size="configTable.iDisplayLength"
+                            layout="total, prev, pager, next"
+                            :total="configTable.total">
+                    </el-pagination>
+                </div>
+            </div>
+        </div>
+        <el-dialog title="收款账号" :visible.sync="chargeVisible" width="600px" top="25vh">
+            <div class="tk-gray">
+                <label class="char-label">收款账号</label>
+                <el-select v-model="accountStr" placeholder="请选择" style="width:365px" @change="accountChoose">
+                    <el-option v-for="item in accountArr" :label="item.name" :value="item.id" :key="item.id"></el-option>
+                </el-select>
+            </div>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="chargeVisible = false">取 消</el-button>
+                <el-button type="primary" class="sure-btn" @click="sureAccount">确 定</el-button>
+            </div>
+        </el-dialog>
+    </div>
+</template>
+
+<script>
+    import { currency } from './../../../util/currency'
+    import { getDateType } from './../../../util/getDate'
+    export default {
+        name: "Electricitycharge_List",
+        data() {
+            return {
+                dateArr:[],
+                accountArr:[],
+                accountStr:'',
+                orderNo:'',
+                flloorStr:null,
+                floorArr:[],
+                roomStr:'',
+                roomArr:[],
+                orderTotalAmount:0,
+                orderTotalNu:0,
+                orderSuccessNO:0,
+                payoffNo:0,
+                configTable:{
+                    tableArr:[],
+                    total:0,
+                    currentPage: 1,
+                    iDisplayStart:0,
+                    iDisplayLength:10,
+                },
+                imageUrl1: require('../../../assets/picture/images/order number.png'),
+                imageUrl2: require('../../../assets/picture/images/order amount.png'),
+                imageUrl3: require('../../../assets/images/success.png'),
+                imageUrl4: require('../../../assets/images/tobepaid.png'),
+                chargeVisible : false,
+                pickerOptions2: {
+                    disabledDate(time) {
+                        return time.getTime() > Date.now() - 8.64e6
+                    },
+                },
+            }
+        },
+        filters:{
+            currency: currency,
+            getDateType:getDateType
+        },
+        created() {
+            let self=this;
+            //楼层列表
+            self.floorList();
+            self.tableList();
+            //账号列表
+            self.accountList();
+            //账户选中值
+            self.accountSelected();
+        },
+        methods: {
+            floorList(){
+                let self = this;
+                self.axios.get('api/Electricitybills/GetRoomRootInfo', {
+                    params: {
+                        schoolCode: localStorage.schoolcode,
+                    }
+                })
+                    .then(function (response) {
+                        let res = response.data;
+                        if(res.code == '000000'){
+                            self.floorArr = res.dormArray;
+                            self.floorArr.unshift({id:null , name: '全部'});
+                        }else {
+                            self.$message({
+                                showClose: true,
+                                message: '获取数据失败',
+                                type: 'warning'
+                            });
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            },
+            floorChoose(val){
+
+                this.flloorStr = val;
+                this.roomStr = '';
+                this.roomList(val);
+            },
+            roomList(val){
+                let self = this;
+                self.axios.get('api/Electricitybills/GetRoomNumInfo', {
+                    params: {
+                        schoolCode: localStorage.schoolcode,
+                        rootid:val,
+                    }
+                })
+                    .then(function (response) {
+                        let res = response.data;
+                        if(res.code == '000000'){
+                            self.roomArr = res.dormArray;
+                        }else {
+                            self.$message({
+                                showClose: true,
+                                message: '获取数据失败',
+                                type: 'warning'
+                            });
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+
+            },
+            roomChoose(val){
+                this.roomStr = val;
+            },
+            tableList(){
+                let self = this,stime = '',etime = '';
+                if(self.dateArr){
+                    stime = self.dateArr[0];
+                    etime = self.dateArr[1];
+                }
+                self.axios.get('api/Electricitybills/GetElectricitybillsInfoToSchoolCode', {
+                    params: {
+                        code: localStorage.schoolcode,
+                        sEcho:self.configTable.currentPage,
+                        iDisplayStart:self.configTable.iDisplayStart,
+                        iDisplayLength:self.configTable.iDisplayLength,
+                        room_id:self.roomStr,
+                        ordernumber:self.orderNo,
+                        stime:stime,
+                        etime:etime
+                    }
+                })
+                    .then(function (response) {
+                        let res = response.data;
+                        if(res.code == '000000'){
+                            self.configTable.tableArr = res.aaData;
+                            self.configTable.total = res.iTotalRecords;
+                            //订单总数
+                           self.orderTotalNu = res.total.itemcount;
+                            //待支付笔数
+                            self.payoffNo = res.total.djcount;
+                            //交易金额
+                            self.orderTotalAmount = res.total.pay_amountTotle;
+                            //成功交易笔数
+                           self.orderSuccessNO = res.total.sj_count;
+
+                        }else {
+                            self.$message({
+                                showClose: true,
+                                message: '获取数据失败',
+                                type: 'warning'
+                            });
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+
+            },
+            accountList(){
+                let self = this;
+                self.axios.get('api/Electricitybills/GetPayAccountsInfo', {
+                    params: {
+                        schoolcode: localStorage.schoolcode,
+                    }
+                })
+                    .then(function (response) {
+                        console.log(2222);
+                        console.log(response);
+                        let res = response.data;
+                        if(res.code == '000000'){
+                            self.accountArr= res.data;
+                        }else {
+                            self.$message({
+                                showClose: true,
+                                message: '获取数据失败',
+                                type: 'warning'
+                            });
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            },
+            search(){
+                this.configTable.iDisplayStart = 0;
+                this.configTable.currentPage = 1;
+                this.tableList();
+            },
+            handleSizeChange(val) {
+                console.log(`每页 ${val} 条`);
+                let self = this;
+                self.configTable.iDisplayLength = val;
+                self.tableList();
+            },
+            handleCurrentChange(val) {
+                console.log(`当前页: ${val}`);
+                let self = this;
+                self.configTable.iDisplayStart = (val - 1)*self.configTable.iDisplayLength;
+                self.tableList();
+            },
+            feeStateTable:function(row, column){
+                //收费状态
+                if(row.pay_status == true){
+                    return "已缴费";
+                }else {
+                    return "未交费";
+                }
+            },
+            moneyTable:function(row, column){
+                //金额
+                return  currency(row.pay_amount,'￥');
+            },
+            sureAccount(){
+                let self = this,json = {};
+                json={
+                    schoolcode: localStorage.schoolcode,
+                    appId: "2018102561878008",
+                    typename: "电费",
+                    accounts_id: self.accountStr
+                };
+                self.axios.post('api/ThirdpartyAPIConfig/AddAppAccountItem',json)
+                    .then(function (response) {
+
+                        if(response.data.code == '000000'){
+                            self.chargeVisible = false;
+
+                            self.$message({
+                                showClose: true,
+                                message: response.data.msg,
+                                type: 'success'
+                            });
+                        }else {
+                            self.$message({
+                                showClose: true,
+                                message: response.data.msg,
+                                type: 'warning'
+                            });
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            },
+            accountChoose(val){
+                this.accountStr = val;
+            },
+            accountSelected(){
+                let self = this;
+                self.axios.get('api/Electricitybills/GetPayAccountsIndex', {
+                    params: {
+                        schoolcode: localStorage.schoolcode,
+                    }
+                })
+                    .then(function (response) {
+                        console.log(2222);
+                        console.log(response);
+                        let res = response.data;
+                        if(res.code == '000000'){
+                            self.accountStr= res.data[0].accounts_id;
+                        }else {
+                            self.$message({
+                                showClose: true,
+                                message: '获取数据失败',
+                                type: 'warning'
+                            });
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            },
+            reset(){
+                let self = this;
+                self.dateArr = [];
+                self.orderNo = '';
+                self.flloorStr = null;
+                self.roomStr = '';
+                self.configTable.iDisplayStart = 0;
+                self.configTable.currentPage = 1;
+                self.tableList();
+            }
+        },
+    }
+</script>
+
+<style scoped>
+
+</style>

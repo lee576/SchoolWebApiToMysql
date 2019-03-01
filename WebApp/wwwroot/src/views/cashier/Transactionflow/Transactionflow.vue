@@ -1,0 +1,391 @@
+<template>
+    <div class="home">
+        <div class="nav-lead clearfix">
+            <div class="fl nav-lead-word"><a href="#">交易流水</a></div>
+            <div class="fr batch-operation">
+                <button class="operation-btn" @click="dowloadBill">对账单下载</button>
+            </div>
+        </div>
+        <div class="page-content">
+            <div class="nav-tab-box">
+                <div class="nav-tab1 clearfix">
+                    <div class="fl on-part-search1">
+                        <div class="fl left-word-on1">消费食堂</div>
+                        <div class="fl form-timerange">
+                            <el-select placeholder="请选择消费食堂" style="width:180px" v-model="hallStr" @change="hallChange">
+                                <el-option v-for="item in hallArr" :label="item.name" :value="item.id" :key="item.id"></el-option>
+                            </el-select>
+                        </div>
+                    </div>
+                    <div class="fl on-part-search1">
+                        <div class="fl left-word-on1">所在档口</div>
+                        <div class="fl form-timerange">
+                            <el-select placeholder="请选择所在档口" style="width:180px" v-model="stallStr" @change="stallChange">
+                                <el-option v-for="item in stallArr" :label="item.name" :value="item.id" :key="item.id"></el-option>
+                            </el-select>
+                        </div>
+                    </div>
+                    <div class="fl on-part-search1">
+                        <div class="fl left-word-on1">缴费时间</div>
+                        <div class="fl form-timerange">
+                            <el-date-picker
+                                    v-model="dateArr"
+                                    value-format="yyyy-MM-dd"
+                                    type="daterange"
+                                    :clearable=false
+                                    range-separator="至"
+                                    start-placeholder="开始日期"
+                                    end-placeholder="结束日期" style="width:250px" :picker-options="pickerOptions2">
+                            </el-date-picker>
+                        </div>
+                        <div class="fl on-part-search">
+                            <div class="fl search-button"><button class="btn-pro" @click="search">搜索</button></div>
+                        </div>
+                    </div>
+                    <div class="fr on-part-search2">
+                        <div class="fl search-button"><button class="btn-pro" @click="download">下载交易流水</button></div>
+                    </div>
+                </div>
+                <div class="nav-tab2 clearfix">
+                    <div class="fl on-part-search1">
+                        <div class="fl left-word-on1">订单编号</div>
+                        <div class="fl search-input" style="width:180px;">
+                            <input  type="text" placeholder="请输入订单号进行搜索" class="se-input" v-model="orderNo">
+                        </div>
+                    </div>
+                    <div class="fl on-part-search1">
+                        <div class="fl left-word-on1">学工号</div>
+                        <div class="fl search-input" style="width:180px;">
+                            <input  type="text" placeholder="请输入学工号进行搜索" class="se-input" v-model="stuNo">
+                        </div>
+                    </div>
+                    <div class="fl on-part-search1">
+                        <div class="fl left-word-on1">机器编号</div>
+                        <div class="fl search-input" style="width:180px;">
+                            <input  type="text" placeholder="请输入机器编号进行搜索" class="se-input" v-model="machineNo">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="payment-item-table" style="margin-top: 15px">
+                <div class="table-box">
+                    <template>
+                        <el-table
+                                :data="configTable.tableArr"
+                                stripe
+                                style="width: 100%">
+                            <el-table-column
+                                    prop="order"
+                                    label="订单编号">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="user_code"
+                                    label="学工号">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="name"
+                                    label="姓名">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="shop"
+                                    label="消费食堂">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="stall"
+                                    label="所在档口">
+                            </el-table-column>
+                            <el-table-column
+                                    label="付款金额">
+                                <template slot-scope="scope">
+                                    {{scope.row.pay_amount | currency('￥')}}
+                                </template>
+                            </el-table-column>
+                            <el-table-column
+                                    label="退款金额">
+                                <template slot-scope="scope">
+                                    {{scope.row.refund | currency('￥')}}
+                                </template>
+                            </el-table-column>
+                            <el-table-column
+                                    prop="datetime"
+                                    label="交易时间">
+                            </el-table-column>
+                            <!--<el-table-column  label="操作">-->
+                                <!--<template slot-scope="scope">-->
+                                    <!--<el-button type="text" size="small" class="edit-tr-con">更新</el-button>-->
+                                <!--</template>-->
+                            <!--</el-table-column>-->
+                        </el-table>
+                    </template>
+                </div>
+                <div class="block" style="text-align: right;">
+                    <el-pagination
+                            @size-change="handleSizeChange"
+                            @current-change="handleCurrentChange"
+                            :current-page.sync="configTable.currentPage"
+                            :page-size="configTable.iDisplayLength"
+                            layout="total, prev, pager, next"
+                            :total="configTable.total">
+                    </el-pagination>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</template>
+
+<script>
+    import { currency } from './../../../util/currency'
+    import { getDateType } from './../../../util/getDate'
+    import { export_json_to_excel } from './../../../assets/js/Export2Excel'
+    export default {
+        name: "Transactionflow",
+        data() {
+            return {
+                dateArr:[],
+                hallStr:null,
+                hallArr:[],
+                stallArr:[],
+                stallStr:'',
+                configTable:{
+                    tableArr:[],
+                    total:0,
+                    currentPage: 1,
+                    iDisplayStart:0,
+                    iDisplayLength:10,
+                },
+                orderNo:'',
+                stuNo:'',
+                machineNo:'',
+                currentPage1:1,
+                exportListData:[],
+                tableData: [{
+                    order:'21235687987898',
+                    date: '2016-05-02',
+                    name: '王小虎',
+                    address: '清真食堂',
+                    paymoney:"100"
+                }, {
+                    order:'21235687987898',
+                    date: '2016-05-04',
+                    name: '王小虎',
+                    address: '清真食堂',
+                    paymoney:"100"
+                }, {
+                    order:'21235687987898',
+                    date: '2016-05-01',
+                    name: '王小虎',
+                    address: '清真食堂',
+                    paymoney:"100"
+                }, {
+                    order:'21235687987898',
+                    date: '2016-05-03',
+                    name: '王小虎',
+                    address: '清真食堂',
+                    paymoney:"100"
+                }],
+                pickerOptions2: {
+                    disabledDate(time) {
+                        return time.getTime() > Date.now() - 8.64e6
+                    },
+                },
+            }
+        },
+        created() {
+            this.dateArr = [getDateType(1,0),getDateType(1,0)];
+            this.hallList();
+            this.tableList();
+        },
+        filters:{
+            currency: currency,
+            getDateType:getDateType,
+            export_json_to_excel:export_json_to_excel
+        },
+        methods: {
+            tableList(){
+                let self = this,stime = '',etime = '';
+                if(self.dateArr.length>0){
+                    stime = self.dateArr[0];
+                    etime = self.dateArr[1];
+                }
+                self.axios.get('api/Cashier/GetFlowing', {
+                    params: {
+                        school_id: localStorage.schoolcode,
+                        sEcho:self.configTable.currentPage,
+                        iDisplayStart:self.configTable.iDisplayStart,
+                        iDisplayLength:self.configTable.iDisplayLength,
+                        dining_hall:self.hallStr,
+                        stall:self.stallStr,
+                        order:self.orderNo,
+                        user_code:self.stuNo,
+                        machine:self.machineNo,
+                        tid:'',
+                        stime:stime,
+                        etime:etime
+                    }
+                })
+                    .then(function (response) {
+                        let res = response.data;
+                        if(res.code == '10000'){
+                            self.configTable.tableArr = res.aaData;
+                            self.configTable.total = res.iTotalRecords;
+                        }else {
+                            self.$message({
+                                showClose: true,
+                                message: '获取数据失败',
+                                type: 'warning'
+                            });
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+
+            },
+            search(){
+                let stime = this.dateArr[0],etime = this.dateArr[1];
+                let  date = parseInt(etime.split('-').join('').substring(4,6),10) - parseInt(stime.split('-').join('').substring(4,6),10);
+                if(date>1){
+                    this.$message({
+                        showClose: true,
+                        message: '月份之间不能隔一个月',
+                        type: 'error'
+                    });
+                }else {
+                    this.configTable.iDisplayStart = 0;
+                    this.configTable.currentPage = 1;
+                    this.tableList();
+                }
+            },
+            hallList(){
+                let self = this;
+                self.axios.get('api/Cashier/GetDinningHall', {
+                    params: {
+                        school_id: localStorage.schoolcode,
+                    }
+                })
+                    .then(function (response) {
+                        let res = response.data;
+                        if(res.code == '10000'){
+                            self.hallArr = res.data;
+                            self.hallArr.unshift({id:null , name: '全部'});
+                        }else {
+                            self.$message({
+                                showClose: true,
+                                message: '获取数据失败',
+                                type: 'warning'
+                            });
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            },
+            stallList(val){
+                let self = this;
+                self.axios.get('api/Cashier/GetStall', {
+                    params: {
+                        school_id: localStorage.schoolcode,
+                        diningid:val
+                    }
+                })
+                    .then(function (response) {
+                        let res = response.data;
+                        if(res.code == '10000'){
+                            self.stallArr = res.data;
+                        }else {
+                            self.$message({
+                                showClose: true,
+                                message: '获取数据失败',
+                                type: 'warning'
+                            });
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            },
+            hallChange(val){
+                this.hallStr = val;
+                this.stallStr = '';
+                this.stallList(val);
+            },
+            stallChange(val){
+                this.stallStr = val;
+            },
+            handleSizeChange(val) {
+                console.log(`每页 ${val} 条`);
+                let self = this;
+                self.configTable.iDisplayLength = val;
+                self.tableList();
+            },
+            handleCurrentChange(val) {
+                console.log(`当前页: ${val}`);
+                let self = this;
+                self.configTable.iDisplayStart = (val - 1)*self.configTable.iDisplayLength;
+                self.tableList();
+            },
+            formatJson(filterVal, jsonData) {
+                return jsonData.map(v => filterVal.map(j => v[j]))
+            },
+            //点击下载
+            download(){
+                let self = this,stime = '',etime = '';
+                if(self.dateArr.length>0){
+                    stime = self.dateArr[0];
+                    etime = self.dateArr[1];
+                }
+                self.axios.get('api/Cashier/GetFlowingExcel', {
+                    params: {
+                        dining_hall:self.hallStr,
+                        school_id: localStorage.schoolcode,
+                        stime:stime,
+                        etime:etime,
+                        stall:self.stallStr,
+                        order:self.orderNo,
+                        user_code:self.stuNo,
+                        machine:self.machineNo,
+                        tid:'',
+                    }
+                })
+                    .then(function (response) {
+                        console.log(response)
+                        let res = response.data;
+                        if(res.code == '10000'){
+                            self.exportListData = res.data;
+                            require.ensure([], () => {
+                                const tHeader = ["支付宝交易号", "支付宝订单号", "创建时间", "完成时间", "交易状态", "所在食堂","所在档口",'机具SN码','付款账户',"学工号",'姓名','订单价格','实付金额','退款金额']; //这个是表头名称 可以是iveiw表格中表头属性的title的数组
+                                const filterVal = ["alipay_order", "order", ",create_time", "finish_time", "status", "dining_name", "stall_name", "sn",'payer_account','user_code','name','pay_amount','paid','refund']; //与表格数据配合 可以是iview表格中的key的数组
+                                const list = self.exportListData; //表格数据，iview中表单数据也是这种格式！
+                                const data = self.formatJson(filterVal, list)
+                                export_json_to_excel(tHeader, data, '交易流水') //列表excel  这个是导出表单的名称
+                            });
+                        }else {
+                            self.$message({
+                                showClose: true,
+                                message: res.msg,
+                                type: 'warning'
+                            });
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+
+
+            },
+            dowloadBill(){
+                this.$router.push({
+                    path: '/BillDownload'
+                });
+            }
+
+        },
+
+    }
+</script>
+
+<style scoped>
+
+</style>

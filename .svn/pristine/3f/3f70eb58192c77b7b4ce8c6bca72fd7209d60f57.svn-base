@@ -1,0 +1,71 @@
+@charset "utf-8";
+/* CSS Document */
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-family:微软雅黑,"Microsoft Yahei",Arial,Helvetica;
+	font-size:14px;
+	color:#707070;
+}
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+button{outline:none;}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after, q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+input, textarea {
+	outline: 0;
+	padding:0; margin:0;
+	resize: none;
+}
+* {
+  -webkit-tap-highlight-color: transparent;
+  outline: 0;
+}
+.clear{clear:both;*display:inline;overflow:hidden;}
+.clearfix:after{content:".";display:block;height:0;clear:both;visibility:hidden;}
+.clearfix{zoom:1;}
+.fl{ float:left;}
+.fr{ float:right;}
+a{color:#707070;text-decoration:none;outline: none;}
+a:hover,a:focus{text-decoration:none;outline:none;}
+
+.logo-login{position:absolute;top:25px;left:80px;}
+.logo-login-left{position:absolute;bottom:0px;left:80px;}
+.logo-login-right{position:absolute;bottom:0px;right:80px;}
+.copyright{position:absolute;left:0px;bottom:20px;width:100%;text-align:center;color:rgba(112,112,112,0.5)}
+.login-main-box{width:300px;}
+.logoicon{text-align:center;}
+.logo-word{text-align:center;margin-top:60px;margin-bottom:30px;}
+.welcome-login{text-align:center;color:#707070;font-weight:bold;font-size:18px;margin-bottom:20px;}
+.login-ul li.normal-input{height:58px;position:relative;}
+.login-ul li.normal-input input{padding:10px 0;width:260px;color:#2387FB;padding-left:40px;border:1px solid #D7D7D7;background:#E8E8E8;border-radius:5px;}
+.login-ul li.normal-input input:focus{border:1px solid #2387FB;background:none;}
+.login-ul input::-webkit-input-placeholder {color:#2387FB;}
+.login-small{position:absolute;left:10px;top:8px;}
+.login-ul li .yan-input{position:relative;}
+.yan-input input{padding:10px 0;width:100%;color:#2387FB;width:150px;padding-left:40px;border:1px solid #D7D7D7;background:#E8E8E8;border-radius:5px;}
+.yan-input input:focus{border:1px solid #2387FB;background:none;}
+.yan-img{width:100px;height:35px;border-radius:5px;}
+.loading-btn .btn{width:300px;height:40px;background:#2387FB;color:#fff;border-radius:25px;margin-top:20px;border:none;font-size:16px;}
+.loading-btn .btn:hover{background:#145AB7}
+@media screen and (min-height: 800px) { 
+	.login-main-box{margin:7% auto;}
+} 
+@media screen and (max-height: 800px) { 
+	.login-main-box{margin:2% auto;}
+}  
+.tip-need-write{color:#fe5f5f;margin-left:40px;line-height:20px;}

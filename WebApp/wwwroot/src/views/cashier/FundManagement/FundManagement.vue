@@ -1,0 +1,527 @@
+<template>
+    <div class="home">
+        <div class="nav-lead clearfix">
+            <div class="fl nav-lead-word"><a href="#">资金管理</a></div>
+            <div class="fr batch-operation">
+                <button class="operation-btn"  @click="download">导出EXCEL</button>
+            </div>
+        </div>
+        <div class="page-content">
+            <div class="nav-tab-box">
+                <div class="nav-tab1 clearfix">
+                    <div class="fl on-part-search1">
+                        <div class="fl left-word-on1">缴费时间</div>
+                        <div class="fl form-timerange">
+                            <el-date-picker
+                                    v-model="dateArr"
+                                    value-format="yyyy-MM-dd"
+                                    type="daterange"
+                                    range-separator="至"
+                                    start-placeholder="开始日期"
+                                    end-placeholder="结束日期" style="width:250px"
+                                    :picker-options="pickerOptions2"
+                                    :clearable=false
+                                  >
+                            </el-date-picker>
+                        </div>
+                    </div>
+                    <div class="fl on-part-search2">
+                        <div class="fl search-button"><button class="btn-pro" @click="search">搜索</button></div>
+                        <div class="fl search-button"><button class="btn-pro" @click="cancel">重置</button></div>
+                    </div>
+                    <div class="high-set-on fr" style="margin-bottom: 15px;" :class="[{ active: isActive }]"  @click="toggleClass(isActive)">
+                        <span  class="high-set-word">高级设置</span>
+                        <span  class="high-set-img"></span>
+                    </div>
+                </div>
+                <div class="nav-tab2 clearfix" :style="{display:(isActive?'block':'none')}">
+                    <div class="fl on-part-search1">
+                        <div class="fl left-word-on1">所在食堂</div>
+                        <div class="fl form-timerange">
+                            <el-select placeholder="请选择消费食堂" style="width:180px" v-model="hallStr" @change="hallChange">
+                                <el-option v-for="item in hallArr" :label="item.name" :value="item.id" :key="item.id"></el-option>
+                            </el-select>
+                        </div>
+                    </div>
+                    <div class="fl on-part-search1">
+                        <div class="fl left-word-on1">所在档口</div>
+                        <div class="fl form-timerange">
+                            <el-select placeholder="请选择所在档口" style="width:180px" v-model="stallStr" @change="stallChange">
+                                <el-option v-for="item in stallArr" :label="item.name" :value="item.id" :key="item.id"></el-option>
+                            </el-select>
+                        </div>
+                    </div>
+                    <div class="fl on-part-search1">
+                        <div class="fl left-word-on1">收款账号</div>
+                        <div class="fl form-timerange">
+                            <el-select v-model="accountStr" placeholder="请选择收款账号" @change="accountChange">
+                                <el-option v-for="item in accountArr" :label="item.name" :value="item.id" :key="item.id"></el-option>
+                            </el-select>
+                        </div>
+                    </div>
+                    <ul class="choose-time-fo fl">
+                        <li  v-for="(item,index) in btnArr" :class="radio==index?'active':''"><el-button  @click="changeIcon(index)" >{{item}}</el-button></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="three-top-box clearfix">
+                <div class="on-border-box fl">
+                    <img :src="imageUrl1" class="fl on-border-img1">
+                    <div class="fl on-border-img2">
+                        <div class="border-word1">交易订单笔数</div>
+                        <div class="border-word2">{{orderNo | currency('',false) }}笔</div>
+                    </div>
+                </div>
+                <div class="on-border-box fl">
+                    <img :src="imageUrl3" class="fl on-border-img1">
+                    <div class="fl on-border-img2">
+                        <div class="border-word1">退款订单笔数</div>
+                        <div class="border-word-red">{{ refundNo | currency('',false) }}笔</div>
+                    </div>
+                </div>
+                <div class="on-border-box fl">
+                    <img :src="imageUrl2" class="fl on-border-img1">
+                    <div class="fl on-border-img2">
+                        <div class="border-word1">收款总金额</div>
+                        <div class="border-word3">{{ totalMoney| currency('￥') }}</div>
+                    </div>
+                </div>
+                <div class="on-border-box fl">
+                    <img :src="imageUrl4" class="fl on-border-img1">
+                    <div class="fl on-border-img2">
+                        <div class="border-word1">退款总金额</div>
+                        <div class="border-word-red">{{ refundMoney| currency('￥') }}</div>
+                    </div>
+                </div>
+                <div class="two-border-box fl">
+                    <img :src="imageUrl5" class="fl on-border-img1">
+                    <div class="fl on-border-img2">
+                        <div class="border-word1">净收入</div>
+                        <div class="border-word3">{{ receiptMoney| currency('￥') }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="payment-item-table">
+                <div class="time-tip-word">查询日期段 ：{{dateArr[0]}}至{{dateArr[1]}}</div>
+                <div class="table-box">
+                    <template>
+                        <el-table
+                                :data="configTable.tableArr"
+                                stripe
+                                style="width: 100%">
+                            <el-table-column
+                                    prop="shop"
+                                    label="所在食堂"
+                            >
+                            </el-table-column>
+                            <el-table-column
+                                    prop="stall"
+                                    label="所在档口"
+                            >
+                            </el-table-column>
+                            <el-table-column
+                                    label="交易订单总数">
+                                <template slot-scope="scope">
+                                    {{scope.row.totalNum | currency('',false)}}
+                                </template>
+                            </el-table-column>
+                            <el-table-column
+                                    label="退款订单总数">
+                                <template slot-scope="scope">
+                                    {{scope.row.totalRefundCount | currency('',false)}}
+                                </template>
+                            </el-table-column>
+                            <el-table-column
+                                    label="订单总价">
+                                <template slot-scope="scope">
+                                    {{scope.row.totalPayment | currency('￥')}}
+                                </template>
+                            </el-table-column>
+                            <el-table-column
+                                    label="搭伙费">
+                                <template slot-scope="scope">
+                                    {{scope.row.totalBoard | currency('￥')}}
+                                </template>
+                            </el-table-column>
+                            <el-table-column
+                                    label="优惠 ">
+                                <template slot-scope="scope">
+                                    {{scope.row.totalFavorable | currency('￥ ')}}
+                                </template>
+                            </el-table-column>
+                            <el-table-column
+                                    label="收款总金额">
+                                <template slot-scope="scope">
+                                    {{scope.row.totalOrderPrice | currency('￥')}}
+                                </template>
+                            </el-table-column>
+                            <el-table-column
+                                    label="退款总金额">
+                                <template slot-scope="scope">
+                                    {{scope.row.totalRefund | currency('￥')}}
+                                </template>
+                            </el-table-column>
+                            <el-table-column
+                                    label="净收入">
+                                <template slot-scope="scope">
+                                    {{scope.row.totalPrice | currency('￥')}}
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </template>
+                </div>
+                <div class="block" style="text-align: right;">
+                    <el-pagination
+                            @size-change="handleSizeChange"
+                            @current-change="handleCurrentChange"
+                            :current-page.sync="configTable.currentPage"
+                            :page-size="configTable.iDisplayLength"
+                            layout="total, prev, pager, next"
+                            :total="configTable.total">
+                    </el-pagination>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</template>
+
+<script>
+    import { currency } from './../../../util/currency'
+    import { getDateType } from './../../../util/getDate'
+    import { export_json_to_excel } from './../../../assets/js/Export2Excel'
+    export default {
+        name: "FundManagement",
+        methods: {
+            handleSizeChange(val) {
+                console.log(`每页 ${val} 条`);
+            },
+            handleCurrentChange(val) {
+                console.log(`当前页: ${val}`);
+            },
+            toggleClass(e){
+                if(e){
+                    this.isActive = false;
+                }else{
+                    this.isActive = true;
+                }
+
+            },
+        },
+        data() {
+            return {
+                orderNo:'0',
+                refundNo:'0',
+                totalMoney:'0',
+                refundMoney:'0',
+                receiptMoney:'0',
+                dateArr:[],
+                hallStr:null,
+                hallArr:[],
+                stallArr:[],
+                stallStr:'',
+                accountStr:null,
+                accountArr:[],
+                exportListData:[],
+                configTable:{
+                    tableArr:[],
+                    total:0,
+                    currentPage: 1,
+                    iDisplayStart:0,
+                    iDisplayLength:10,
+                },
+                isActive:false,
+                canteen:'',
+                radio:'0',
+                btnArr:['今天','昨天','最近七天','最近30天'],
+                imageUrl1: require('../../../assets/picture/images/order number.png'),
+                imageUrl2: require('../../../assets/picture/images/order amount.png'),
+                imageUrl3: require('../../../assets/picture/images/refund.png'),
+                imageUrl4: require('../../../assets/picture/images/refund_amount.png'),
+                imageUrl5: require('../../../assets/picture/images/net_income.png'),
+                pickerOptions2: {
+                    disabledDate(time) {
+                        return time.getTime() > Date.now() - 8.64e6
+                    },
+                },
+            }
+        },
+        created() {
+            this.dateArr = [getDateType(1,0),getDateType(1,0)];
+            this.hallList();
+            this.tableList();
+            this.accountList();
+            this.dataRecord();
+        },
+        filters:{
+            currency: currency,
+            getDateType:getDateType,
+            export_json_to_excel:export_json_to_excel
+        },
+        methods: {
+            cancel(){
+                this.dateArr = [getDateType(1,0),getDateType(1,0)];
+                this.hallStr = null;
+                this.accountStr = null;
+                this.stallStr = '';
+                this.radio = '0';
+            },
+            tableList(){
+                let self = this,stime = '',etime = '';
+                if(self.dateArr.length>0){
+                    stime = self.dateArr[0];
+                    etime = self.dateArr[1];
+                }
+                self.axios.get('api/Cashier/GetorderDetail', {
+                    params: {
+                        school_id: localStorage.schoolcode,
+                        sEcho:self.configTable.currentPage,
+                        iDisplayStart:self.configTable.iDisplayStart,
+                        iDisplayLength:self.configTable.iDisplayLength,
+                        dining_hall:self.hallStr,
+                        stall:self.stallStr,
+                        stime:stime,
+                        etime:etime
+                    }
+                })
+                    .then(function (response) {
+                        let res = response.data;
+                        if(res.code == '10000'){
+
+                            self.configTable.tableArr = res.data;
+                            self.configTable.total = res.iTotalRecords;
+                        }else {
+                            self.$message({
+                                showClose: true,
+                                message: '获取数据失败',
+                                type: 'warning'
+                            });
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+
+            },
+            accountList(){
+                let self = this;
+                self.axios.get('api/Cashier/GetPayment_accounts', {
+                    params: {
+                        school_id: localStorage.schoolcode,
+                    }
+                })
+                    .then(function (response) {
+                        let res = response.data;
+                        if(res.code == '10000'){
+                            self.accountArr = res.data;
+                            self.accountArr.unshift({id:null , name: '全部'});
+                        }else {
+                            self.$message({
+                                showClose: true,
+                                message: '获取数据失败',
+                                type: 'warning'
+                            });
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            },
+            accountChange(val){
+                this.accountForm.accountStr = val;
+            },
+            search(){
+                this.configTable.iDisplayStart = 0;
+                this.configTable.currentPage = 1;
+                this.tableList();
+                this.dataRecord();
+            },
+            hallList(){
+                let self = this;
+                self.axios.get('api/Cashier/GetDinningHall', {
+                    params: {
+                        school_id: localStorage.schoolcode,
+                    }
+                })
+                    .then(function (response) {
+
+                        let res = response.data;
+                        if(res.code == '10000'){
+                            self.hallArr = res.data;
+                            self.hallArr.unshift({id:null , name: '全部'});
+                        }else {
+                            self.$message({
+                                showClose: true,
+                                message: '获取数据失败',
+                                type: 'warning'
+                            });
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            },
+            stallList(val){
+                let self = this;
+                self.axios.get('api/Cashier/GetStall', {
+                    params: {
+                        school_id: localStorage.schoolcode,
+                        diningid:val
+                    }
+                })
+                    .then(function (response) {
+                        let res = response.data;
+                        if(res.code == '10000'){
+                            self.stallArr = res.data;
+                        }else {
+                            self.$message({
+                                showClose: true,
+                                message: '获取数据失败',
+                                type: 'warning'
+                            });
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            },
+            hallChange(val){
+                this.hallStr = val;
+                this.stallStr = '';
+                this.stallList(val);
+            },
+            stallChange(val){
+                this.stallStr = val;
+            },
+            handleSizeChange(val) {
+                console.log(`每页 ${val} 条`);
+                let self = this;
+                self.configTable.iDisplayLength = val;
+                self.tableList();
+            },
+            handleCurrentChange(val) {
+                console.log(`当前页: ${val}`);
+                let self = this;
+                self.configTable.iDisplayStart = (val - 1)*self.configTable.iDisplayLength;
+                self.tableList();
+            },
+            formatJson(filterVal, jsonData) {
+                return jsonData.map(v => filterVal.map(j => v[j]))
+            },
+            //点击下载
+            download(){
+                let self = this,stime = '',etime = '';
+                if(self.dateArr.length>0){
+                    stime = self.dateArr[0];
+                    etime = self.dateArr[1];
+                }
+                self.axios.get('api/Cashier/GetorderDetail', {
+                    params: {
+                        school_id: localStorage.schoolcode,
+                        sEcho:self.configTable.currentPage,
+                        iDisplayStart:-1,
+                        iDisplayLength:-1,
+                        dining_hall:self.hallStr,
+                        stall:self.stallStr,
+                        stime:stime,
+                        etime:etime
+                    }
+                })
+                    .then(function (response) {
+                        console.log(response)
+                        let res = response.data;
+                        if(res.code == '10000'){
+                            self.exportListData = res.data;
+                            require.ensure([], () => {
+                                const tHeader = ["食堂名称", "档口名称", "交易笔数", "订单金额","支付金额", "退款金额", "退款笔数","净收入",'搭伙费','折扣']; //这个是表头名称 可以是iveiw表格中表头属性的title的数组
+                                const filterVal = ["shop", "stall", ",totalNum", "totalPayment", "totalOrderPrice", "totalRefund ", "totalRefundCount", "totalPrice",'totalBoard','totalFavorable']; //与表格数据配合 可以是iview表格中的key的数组
+                                const list = self.exportListData; //表格数据，iview中表单数据也是这种格式！
+                                const data = self.formatJson(filterVal, list)
+                                export_json_to_excel(tHeader, data, '交易流水') //列表excel  这个是导出表单的名称
+                            });
+                        }else {
+                            self.$message({
+                                showClose: true,
+                                message: res.msg,
+                                type: 'warning'
+                            });
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+
+
+            },
+            toggleClass(e){
+                if(e){
+                    this.isActive = false;
+                }else{
+                    this.isActive = true;
+                }
+
+            },
+            changeIcon(icon){
+                let self = this;
+                self.radio = icon;
+                if(self.radio == 0){
+                    self.dateArr = [getDateType(1,0),getDateType(1,0)];
+                }else if(self.radio == 1){
+
+                    self.dateArr = [getDateType(1,-1),getDateType(1,0)];
+                }else if(self.radio == 2){
+                    self.dateArr = [getDateType(1,-7),getDateType(1,0)];
+                }else if(self.radio == 3){
+                    self.dateArr = [getDateType(1,-30),getDateType(1,0)];
+                }
+            },
+            dataRecord(){
+                let self = this,stime = '',etime = '';
+                if(self.dateArr.length>0){
+                    stime = self.dateArr[0];
+                    etime = self.dateArr[1];
+                }
+                self.axios.get('api/Cashier/GetTotalt',{
+                    params: {
+                        school_id: localStorage.schoolcode,
+                        stime:stime,
+                        etime:etime
+                    }
+                })
+                    .then(response => {
+                        let resp = response.data;
+                        if(response.data.code == "10000"){
+                            if(resp.data.length > 0){
+                                self.orderNo = resp.data[0].totalOrder;
+                                self.refundNo = resp.data[0].totalReund;
+                                self.totalMoney =  resp.data[0].totalPayAmount;
+                                self.refundMoney =  resp.data[0].totalReundMoney;
+                                self.receiptMoney =  resp.data[0].totalMoney;
+                            }
+
+
+                        }else {
+                            self.$message({
+                                showClose: true,
+                                message: resp.data.msg,
+                                type: 'warning'
+                            });
+                        }
+
+                    })
+                    .catch(function (error) {
+
+                        console.log(error);
+
+                    });
+            },
+
+
+        },
+
+    }
+</script>
+
+<style scoped>
+
+</style>

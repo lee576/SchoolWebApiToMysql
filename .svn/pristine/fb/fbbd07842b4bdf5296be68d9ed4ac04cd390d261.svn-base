@@ -1,0 +1,679 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using DbModel;
+using IService;
+using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
+using SchoolWebApi.Utility;
+using SqlSugar;
+
+namespace SchoolWebApi.Controllers
+{
+    /// <summary>
+    /// 签到小程序接口API
+    /// </summary>
+    [Route("api/[controller]/[action]")]
+    [ApiController]
+    [Produces("application/json")]
+    [EnableCors("any")]
+    public class SignInController : Controller
+    {
+        private readonly Itb_teamService _tbTeamService;
+        private readonly Itb_team_userService _tbTeamUserService;
+        private readonly Itb_IBeaconService _beaconService;
+        private readonly Itb_attendanceService _attendanceService;
+        /// <summary>
+        /// 初始化日志对象
+        /// </summary>
+        public static NLog.Logger Log = NLog.LogManager.GetCurrentClassLogger();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tbTeamService"></param>
+        /// <param name="tbTeamUserService"></param>
+        /// <param name="beaconService"></param>
+        /// <param name="attendanceService"></param>
+        public SignInController(Itb_teamService tbTeamService, Itb_team_userService tbTeamUserService, Itb_IBeaconService beaconService, Itb_attendanceService
+            attendanceService)
+        {
+            _tbTeamService = tbTeamService;
+            _tbTeamUserService = tbTeamUserService;
+            _beaconService = beaconService;
+            _attendanceService = attendanceService;
+        }
+
+        /// <summary>
+        /// 创建签到群组
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult AddTeam([FromBody]JObject obj)
+        {
+            try
+            {
+                var addedTeamId = _tbTeamService.Insert(new tb_team
+                {
+                    teamName = obj["groupName"] + "",
+                    startTime = obj["startTime"] + "",
+                    endTime = obj["endTime"] + "",
+                    address = obj["signAddress"] + "",
+                    isTemporary = bool.Parse(obj["isTemp"] + "") ? 1 : 0,
+                    isAddJoin = bool.Parse(obj["isFixPeople"] + "") ? 1 : 0,
+                    userid = obj["studentid"] + "",
+                    schoolCode = obj["schoolCode"] + ""
+                });
+                return new JsonResult(new { data = addedTeamId });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return new JsonResult(new { data = ex.ToString() });
+            }
+        }
+
+        /// <summary>
+        /// 修改签到群组
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult ModifyTeam([FromBody]JObject obj)
+        {
+            try
+            {
+                var isSucess = _tbTeamService.Update(new tb_team
+                {
+                    id = long.Parse(obj["id"] + ""),
+                    teamName = obj["groupName"] + "",
+                    startTime = obj["startTime"] + "",
+                    endTime = obj["endTime"] + "",
+                    address = obj["signAddress"] + "",
+                    isTemporary = bool.Parse(obj["isTemp"] + "") ? 1 : 0,
+                    isAddJoin = bool.Parse(obj["isFixPeople"] + "") ? 1 : 0,
+                    userid = obj["studentid"] + "",
+                    schoolCode = obj["schoolCode"] + ""
+                });
+                return new JsonResult(new { data = isSucess });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return new JsonResult(new { data = ex.ToString() });
+            }
+        }
+
+        /// <summary>
+        /// 删除签到群组
+        /// </summary>
+        /// <param name="id">群组id</param>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult RemoveTeam(string id)
+        {
+            try
+            {
+                var isDelete = _tbTeamService.Delete(t => t.id == SqlFunc.ToInt64(id));
+                return new JsonResult(new { data = isDelete });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return new JsonResult(new { data = ex.ToString() });
+            }
+        }
+
+        /// <summary>
+        /// 根据StudentId显示所有此id发起的群组
+        /// </summary>
+        /// <param name="userid"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult LaunchTeams(string userid)
+        {
+            try
+            {
+                var teams = _tbTeamService.LaunchTeams(userid, TimeHelper.GetWebTime());
+                return new JsonResult(new { data = teams });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return new JsonResult(new { data = ex.ToString() });
+            }
+        }
+
+        /// <summary>
+        /// 查找该用户参与的群组
+        /// </summary>
+        /// <param name="schoolCode"></param>
+        /// <param name="joinUserId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult JoinedTeams(string schoolCode, string joinUserId)
+        {
+            try
+            {
+                var teams = _tbTeamService.JoinedTeams(schoolCode, joinUserId, TimeHelper.GetWebTime());
+                return new JsonResult(new { data = teams });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return new JsonResult(new { data = ex.ToString() });
+            }
+        }
+
+        /// <summary>
+        /// 根据群组id获取群组
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult Team(string id)
+        {
+            try
+            {
+                var team = _tbTeamService.FindById(id);
+                return new JsonResult(new { data = team });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return new JsonResult(new { data = ex.ToString() });
+            }
+        }
+        /// <summary>
+        /// 获取全部群组信息
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult AllTeam()
+        {
+            try
+            {
+                var team = _tbTeamService.FindAll();
+                return new JsonResult(new { data = team });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return new JsonResult(new { data = ex.ToString() });
+            }
+        }
+        /// <summary>
+        /// 根据群组ID得到群组下的用户
+        /// </summary>
+        /// <param name="teamid"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult TeamUsers(string teamid)
+        {
+            try
+            {
+                var teamUsers = _tbTeamUserService.FindTeamUser(teamid);
+                return new JsonResult(new { data = teamUsers });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return new JsonResult(new { data = ex.ToString() });
+            }
+        }
+
+        /// <summary>
+        /// 加入在校人员到签到群组
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult AddTeamUser([FromBody]JObject obj)
+        {
+            try
+            {
+                var addTeamUserId = _tbTeamUserService.Insert(new tb_team_user
+                {
+                    teamID = long.Parse(obj["teamID"] + ""),
+                    joinUserid = obj["joinUserid"] + ""
+                });
+                return new JsonResult(new { data = addTeamUserId });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return new JsonResult(new { data = ex.ToString() });
+            }
+        }
+
+        /// <summary>
+        /// 删除签到群组里的人员
+        /// </summary>
+        /// <param name="teamid">群组ID</param>
+        /// <param name="joinUserid">人员StudentId</param>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult RemoveTeamUser(string teamid, string joinUserid)
+        {
+            try
+            {
+                var isSucess = _tbTeamUserService.Delete(t => t.teamID == SqlFunc.ToInt64(teamid) && t.joinUserid == joinUserid);
+                return new JsonResult(new { data = isSucess });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return new JsonResult(new { data = ex.ToString() });
+            }
+        }
+
+        /// <summary>
+        /// 签到群组是否存在此人员
+        /// </summary>
+        /// <param name="teamid"></param>
+        /// <param name="joinUserid"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult ExsitTeamUser(string teamid, string joinUserid)
+        {
+            try
+            {
+                var isExsit = _tbTeamUserService.Any(t => t.teamID == SqlFunc.ToInt64(teamid) && t.joinUserid == joinUserid);
+                return new JsonResult(new { data = isExsit });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return new JsonResult(new { data = ex.ToString() });
+            }
+        }
+
+        /// <summary>
+        /// 获取某学校IBeacon UUID列表
+        /// </summary>
+        /// <param name="schoolCode"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult GetIBeacons(string schoolCode)
+        {
+            try
+            {
+                var iBeaconList = _beaconService.GetIBeaconList(schoolCode);
+                return new JsonResult(new { data = iBeaconList });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return new JsonResult(new { data = ex.ToString() });
+            }
+        }
+
+        /// <summary>
+        /// 查询某用户是否已签到/签退
+        /// </summary>
+        /// <param name="teamId">签到群组 Id</param>
+        /// <param name="joinUserid">签到人员User Id</param>
+        /// <param name="attendanceType">0签到,1签退</param>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult IsAttendance(int teamId, string joinUserid, int attendanceType)
+        {
+            try
+            {
+                var startTime = DateTime.Now.ToString("yyyy-MM-dd 00:00:00");
+                var endTime = DateTime.Now.ToString("yyyy-MM-dd 23:59:59");
+                var isExsit = _attendanceService.Any(t =>
+                    t.teamID == teamId && t.joinUserid == joinUserid && t.attendanceType == attendanceType &&
+                    t.attendanceTime >= SqlFunc.ToDate(startTime) && t.attendanceTime <= SqlFunc.ToDate(endTime));
+                return new JsonResult(new { data = isExsit });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return new JsonResult(new { data = ex.ToString() });
+            }
+        }
+
+        /// <summary>
+        /// 提交签到/签退记录
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult AddAttendance([FromBody] JObject obj)
+        {
+            try
+            {
+                var startTime = DateTime.Now.ToString("yyyy-MM-dd 00:00:00");
+                var endTime = DateTime.Now.ToString("yyyy-MM-dd 23:59:59");
+                var findAttendance = _attendanceService.FindByClause(t => t.teamID == long.Parse(obj["teamID"] + "")
+                                                                          && t.joinUserid == obj["joinUserid"] + ""
+                                                                          && t.attendanceType ==
+                                                                          int.Parse(obj["attendanceType"] + "") &&
+                                                                          t.attendanceTime >=
+                                                                          SqlFunc.ToDate(startTime) &&
+                                                                          t.attendanceTime <= SqlFunc.ToDate(endTime));
+                if (findAttendance == null)
+                {
+                    var addAttendanceId = _attendanceService.Insert(new tb_attendance
+                    {
+                        teamID = long.Parse(obj["teamID"] + ""),
+                        joinUserid = obj["joinUserid"] + "",
+                        attendanceTime = TimeHelper.GetWebTime(),
+                        attendanceType = int.Parse(obj["attendanceType"] + "")
+                    });
+                    return new JsonResult(new { data = addAttendanceId });
+                }
+
+                findAttendance.attendanceTime = TimeHelper.GetWebTime();
+                var updateAttendanceId = _attendanceService.Update(findAttendance);
+                return new JsonResult(new { data = updateAttendanceId });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return new JsonResult(new { data = ex.ToString() });
+            }
+        }
+
+        /// <summary>
+        /// 已签到人员
+        /// </summary>
+        /// <param name="teamId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult SignIned(int teamId)
+        {
+            try
+            {
+                var signInedList = _attendanceService.SignIned(teamId);
+                return new JsonResult(new { data = signInedList });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return new JsonResult(new { data = ex.ToString() });
+            }
+        }
+
+        /// <summary>
+        /// 未签到人员
+        /// </summary>
+        /// <param name="teamId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult UnSignIned(int teamId)
+        {
+            try
+            {
+                var unSignInedList = _attendanceService.UnSignIned(teamId);
+                return new JsonResult(new { data = unSignInedList });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return new JsonResult(new { data = ex.ToString() });
+            }
+        }
+
+        /// <summary>
+        /// 通过code获取学校签到信息
+        /// </summary>
+        /// <param name="sEcho"></param>
+        /// <param name="code"></param>
+        /// <param name="iDisplayStart"></param>
+        /// <param name="iDisplayLength"></param>
+        /// <param name="nameorid"></param>
+        /// <param name="teamNameorTeamiD"></param>
+        /// <param name="stime"></param>
+        /// <param name="etime"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult GetAttendanceInfoToSchoolCode(int sEcho, string code, int iDisplayStart, int iDisplayLength,
+            string nameorid = "", string teamNameorTeamiD = "", string stime = "", string etime = "")
+        {
+            try
+            {
+                int pageStart = iDisplayStart;
+                int pageSize = iDisplayLength;
+                int pageIndex = (pageStart / pageSize) + 1;
+                int totalRecordNum = default(int);
+                var data = _attendanceService.GetAttendanceInfoToSchoolCode(pageIndex, pageSize, ref totalRecordNum, code, nameorid, teamNameorTeamiD, stime, etime);
+                return Json(new
+                {
+                    code = JsonReturnMsg.GetSuccess,
+                    sEcho = sEcho,
+                    iTotalRecords = totalRecordNum,
+                    iTotalDisplayRecords = totalRecordNum,
+                    aaData = data
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return new JsonResult(new { data = ex.ToString() });
+            }
+        }
+
+        /// <summary>
+        /// 导出签到信息
+        /// </summary>
+        /// <param name="schoolCode"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public FileContentResult GetAttendanceInfo(string schoolCode)
+        {
+            try
+            {
+                //查询套餐
+                var records = _attendanceService.GetAttendanceInfo(schoolCode);
+                if (records == null)
+                {
+                    return null;
+                }
+                //导出数据excel
+                return ExcelHelper.ExportAction(@"签到详细信息.xls",
+                    new List<string> { "签到ID", "群主ID", "群主名", "学号", "姓名", "签到时间", "状态" }, records.ToArray(),
+                    FillCell);
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return null;
+            }
+        }
+        /// <summary>
+        /// 通过code获取学校蓝牙设备信息
+        /// </summary>
+        /// <param name="sEcho"></param>
+        /// <param name="code"></param>
+        /// <param name="iDisplayStart"></param>
+        /// <param name="iDisplayLength"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult GetIBeaconInfoToSchoolCode(int sEcho, string code, int iDisplayStart, int iDisplayLength)
+        {
+            try
+            {
+                int pageStart = iDisplayStart;
+                int pageSize = iDisplayLength;
+                int pageIndex = (pageStart / pageSize) + 1;
+                int totalRecordNum = default(int);
+                var data = _beaconService.GetIBeaconInfoToPageList(pageIndex, pageSize, ref totalRecordNum, code);
+                return Json(new
+                {
+                    code = JsonReturnMsg.GetSuccess,
+                    sEcho = sEcho,
+                    iTotalRecords = totalRecordNum,
+                    iTotalDisplayRecords = totalRecordNum,
+                    aaData = data
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return new JsonResult(new { data = ex.ToString() });
+            }
+        }
+        /// <summary>
+        /// 添加蓝牙设备
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult AddIBeaconInfo([FromBody] JObject obj)
+        {
+            try
+            {
+                string uuid = obj["uuid"].ToString();
+                var tb = _beaconService.FindByClause(x => x.uuid == uuid);
+                if (tb != null)
+                {
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.FailCode,
+                        msg = JsonReturnMsg.AddFail
+                    });
+                }
+                tb_ibeacon beaconModel = new tb_ibeacon();
+                beaconModel.uuid = uuid;
+                beaconModel.schoolCode = obj["schoolCode"].ToString();
+                _beaconService.Insert(beaconModel);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        /// <summary>
+        /// 修改蓝牙设备信息
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult UpdateIBeaconInfo([FromBody] JObject obj)
+        {
+            try
+            {
+                string uuid = obj["uuid"].ToString();
+                var tb = _beaconService.FindByClause(x => x.uuid == uuid);
+                if (tb != null)
+                {
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.FailCode,
+                        msg = JsonReturnMsg.UpdateFail
+                    });
+                }
+
+                tb_ibeacon beaconModel = new tb_ibeacon
+                {
+                    id = Convert.ToInt32(obj["id"] + ""),
+                    uuid = uuid,
+                    schoolCode = obj["schoolCode"] + ""
+                };
+                _beaconService.Update(beaconModel);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        /// <summary>
+        /// 删除蓝牙设备信息
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult DeleteIBeaconInfo([FromBody] JObject obj)
+        {
+            try
+            {
+                int id = Convert.ToInt32(obj["id"] + "");
+                var tb = _beaconService.FindByClause(x => x.id == id);
+                if (tb == null)
+                {
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.FailCode,
+                        msg = JsonReturnMsg.DeleteFail
+                    });
+                }
+                _beaconService.Delete(tb);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        /// <summary>
+        /// 批量删除蓝牙设备信息
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult DeleteAllIBeaconInfo([FromBody] JObject obj)
+        {
+            try
+            {
+                var _ids = obj["ids"].AsJEnumerable();
+                var idList = new List<string>();
+                foreach (JToken id in _ids)
+                {
+                    idList.Add(id + "");
+                }
+                _beaconService.DeleteByIds(idList.ToArray());
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        private void FillCell(NPOI.SS.UserModel.IRow row, Models.ViewModels.Attendance[] list, int i)
+        {
+            row.CreateCell(0).SetCellValue(list[i].id);
+            row.CreateCell(1).SetCellValue(list[i].teamID);
+            row.CreateCell(2).SetCellValue(list[i].teamName);
+            row.CreateCell(3).SetCellValue(list[i].joinUserid);
+            row.CreateCell(4).SetCellValue(list[i].user_name);
+            row.CreateCell(5).SetCellValue(list[i].attendanceTime.ToString());
+            row.CreateCell(6).SetCellValue(list[i].attendanceType.Equals("0") ? "签到" : "签退");
+        }
+    }
+}

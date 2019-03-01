@@ -1,0 +1,220 @@
+2019-01-03 14:23:02.7749|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'BackgroundProcessingServer' started. 
+2019-01-03 14:23:02.7749|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'BackgroundProcessingServer' started. 
+2019-01-03 14:23:02.8499|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'ServerHeartbeat' started. 
+2019-01-03 14:23:02.8679|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'ServerHeartbeat' started. 
+2019-01-03 14:23:02.9179|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'ServerWatchdog' started. 
+2019-01-03 14:23:02.9409|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'ServerWatchdog' started. 
+2019-01-03 14:23:03.0079|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #eb469374' started. 
+2019-01-03 14:23:03.0079|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Hangfire.Redis.RedisSubscription' started. 
+2019-01-03 14:23:03.0079|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #eb469374' started. 
+2019-01-03 14:23:03.0079|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Hangfire.Redis.RedisSubscription' started. 
+2019-01-03 14:23:03.0079|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Hangfire.Redis.FetchedJobsWatcher' started. 
+2019-01-03 14:23:03.0219|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Hangfire.Redis.FetchedJobsWatcher' started. 
+2019-01-03 14:23:03.0219|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #250d4b65' started. 
+2019-01-03 14:23:03.0369|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #250d4b65' started. 
+2019-01-03 14:23:03.1089|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'default' queue... 
+2019-01-03 14:23:03.1089|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'default' queue... 
+2019-01-03 14:23:03.1169|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #857e7257' started. 
+2019-01-03 14:23:03.1169|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #857e7257' started. 
+2019-01-03 14:23:03.1439|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'default' queue... 
+2019-01-03 14:23:03.1709|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'default' queue... 
+2019-01-03 14:23:03.1439|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #64be417b' started. 
+2019-01-03 14:23:03.1709|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #64be417b' started. 
+2019-01-03 14:23:03.1879|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #1851525b' started. 
+2019-01-03 14:23:03.1879|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #1851525b' started. 
+2019-01-03 14:23:03.2149|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'default' queue 
+2019-01-03 14:23:03.2319|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'default' queue 
+2019-01-03 14:23:03.2619|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #714385f9' started. 
+2019-01-03 14:23:03.2619|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #ae037d0a' started. 
+2019-01-03 14:23:03.2619|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #714385f9' started. 
+2019-01-03 14:23:03.2619|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #ae037d0a' started. 
+2019-01-03 14:23:03.2929|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #532ee19f' started. 
+2019-01-03 14:23:03.3029|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #c56cff94' started. 
+2019-01-03 14:23:03.3029|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #532ee19f' started. 
+2019-01-03 14:23:03.3219|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #c56cff94' started. 
+2019-01-03 14:23:03.3360|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #1fe216d3' started. 
+2019-01-03 14:23:03.3730|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #1fe216d3' started. 
+2019-01-03 14:23:03.3810|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #41efc240' started. 
+2019-01-03 14:23:03.3810|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #41efc240' started. 
+2019-01-03 14:23:03.4200|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #5df304e3' started. 
+2019-01-03 14:23:03.4450|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #5df304e3' started. 
+2019-01-03 14:23:03.4650|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #6f663bc5' started. 
+2019-01-03 14:23:03.4650|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #6f663bc5' started. 
+2019-01-03 14:23:03.4780|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #d22a39f5' started. 
+2019-01-03 14:23:03.4940|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #d22a39f5' started. 
+2019-01-03 14:23:03.5220|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #c43d2b2e' started. 
+2019-01-03 14:23:03.5220|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #c43d2b2e' started. 
+2019-01-03 14:23:03.5370|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #2a565044' started. 
+2019-01-03 14:23:03.5370|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'jobs' queue... 
+2019-01-03 14:23:03.5370|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #2a565044' started. 
+2019-01-03 14:23:03.5770|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #d1ac4eed' started. 
+2019-01-03 14:23:03.5770|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'jobs' queue... 
+2019-01-03 14:23:03.5770|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #d1ac4eed' started. 
+2019-01-03 14:23:03.6000|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'jobs' queue... 
+2019-01-03 14:23:03.6000|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'jobs' queue... 
+2019-01-03 14:23:03.7040|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #5530608a' started. 
+2019-01-03 14:23:03.7040|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #5530608a' started. 
+2019-01-03 14:23:03.7320|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'DelayedJobScheduler' started. 
+2019-01-03 14:23:03.7320|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'DelayedJobScheduler' started. 
+2019-01-03 14:23:03.7440|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'RecurringJobScheduler' started. 
+2019-01-03 14:23:03.7550|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #7d6a5d13' started. 
+2019-01-03 14:23:03.7550|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #7d6a5d13' started. 
+2019-01-03 14:23:03.7550|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'RecurringJobScheduler' started. 
+2019-01-03 14:23:03.7740|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #b9d0d683' started. 
+2019-01-03 14:23:03.7740|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #b9d0d683' started. 
+2019-01-03 14:23:56.5220|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'BackgroundProcessingServer' started. 
+2019-01-03 14:23:56.5530|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'BackgroundProcessingServer' started. 
+2019-01-03 14:23:56.7230|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'ServerWatchdog' started. 
+2019-01-03 14:23:56.7560|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'ServerWatchdog' started. 
+2019-01-03 14:23:56.7230|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'ServerHeartbeat' started. 
+2019-01-03 14:23:56.7660|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'ServerHeartbeat' started. 
+2019-01-03 14:23:56.7910|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Hangfire.Redis.FetchedJobsWatcher' started. 
+2019-01-03 14:23:56.7980|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Hangfire.Redis.FetchedJobsWatcher' started. 
+2019-01-03 14:23:56.8720|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Hangfire.Redis.RedisSubscription' started. 
+2019-01-03 14:23:56.8880|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Hangfire.Redis.RedisSubscription' started. 
+2019-01-03 14:23:56.9420|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'default' queue... 
+2019-01-03 14:23:56.9630|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'default' queue... 
+2019-01-03 14:23:56.9830|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #ecbd748e' started. 
+2019-01-03 14:23:56.9830|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #c27ed61d' started. 
+2019-01-03 14:23:56.9830|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #ecbd748e' started. 
+2019-01-03 14:23:57.0000|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #c27ed61d' started. 
+2019-01-03 14:23:57.0840|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #074d2c09' started. 
+2019-01-03 14:23:57.0840|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #074d2c09' started. 
+2019-01-03 14:23:57.1030|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'default' queue... 
+2019-01-03 14:23:57.1030|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'default' queue... 
+2019-01-03 14:23:57.1600|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #389568fc' started. 
+2019-01-03 14:23:57.1600|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #389568fc' started. 
+2019-01-03 14:23:57.1600|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'default' queue 
+2019-01-03 14:23:57.1700|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'default' queue 
+2019-01-03 14:23:57.1850|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #f4c4dab3' started. 
+2019-01-03 14:23:57.1850|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #f4c4dab3' started. 
+2019-01-03 14:23:57.2350|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #6c026b49' started. 
+2019-01-03 14:23:57.2350|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #6c026b49' started. 
+2019-01-03 14:23:57.3470|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #ef5a9afd' started. 
+2019-01-03 14:23:57.3470|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #fce750cf' started. 
+2019-01-03 14:23:57.3470|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #ef5a9afd' started. 
+2019-01-03 14:23:57.3560|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #fce750cf' started. 
+2019-01-03 14:23:57.3760|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #46041bc0' started. 
+2019-01-03 14:23:57.3760|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #46041bc0' started. 
+2019-01-03 14:23:57.3910|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #69ce634c' started. 
+2019-01-03 14:23:57.3910|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #69ce634c' started. 
+2019-01-03 14:23:57.4100|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #8e4f2e44' started. 
+2019-01-03 14:23:57.4100|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #8e4f2e44' started. 
+2019-01-03 14:23:57.4770|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #e97d4517' started. 
+2019-01-03 14:23:57.4800|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #e97d4517' started. 
+2019-01-03 14:23:57.4800|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #e72b8057' started. 
+2019-01-03 14:23:57.4800|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #e72b8057' started. 
+2019-01-03 14:23:57.6071|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #b6898c14' started. 
+2019-01-03 14:23:57.6071|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #b6898c14' started. 
+2019-01-03 14:23:57.6491|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #e7b79fdf' started. 
+2019-01-03 14:23:57.6551|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #e7b79fdf' started. 
+2019-01-03 14:23:57.6851|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #65b464fa' started. 
+2019-01-03 14:23:57.6851|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #65b464fa' started. 
+2019-01-03 14:23:57.7081|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'jobs' queue... 
+2019-01-03 14:23:57.7081|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'jobs' queue... 
+2019-01-03 14:23:57.7141|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'jobs' queue... 
+2019-01-03 14:23:57.7141|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'jobs' queue... 
+2019-01-03 14:23:57.7371|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #9de30274' started. 
+2019-01-03 14:23:57.7541|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #9de30274' started. 
+2019-01-03 14:23:57.7541|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #f3b36ad4' started. 
+2019-01-03 14:23:57.7541|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #f3b36ad4' started. 
+2019-01-03 14:23:57.7901|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'jobs' queue 
+2019-01-03 14:23:57.8091|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'jobs' queue 
+2019-01-03 14:23:57.8091|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #1df261a5' started. 
+2019-01-03 14:23:57.8091|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #1df261a5' started. 
+2019-01-03 14:23:57.8431|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #f229f9cf' started. 
+2019-01-03 14:23:57.8861|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'DelayedJobScheduler' started. 
+2019-01-03 14:23:57.8861|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #f229f9cf' started. 
+2019-01-03 14:23:57.8861|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'DelayedJobScheduler' started. 
+2019-01-03 14:23:57.9011|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'RecurringJobScheduler' started. 
+2019-01-03 14:23:57.9011|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'RecurringJobScheduler' started. 
+2019-01-03 14:35:24.9664|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'BackgroundProcessingServer' started. 
+2019-01-03 14:35:24.9784|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'BackgroundProcessingServer' started. 
+2019-01-03 14:35:25.0074|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'ServerHeartbeat' started. 
+2019-01-03 14:35:25.0164|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'ServerHeartbeat' started. 
+2019-01-03 14:35:25.0284|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'ServerWatchdog' started. 
+2019-01-03 14:35:25.0284|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'ServerWatchdog' started. 
+2019-01-03 14:35:25.0284|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Hangfire.Redis.FetchedJobsWatcher' started. 
+2019-01-03 14:35:25.0284|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Hangfire.Redis.RedisSubscription' started. 
+2019-01-03 14:35:25.0284|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Hangfire.Redis.RedisSubscription' started. 
+2019-01-03 14:35:25.0284|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Hangfire.Redis.FetchedJobsWatcher' started. 
+2019-01-03 14:35:25.0504|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #04ad8a50' started. 
+2019-01-03 14:35:25.0504|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #04ad8a50' started. 
+2019-01-03 14:35:25.0614|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #c7474561' started. 
+2019-01-03 14:35:25.0614|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #c7474561' started. 
+2019-01-03 14:35:25.0614|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #532fd233' started. 
+2019-01-03 14:35:25.0614|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #cd0027d9' started. 
+2019-01-03 14:35:25.0614|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #532fd233' started. 
+2019-01-03 14:35:25.0714|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #cd0027d9' started. 
+2019-01-03 14:35:25.0714|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #38a895a2' started. 
+2019-01-03 14:35:25.0714|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #d51282ef' started. 
+2019-01-03 14:35:25.0714|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #6b4c56e9' started. 
+2019-01-03 14:35:25.0714|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #e9ae8595' started. 
+2019-01-03 14:35:25.0864|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #35e8dfc7' started. 
+2019-01-03 14:35:25.0864|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'default' queue... 
+2019-01-03 14:35:25.0714|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #1f983527' started. 
+2019-01-03 14:35:25.0714|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #38a895a2' started. 
+2019-01-03 14:35:25.0714|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #a74329a3' started. 
+2019-01-03 14:35:25.0714|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #d51282ef' started. 
+2019-01-03 14:35:25.0864|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #1b380b3f' started. 
+2019-01-03 14:35:25.0864|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #e9ae8595' started. 
+2019-01-03 14:35:25.0864|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #35e8dfc7' started. 
+2019-01-03 14:35:25.0864|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'default' queue... 
+2019-01-03 14:35:25.0864|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #6b4c56e9' started. 
+2019-01-03 14:35:25.1014|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #a74329a3' started. 
+2019-01-03 14:35:25.1014|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #c7f90945' started. 
+2019-01-03 14:35:25.1014|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #1f983527' started. 
+2019-01-03 14:35:25.1014|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #8f6b5340' started. 
+2019-01-03 14:35:25.1214|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #1b380b3f' started. 
+2019-01-03 14:35:25.1214|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #c7f90945' started. 
+2019-01-03 14:35:25.1214|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #96a44e55' started. 
+2019-01-03 14:35:25.1324|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #96a44e55' started. 
+2019-01-03 14:35:25.1214|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #f9b99fd8' started. 
+2019-01-03 14:35:25.1324|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #8f6b5340' started. 
+2019-01-03 14:35:25.1324|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #f9b99fd8' started. 
+2019-01-03 14:35:25.1324|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #eec16b76' started. 
+2019-01-03 14:35:25.1484|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #cd6a516a' started. 
+2019-01-03 14:35:25.1484|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'default' queue... 
+2019-01-03 14:35:25.1484|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #eec16b76' started. 
+2019-01-03 14:35:25.1484|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #cd6a516a' started. 
+2019-01-03 14:35:25.1484|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'default' queue... 
+2019-01-03 14:35:25.1484|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #f5094c7f' started. 
+2019-01-03 14:35:25.1654|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'DelayedJobScheduler' started. 
+2019-01-03 14:35:25.1654|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'RecurringJobScheduler' started. 
+2019-01-03 14:35:25.1484|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #26f9d9b9' started. 
+2019-01-03 14:35:25.1654|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'DelayedJobScheduler' started. 
+2019-01-03 14:35:25.1654|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'default' queue 
+2019-01-03 14:35:25.1654|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #f5094c7f' started. 
+2019-01-03 14:35:25.1654|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'RecurringJobScheduler' started. 
+2019-01-03 14:35:25.1654|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #26f9d9b9' started. 
+2019-01-03 14:35:25.1794|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'default' queue 
+2019-01-03 14:35:25.2004|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'jobs' queue... 
+2019-01-03 14:35:25.2004|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'jobs' queue... 
+2019-01-03 14:35:25.2004|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'jobs' queue... 
+2019-01-03 14:35:25.2004|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'jobs' queue... 
+2019-01-03 14:35:25.2124|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'jobs' queue 
+2019-01-03 14:35:25.2124|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'jobs' queue 
+2019-01-03 14:36:25.2218|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'default' queue... 
+2019-01-03 14:36:25.2218|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'default' queue... 
+2019-01-03 14:36:25.2308|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'default' queue... 
+2019-01-03 14:36:25.2308|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'default' queue... 
+2019-01-03 14:36:25.2308|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'default' queue 
+2019-01-03 14:36:25.2308|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'default' queue 
+2019-01-03 14:36:25.2448|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'jobs' queue... 
+2019-01-03 14:36:25.2448|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'jobs' queue... 
+2019-01-03 14:36:25.2448|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'jobs' queue... 
+2019-01-03 14:36:25.2448|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'jobs' queue... 
+2019-01-03 14:36:25.2568|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'jobs' queue 
+2019-01-03 14:36:25.2568|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'jobs' queue 
+2019-01-03 14:37:25.2632|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'default' queue... 
+2019-01-03 14:37:25.2632|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'default' queue... 
+2019-01-03 14:37:25.2632|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'default' queue... 
+2019-01-03 14:37:25.2632|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'default' queue... 
+2019-01-03 14:37:25.2723|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'default' queue 
+2019-01-03 14:37:25.2723|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'default' queue 
+2019-01-03 14:37:25.2723|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'jobs' queue... 
+2019-01-03 14:37:25.2723|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'jobs' queue... 
+2019-01-03 14:37:25.2723|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'jobs' queue... 
+2019-01-03 14:37:25.2723|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'jobs' queue... 
+2019-01-03 14:37:25.2853|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'jobs' queue 
+2019-01-03 14:37:25.2853|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'jobs' queue 

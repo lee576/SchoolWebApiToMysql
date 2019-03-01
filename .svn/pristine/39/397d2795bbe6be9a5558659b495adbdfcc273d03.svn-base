@@ -1,0 +1,9 @@
+﻿[
+  {
+    "job-name": "My Job1",
+    "job-type": "SchoolWebApi.HangfireJobs.MyJob1, SchoolWebApi.HangfireJobs",
+    "cron-expression": "*/1 * * * *",
+    "timezone": "China Standard Time",
+    "queue": "jobs"
+  }
+]

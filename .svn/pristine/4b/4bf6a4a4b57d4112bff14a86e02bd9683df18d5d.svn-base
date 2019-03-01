@@ -1,0 +1,19 @@
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
+    <WebPublishMethod>FileSystem</WebPublishMethod>
+    <LastUsedBuildConfiguration>Release</LastUsedBuildConfiguration>
+    <LastUsedPlatform>Any CPU</LastUsedPlatform>
+    <SiteUrlToLaunchAfterPublish />
+    <LaunchSiteAfterPublish>True</LaunchSiteAfterPublish>
+    <ExcludeApp_Data>False</ExcludeApp_Data>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <ProjectGuid>9fe853a3-7191-435f-9863-924f265dd1a1</ProjectGuid>
+    <SelfContained>false</SelfContained>
+    <_IsPortable>true</_IsPortable>
+    <publishUrl>D:\SchoolWebApi</publishUrl>
+    <DeleteExistingFiles>False</DeleteExistingFiles>
+    <PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
+  </PropertyGroup>
+</Project>

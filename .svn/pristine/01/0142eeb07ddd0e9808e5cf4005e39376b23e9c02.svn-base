@@ -1,0 +1,81 @@
+﻿using DbModel;
+using IService;
+using Infrastructure.Service;
+using Models.ViewModels;
+using System.Collections.Generic;
+using Infrastructure;
+using System.Linq;
+using SqlSugar;
+using System;
+
+namespace Service
+{
+    public class tb_payment_typeService : GenericService<tb_payment_type>, Itb_payment_typeService
+    {
+        public List<view_payment_itemType> GetTypeChildList(string school_code)
+        {
+            using (var db = DbFactory.GetSqlSugarClient())
+            {
+                List<view_payment_itemType> lstReturn = new List<view_payment_itemType>();
+                List<tb_payment_type> lst = db.Queryable<tb_payment_type>().Where(x => x.is_display.ToString() == "1" && x.schoolcode.Equals(school_code)).ToList();
+                //List<tb_payment_item> lstItem = db.Queryable<tb_payment_item>().Where(x => x.status.ToString() == "0" && x.schoolcode.Equals(school_code)).ToList();
+                List<view_payment_item> lstItem = db.Queryable<tb_payment_item, tb_payment_accounts>(
+                        (pi, pa) =>
+                        new object[] {
+                        JoinType.Left,pi.account==pa.id.ToString()
+                    })
+                    .Where((pi, pa) =>
+                        pi.status == 0
+                        && pi.schoolcode.Equals(school_code)
+                        && pi.date_to > DateTime.Now
+                    )
+                    .Select((pi, pa) => new view_payment_item
+                    {
+                        id = pi.id,
+                        //schoolcode = pi.schoolcode,
+                        name = pi.name,
+                        //is_external = pi.is_external,
+                        //account = pi.account,
+                        //target = pi.target,
+                        //@fixed = pi.@fixed,
+                        money = pi.money,
+                        type = pi.type,
+                        //introduction = pi.introduction,
+                        //icon = pi.icon,
+                        iconImg = "/images/choose-icon" + pi.icon.ToString() + ".png",
+                        //group = pi.group,
+                        //method = pi.method,
+                        //can_set_count = pi.can_set_count,
+                        //nessary_info = pi.nessary_info,
+                        //date_from = pi.date_from,
+                        //date_to = pi.date_to,
+                        //count = pi.count,
+                        //notify_link = pi.notify_link,
+                        //notify_key = pi.notify_key,
+                        //notify_msg = pi.notify_msg,
+                        //remark = pi.remark,
+                        //status = pi.status,
+                        //limit = pi.limit,
+                        AccountId = pa.id,
+                        AccountName = pa.name,
+                        appid = pa.appid
+                    }).ToList();
+                for (int i = 0; i < lst.Count; i++)
+                {
+                    //view_payment_itemType model = (view_payment_itemType)lst[i];
+                    view_payment_itemType model = new view_payment_itemType() {
+                        id = lst[i].id,
+                        //schoolcode= lst[i].schoolcode,
+                        name = lst[i].name,
+                        //introduction = lst[i].introduction,
+                        //create_time = lst[i].create_time,
+                        //is_display = lst[i].is_display
+                    };
+                    model.lstItem = lstItem.Where(x => x.type == lst[i].id).ToList();
+                    lstReturn.Add(model);
+                }
+                return lstReturn;
+            }
+        }
+    }
+}

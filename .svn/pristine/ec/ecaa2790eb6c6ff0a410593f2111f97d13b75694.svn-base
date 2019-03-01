@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+此文件由 Web 项目的发布/打包过程使用。可以通过编辑此 MSBuild 文件
+自定义此过程的行为。为了解与此相关的更多内容，请访问 https://go.microsoft.com/fwlink/?LinkID=208121。 
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <_PublishTargetUrl>D:\SchoolWebApi</_PublishTargetUrl>
+  </PropertyGroup>
+  <ItemGroup>
+    <File Include="Alipay.AopSdk.AspnetCore.dll">
+      <publishTime>05/17/2018 11:32:44</publishTime>
+    </File>
+    <File Include="Alipay.AopSdk.Core.dll">
+      <publishTime>05/17/2018 11:32:42</publishTime>
+    </File>
+    <File Include="Alipay.AopSdk.F2FPay.AspnetCore.dll">
+      <publishTime>05/17/2018 11:32:44</publishTime>
+    </File>
+    <File Include="Alipay.AopSdk.F2FPay.dll">
+      <publishTime>05/17/2018 11:32:44</publishTime>
+    </File>
+    <File Include="AopSdk.dll">
+      <publishTime>11/25/2018 20:09:15</publishTime>
+    </File>
+    <File Include="App.Metrics.Abstractions.dll">
+      <publishTime>05/24/2018 02:22:38</publishTime>
+    </File>
+    <File Include="App.Metrics.AspNetCore.Abstractions.dll">
+      <publishTime>03/29/2018 07:04:26</publishTime>
+    </File>
+    <File Include="App.Metrics.AspNetCore.Core.dll">
+      <publishTime>03/29/2018 07:04:28</publishTime>
+    </File>
+    <File Include="App.Metrics.AspNetCore.Endpoints.dll">
+      <publishTime>03/29/2018 07:04:32</publishTime>
+    </File>
+    <File Include="App.Metrics.AspNetCore.Hosting.dll">
+      <publishTime>03/29/2018 07:04:36</publishTime>
+    </File>
+    <File Include="App.Metrics.AspNetCore.Reporting.dll">
+      <publishTime>03/29/2018 07:04:44</publishTime>
+    </File>
+    <File Include="App.Metrics.AspNetCore.Tracking.dll">
+      <publishTime>03/29/2018 07:04:52</publishTime>
+    </File>
+    <File Include="App.Metrics.Concurrency.dll">
+      <publishTime>05/05/2018 13:39:16</publishTime>
+    </File>
+    <File Include="App.Metrics.Core.dll">
+      <publishTime>05/24/2018 02:22:42</publishTime>
+    </File>
+    <File Include="App.Metrics.dll">
+      <publishTime>05/24/2018 02:22:36</publishTime>
+    </File>
+    <File Include="App.Metrics.Extensions.Configuration.dll">
+      <publishTime>03/29/2018 06:52:20</publishTime>
+    </File>
+    <File Include="App.Metrics.Extensions.DependencyInjection.dll">
+      <publishTime>03/29/2018 06:52:24</publishTime>
+    </File>
+    <File Include="App.Metrics.Formatters.Ascii.dll">
+      <publishTime>05/24/2018 02:22:48</publishTime>
+    </File>
+    <File Include="App.Metrics.Formatters.InfluxDB.dll">
+      <publishTime>03/29/2018 07:20:38</publishTime>
+    </File>
+    <File Include="App.Metrics.Formatters.Json.dll">
+      <publishTime>05/24/2018 02:22:46</publishTime>
+    </File>
+    <File Include="App.Metrics.Reporting.InfluxDB.dll">
+      <publishTime>03/29/2018 07:20:36</publishTime>
+    </File>
+    <File Include="appsettings.Development.json">
+      <publishTime>10/16/2018 09:13:08</publishTime>
+    </File>
+    <File Include="appsettings.json">
+      <publishTime>11/26/2018 17:03:55</publishTime>
+    </File>
+    <File Include="Chaunce.Hangfire.Client.dll">
+      <publishTime>09/09/2018 13:26:26</publishTime>
+    </File>
+    <File Include="DnsClient.dll">
+      <publishTime>05/01/2017 09:09:22</publishTime>
+    </File>
+    <File Include="dotnet-aspnet-codegenerator-design.dll">
+      <publishTime>05/16/2018 20:17:54</publishTime>
+    </File>
+    <File Include="es/Hangfire.Core.resources.dll">
+      <publishTime>07/31/2018 10:28:50</publishTime>
+    </File>
+    <File Include="Exceptionless.AspNetCore.dll">
+      <publishTime>09/04/2018 14:30:14</publishTime>
+    </File>
+    <File Include="Exceptionless.dll">
+      <publishTime>09/04/2018 14:29:44</publishTime>
+    </File>
+    <File Include="Hangfire.AspNetCore.dll">
+      <publishTime>07/31/2018 10:28:56</publishTime>
+    </File>
+    <File Include="Hangfire.Console.dll">
+      <publishTime>10/01/2018 22:09:10</publishTime>
+    </File>
+    <File Include="Hangfire.Core.dll">
+      <publishTime>07/31/2018 10:28:50</publishTime>
+    </File>
+    <File Include="Hangfire.Dashboard.Authorization.dll">
+      <publishTime>12/08/2014 12:48:16</publishTime>
+    </File>
+    <File Include="Hangfire.RecurringJobExtensions.dll">
+      <publishTime>02/08/2017 11:01:24</publishTime>
+    </File>
+    <File Include="Hangfire.Redis.StackExchange.StrongName.dll">
+      <publishTime>05/17/2017 19:03:24</publishTime>
+    </File>
+    <File Include="HtmlAgilityPack.NetCore.dll">
+      <publishTime>07/22/2016 18:33:56</publishTime>
+    </File>
+    <File Include="ICSharpCode.SharpZipLib.dll">
+      <publishTime>08/20/2017 13:51:42</publishTime>
+    </File>
+    <File Include="images/logo.png">
+      <publishTime>05/09/2018 20:01:14</publishTime>
+    </File>
+    <File Include="Infrastructure.dll">
+      <publishTime>11/26/2018 14:29:21</publishTime>
+    </File>
+    <File Include="Infrastructure.pdb">
+      <publishTime>11/26/2018 14:29:21</publishTime>
+    </File>
+    <File Include="infrastructuresetting.json">
+      <publishTime>10/16/2018 09:13:07</publishTime>
+    </File>
+    <File Include="IService.dll">
+      <publishTime>11/27/2018 11:23:53</publishTime>
+    </File>
+    <File Include="IService.pdb">
+      <publishTime>11/27/2018 11:23:53</publishTime>
+    </File>
+    <File Include="Microsoft.CodeAnalysis.CSharp.Workspaces.dll">
+      <publishTime>10/16/2018 10:04:20</publishTime>
+    </File>
+    <File Include="Microsoft.CodeAnalysis.Workspaces.dll">
+      <publishTime>10/16/2018 10:04:20</publishTime>
+    </File>
+    <File Include="Microsoft.Data.Sqlite.dll">
+      <publishTime>07/25/2017 00:48:04</publishTime>
+    </File>
+    <File Include="Microsoft.Extensions.PlatformAbstractions.dll">
+      <publishTime>10/16/2018 10:07:19</publishTime>
+    </File>
+    <File Include="Microsoft.VisualStudio.Web.CodeGeneration.Contracts.dll">
+      <publishTime>05/16/2018 20:18:10</publishTime>
+    </File>
+    <File Include="Microsoft.VisualStudio.Web.CodeGeneration.Core.dll">
+      <publishTime>05/16/2018 20:17:50</publishTime>
+    </File>
+    <File Include="Microsoft.VisualStudio.Web.CodeGeneration.dll">
+      <publishTime>05/16/2018 20:17:56</publishTime>
+    </File>
+    <File Include="Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore.dll">
+      <publishTime>05/16/2018 20:18:10</publishTime>
+    </File>
+    <File Include="Microsoft.VisualStudio.Web.CodeGeneration.Templating.dll">
+      <publishTime>05/16/2018 20:17:54</publishTime>
+    </File>
+    <File Include="Microsoft.VisualStudio.Web.CodeGeneration.Utils.dll">
+      <publishTime>05/16/2018 20:17:58</publishTime>
+    </File>
+    <File Include="Microsoft.VisualStudio.Web.CodeGenerators.Mvc.dll">
+      <publishTime>05/16/2018 20:17:50</publishTime>
+    </File>
+    <File Include="Models.dll">
+      <publishTime>11/27/2018 11:23:52</publishTime>
+    </File>
+    <File Include="Models.pdb">
+      <publishTime>11/27/2018 11:23:52</publishTime>
+    </File>
+    <File Include="MongoDB.Bson.dll">
+      <publishTime>11/08/2018 04:13:40</publishTime>
+    </File>
+    <File Include="MongoDB.Driver.Core.dll">
+      <publishTime>11/08/2018 04:13:52</publishTime>
+    </File>
+    <File Include="MongoDB.Driver.dll">
+      <publishTime>11/08/2018 04:14:06</publishTime>
+    </File>
+    <File Include="MongoDBService.dll">
+      <publishTime>11/22/2018 17:47:04</publishTime>
+    </File>
+    <File Include="MongoDBService.pdb">
+      <publishTime>11/22/2018 17:47:04</publishTime>
+    </File>
+    <File Include="MySql.Data.dll">
+      <publishTime>10/09/2017 04:58:08</publishTime>
+    </File>
+    <File Include="nlog.config">
+      <publishTime>10/16/2018 09:13:09</publishTime>
+    </File>
+    <File Include="NLog.dll">
+      <publishTime>09/17/2018 21:33:42</publishTime>
+    </File>
+    <File Include="NLog.Extensions.Logging.dll">
+      <publishTime>09/22/2018 14:14:46</publishTime>
+    </File>
+    <File Include="NLog.Web.AspNetCore.dll">
+      <publishTime>09/22/2018 22:44:38</publishTime>
+    </File>
+    <File Include="NPOI.dll">
+      <publishTime>09/25/2017 14:16:34</publishTime>
+    </File>
+    <File Include="NPOI.OOXML.dll">
+      <publishTime>09/25/2017 14:16:42</publishTime>
+    </File>
+    <File Include="NPOI.OpenXml4Net.dll">
+      <publishTime>09/25/2017 14:16:36</publishTime>
+    </File>
+    <File Include="NPOI.OpenXmlFormats.dll">
+      <publishTime>09/25/2017 14:16:40</publishTime>
+    </File>
+    <File Include="NuGet.Frameworks.dll">
+      <publishTime>04/24/2018 21:25:58</publishTime>
+    </File>
+    <File Include="Owin.dll">
+      <publishTime>11/13/2012 12:19:34</publishTime>
+    </File>
+    <File Include="PinYinConverterCore.dll">
+      <publishTime>10/20/2017 11:30:18</publishTime>
+    </File>
+    <File Include="Polly.dll">
+      <publishTime>07/14/2018 16:33:24</publishTime>
+    </File>
+    <File Include="QRCoder.dll">
+      <publishTime>04/22/2018 09:30:28</publishTime>
+    </File>
+    <File Include="recurringjob.json">
+      <publishTime>10/18/2018 08:59:43</publishTime>
+    </File>
+    <File Include="RestSharp.dll">
+      <publishTime>09/18/2018 20:32:56</publishTime>
+    </File>
+    <File Include="runtimes/linux-x64/native/libe_sqlite3.so">
+      <publishTime>10/16/2018 10:07:17</publishTime>
+    </File>
+    <File Include="runtimes/linux-x86/native/libe_sqlite3.so">
+      <publishTime>10/16/2018 10:06:58</publishTime>
+    </File>
+    <File Include="runtimes/osx-x64/native/libe_sqlite3.dylib">
+      <publishTime>10/16/2018 10:07:00</publishTime>
+    </File>
+    <File Include="runtimes/unix/lib/netcoreapp2.0/System.Drawing.Common.dll">
+      <publishTime>11/14/2017 15:14:46</publishTime>
+    </File>
+    <File Include="runtimes/unix/lib/netcoreapp2.1/System.Data.SqlClient.dll">
+      <publishTime>10/16/2018 10:04:07</publishTime>
+    </File>
+    <File Include="runtimes/win-arm64/native/sni.dll">
+      <publishTime>10/16/2018 10:07:16</publishTime>
+    </File>
+    <File Include="runtimes/win-x64/native/sni.dll">
+      <publishTime>10/16/2018 10:07:16</publishTime>
+    </File>
+    <File Include="runtimes/win-x86/native/sni.dll">
+      <publishTime>10/16/2018 10:07:16</publishTime>
+    </File>
+    <File Include="runtimes/win/lib/netcoreapp2.0/System.Drawing.Common.dll">
+      <publishTime>11/14/2017 15:14:46</publishTime>
+    </File>
+    <File Include="runtimes/win/lib/netcoreapp2.0/System.Text.Encoding.CodePages.dll">
+      <publishTime>10/16/2018 10:03:31</publishTime>
+    </File>
+    <File Include="runtimes/win/lib/netcoreapp2.1/System.Data.SqlClient.dll">
+      <publishTime>10/16/2018 10:04:08</publishTime>
+    </File>
+    <File Include="runtimes/win7-x64/native/e_sqlite3.dll">
+      <publishTime>10/16/2018 10:07:00</publishTime>
+    </File>
+    <File Include="runtimes/win7-x86/native/e_sqlite3.dll">
+      <publishTime>10/16/2018 10:07:00</publishTime>
+    </File>
+    <File Include="SchoolWebApi.deps.json">
+      <publishTime>11/27/2018 11:24:05</publishTime>
+    </File>
+    <File Include="SchoolWebApi.dll">
+      <publishTime>11/27/2018 11:24:00</publishTime>
+    </File>
+    <File Include="SchoolWebApi.pdb">
+      <publishTime>11/27/2018 11:24:00</publishTime>
+    </File>
+    <File Include="SchoolWebApi.runtimeconfig.json">
+      <publishTime>11/27/2018 11:24:05</publishTime>
+    </File>
+    <File Include="Service.dll">
+      <publishTime>11/27/2018 11:23:55</publishTime>
+    </File>
+    <File Include="Service.pdb">
+      <publishTime>11/27/2018 11:23:55</publishTime>
+    </File>
+    <File Include="ServiceStack.Common.dll">
+      <publishTime>04/23/2018 01:33:18</publishTime>
+    </File>
+    <File Include="ServiceStack.Interfaces.dll">
+      <publishTime>04/23/2018 01:32:44</publishTime>
+    </File>
+    <File Include="ServiceStack.Redis.dll">
+      <publishTime>04/22/2018 20:26:18</publishTime>
+    </File>
+    <File Include="ServiceStack.Text.dll">
+      <publishTime>04/22/2018 20:23:24</publishTime>
+    </File>
+    <File Include="SQLitePCLRaw.batteries_green.dll">
+      <publishTime>10/16/2018 10:07:16</publishTime>
+    </File>
+    <File Include="SQLitePCLRaw.batteries_v2.dll">
+      <publishTime>10/16/2018 10:07:16</publishTime>
+    </File>
+    <File Include="SQLitePCLRaw.core.dll">
+      <publishTime>10/16/2018 10:07:17</publishTime>
+    </File>
+    <File Include="SQLitePCLRaw.provider.e_sqlite3.dll">
+      <publishTime>10/16/2018 10:07:00</publishTime>
+    </File>
+    <File Include="SqlSugar.dll">
+      <publishTime>10/14/2018 16:44:38</publishTime>
+    </File>
+    <File Include="StackExchange.Redis.StrongName.dll">
+      <publishTime>02/03/2017 14:30:40</publishTime>
+    </File>
+    <File Include="Swashbuckle.AspNetCore.dll">
+      <publishTime>07/06/2018 17:09:06</publishTime>
+    </File>
+    <File Include="Swashbuckle.AspNetCore.Swagger.dll">
+      <publishTime>07/06/2018 17:09:02</publishTime>
+    </File>
+    <File Include="Swashbuckle.AspNetCore.SwaggerGen.dll">
+      <publishTime>07/06/2018 17:09:02</publishTime>
+    </File>
+    <File Include="Swashbuckle.AspNetCore.SwaggerUI.dll">
+      <publishTime>07/06/2018 17:09:04</publishTime>
+    </File>
+    <File Include="System.Composition.AttributedModel.dll">
+      <publishTime>10/16/2018 10:07:11</publishTime>
+    </File>
+    <File Include="System.Composition.Convention.dll">
+      <publishTime>10/16/2018 10:07:11</publishTime>
+    </File>
+    <File Include="System.Composition.Hosting.dll">
+      <publishTime>10/16/2018 10:07:11</publishTime>
+    </File>
+    <File Include="System.Composition.Runtime.dll">
+      <publishTime>10/16/2018 10:07:11</publishTime>
+    </File>
+    <File Include="System.Composition.TypedParts.dll">
+      <publishTime>10/16/2018 10:07:11</publishTime>
+    </File>
+    <File Include="System.Data.SqlClient.dll">
+      <publishTime>10/16/2018 10:03:53</publishTime>
+    </File>
+    <File Include="System.Drawing.Common.dll">
+      <publishTime>11/14/2017 15:14:46</publishTime>
+    </File>
+    <File Include="System.ServiceModel.dll">
+      <publishTime>06/13/2016 21:51:24</publishTime>
+    </File>
+    <File Include="System.Text.Encoding.CodePages.dll">
+      <publishTime>10/16/2018 10:03:31</publishTime>
+    </File>
+    <File Include="UnityEngine.dll">
+      <publishTime>04/22/2018 09:30:28</publishTime>
+    </File>
+    <File Include="web.config">
+      <publishTime>11/27/2018 11:24:05</publishTime>
+    </File>
+    <File Include="wwwroot/images/logo.jpg">
+      <publishTime>10/16/2018 09:13:08</publishTime>
+    </File>
+    <File Include="wwwroot/Swagger/index.html">
+      <publishTime>10/19/2018 09:00:14</publishTime>
+    </File>
+    <File Include="wwwroot/Swagger/login.html">
+      <publishTime>10/19/2018 09:00:14</publishTime>
+    </File>
+    <File Include="zh-TW/Hangfire.Core.resources.dll">
+      <publishTime>07/31/2018 10:28:50</publishTime>
+    </File>
+    <File Include="zh/Hangfire.Core.resources.dll">
+      <publishTime>07/31/2018 10:28:50</publishTime>
+    </File>
+    <File Include="ZKWeb.System.Drawing.dll">
+      <publishTime>08/28/2017 17:32:08</publishTime>
+    </File>
+  </ItemGroup>
+</Project>

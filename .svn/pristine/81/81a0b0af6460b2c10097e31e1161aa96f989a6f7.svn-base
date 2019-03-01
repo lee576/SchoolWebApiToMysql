@@ -1,0 +1,1 @@
+﻿var apiurl = 'http://apitext.newxiaoyuan.com/';

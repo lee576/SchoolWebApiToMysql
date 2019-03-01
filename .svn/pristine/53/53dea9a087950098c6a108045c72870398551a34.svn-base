@@ -1,0 +1,9 @@
+﻿using DbModel;
+using Infrastructure.Service;
+namespace IService
+{
+    public interface Itb_school_card_template_formerService : IServiceBase<tb_school_card_template_former>
+    {
+        object GetSchoolCardTempFormer(string schoolcode);
+    }
+}

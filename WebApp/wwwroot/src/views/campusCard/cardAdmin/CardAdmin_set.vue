@@ -1,0 +1,1576 @@
+<template>
+    <div class="home">
+        <div class="nav">
+            <div class="nav_bread">
+                <el-breadcrumb separator-class="el-icon-arrow-right">
+                    <el-breadcrumb-item>校园卡管理</el-breadcrumb-item>
+                    <el-breadcrumb-item>管理</el-breadcrumb-item>
+                </el-breadcrumb>
+                <el-row>
+                    <router-link to="/cardadmin">
+                        <el-button plain size="small" class="details">
+                            <div class="det_btn">返回</div>
+                        </el-button>
+                    </router-link>
+                </el-row>
+            </div>
+            <el-row>
+                <el-button type="primary" size="small" class="release" round @click="ImmediatelyRelease">
+                    立即发布
+                </el-button>
+            </el-row>
+        </div>
+        <div class="container">
+            <div class="card_set">
+                <div class="al_set">
+                    <div class="al_title">
+                        卡包设置
+                    </div>
+                    <div class="template">
+                        <div class="template_title">{{phoneSurface.cardname}}</div>
+                        <div class="phone">
+                            <div class="template_phone">
+                                <div class="phone_border">
+
+                                    <div class="phone_content" style="margin:20px 10px">
+                                        <div class="phone_background">
+                                            <div class="phone_backpic">
+                                                <el-upload
+                                                        class="avatar-uploaders "
+                                                        :action=uploadUrl()
+                                                        :show-file-list="false"
+                                                        :on-success="handleAvatarSuccess"
+                                                        :before-upload="beforeAvatarUpload"
+                                                        :data="picback_data"
+                                                        style="width: 100%;height: 110px;background: rgba(241,241,241,1);border-radius: 10px 10px 10px 10px;">
+                                                    <img v-if="imageback" :src="imageback"
+                                                         style=" width: 100%;height: 110px;">
+                                                </el-upload>
+                                            </div>
+                                            <div class="phone_icon">
+                                                <el-upload
+                                                        class="avatar-uploader"
+                                                        :action=uploadUrl()
+                                                        :show-file-list="false"
+                                                        :on-success="handleAvatarSuccessIcon"
+                                                        :before-upload="beforeAvatarUploadIcon"
+                                                        :data="picicon_data">
+                                                    <img v-if="imageIcon" :src="imageIcon"
+                                                         style="width: 30px;height:30px;position: absolute;top: 25px;left: 17px;border-radius:50%">
+                                                </el-upload>
+                                            </div>
+                                        </div>
+                                        <div class="phone_code">
+                                            <div class="phone_payment">
+                                                <div class="paymentCode" @click="SelectedPaymentcode"
+                                                     style="cursor: pointer">付款码
+                                                </div>
+                                                <div class="campusCode" @click="SelectedCampuscode"
+                                                     style="cursor: pointer">校园码
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="phone_campus" v-for="(typename,index) in typenames">
+                                            <div style="border-left:3px solid rgba(34,135,251,1);"
+                                                 class="phone_campus_title"
+                                            >
+                                                <span style="color: rgba(112,112,112,1);">{{typename}}</span>
+                                                <span @click="alter(typename,index)" style="cursor: pointer">修改</span>
+                                                <el-dialog
+                                                        title="修改分组"
+                                                        :visible.sync="AlterDispatch"
+                                                        width="30%">
+                                                    <el-input v-model="message" placeholder="活动名称"></el-input>
+                                                    <span slot="footer" class="dialog-footer">
+                                                    <el-button @click="AlterDispatch = false">取 消</el-button>
+                                                    <el-button type="primary"
+                                                               @click="changeMessage">确 定</el-button>
+                                                  </span>
+                                                </el-dialog>
+                                                <span @click="deleteIcon(index,typename)"
+                                                      style="cursor: pointer">删除</span>
+                                            </div>
+                                            <draggable class="phone_function"
+                                                       style="display: flex;flex-wrap: wrap;margin-top: 5px;"
+                                                       v-show="layout===0"
+                                                       :move="getphonedata" @update="PhonedataEnd">
+                                                <div class="phone_box"
+                                                     v-for="(column_list,index) in column_info_list"
+                                                     :key="index"
+                                                     @click="Changenavigation(column_list,index)"
+                                                >
+                                                    <div v-if="column_list.GroupTitle==typename"
+                                                         style="margin:6px;position: relative">
+                                                        <img class="direction" :src="imageDelete" alt=""
+                                                             style="position: absolute;top: -8px;left: 15px;width: 15px"
+                                                             @click="DeleteItem(index)"
+                                                        >
+                                                        <img class="directionhot"
+                                                             :src="imagehot|hot(column_list,column_info_list)" alt=""
+                                                             style="position: absolute;top: -7px;left: 28px;width: 15px"
+                                                        >
+                                                        <!--<img class="direction" :src="imageleft" alt=""-->
+                                                        <!--style="position: absolute;left: -10px;top: 14px;"-->
+                                                        <!--@click="changeleft(index)">-->
+                                                        <img :src="column_list.IconId|imgurl(warehouse_pictures)"
+                                                             style="width: 45px;height: 45px;">
+                                                        <!--<img class="direction" :src="imageright" alt=""-->
+                                                        <!--style="position: absolute;top: 14px;right: -7px"-->
+                                                        <!--@click="changeright(index,typename)">-->
+                                                        <div style="font-size:12px;white-space:nowrap;overflow:hidden;width: 48px; text-align:center">
+                                                            {{column_list.title}}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </draggable>
+                                            <draggable class="phone_function" v-show="layout===1"
+                                                       :move="getphonedata" @update="PhonedataEnd">
+                                                <div class="phone_box" v-for="(column_list,index) in column_info_list"
+                                                     :key="index"
+                                                     @click="Changenavigation(column_list)">
+                                                    <div v-if="column_list.GroupTitle==typename" style="margin:5px 0px;
+height: 34px;
+background: rgba(241,241,241,1);
+border-radius: 5px 5px 5px 5px;
+border: 1px solid rgba(112,112,112,0.2);
+display: flex;
+align-items:Center;
+padding: 0 10px;
+justify-content: space-between
+">
+                                                        <div style="font-size:12px;white-space:nowrap;overflow:hidden;width: 48px">
+                                                            {{column_list.title}}
+                                                        </div>
+                                                        <!--<img class="direction" :src="imageup" alt=""-->
+                                                        <!--style="position: relative;top: -7px;right: -45px"-->
+                                                        <!--@click="changeleft(index)">-->
+                                                        <!--<img class="direction" :src="imagedown" alt=""-->
+                                                        <!--style="position: relative;top: 7px;right: -13px"-->
+                                                        <!--@click="changeright(index)">-->
+                                                        <img class="direction" :src="imageDelete" alt=""
+                                                             style="position: relative;top: 1px;left: 50px;"
+                                                             @click="DeleteItem(index)"
+                                                        >
+                                                        <div>
+                                                            <img src="../../../assets/images/open.jpg" alt="">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div style="margin: 5px 0px;
+height: 34px;
+background: rgba(241,241,241,1);
+border-radius: 5px 5px 5px 5px;
+border: 1px solid rgba(112,112,112,0.2);
+display: flex;
+align-items:Center;
+padding: 0 10px;
+justify-content: space-between "
+                                                     @click="addnavigation">
+                                                    <div style="font-size:12px;">
+                                                        新增导航
+                                                    </div>
+                                                    <div>
+                                                        <img src="../../../assets/images/open.jpg" alt="">
+                                                    </div>
+                                                </div>
+                                            </draggable>
+                                        </div>
+                                        <div style="cursor: pointer;border-radius:5px;padding:1px 10px;font-size: 12px;color: rgba(255,255,255,1); width: 60px;height: 20px;background: rgba(34,135,251,1);"
+                                             @click="OpenaddItem"
+                                        >+增加分组
+                                        </div>
+                                        <el-dialog
+                                                title="提示"
+                                                :visible.sync="addItemDispatch"
+                                                width="30%">
+                                            <el-form :model="itemTitle" ref="itemTitle"
+                                                     label-width="100px"
+                                                     class="demo-ruleForm">
+                                                <el-form-item label="分组名称">
+                                                    <el-input v-model="itemTitle.titleitem"></el-input>
+                                                </el-form-item>
+                                            </el-form>
+                                            <span slot="footer" class="dialog-footer">
+                                        <el-button @click="addresetForm">取 消</el-button>
+                                        <el-button type="primary" @click="addIist('itemTitle')">确 定</el-button>
+                                        </span>
+                                        </el-dialog>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 7px">
+                        <span class="show">显示个人信息</span>
+                        <template>
+                            <el-radio v-model="radio" label='1' style="margin-left: 12px">是</el-radio>
+                            <el-radio v-model="radio" label='0'>否</el-radio>
+                        </template>
+                    </div>
+                    <div class="template_custom">
+                        <div class="custom_title">自定义模块</div>
+                        <div>
+                            <el-radio-group v-model="radio6" size="mini" style="margin-top: 5px">
+                                <el-radio-button @click.native.prevent="TemplateNum(1)" :label="1">1</el-radio-button>
+                                <el-radio-button @click.native.prevent="TemplateNum(2)" :label="2">2</el-radio-button>
+                                <el-radio-button @click.native.prevent="TemplateNum(3)" :label="3">3</el-radio-button>
+                                <el-radio-button @click.native.prevent="TemplateNum(4)" :label="4">4</el-radio-button>
+                                <el-radio-button @click.native.prevent="TemplateNum(5)" :label="5">5</el-radio-button>
+                                <el-radio-button @click.native.prevent="TemplateNum(6)" :label="6" disabled>6</el-radio-button>
+                            </el-radio-group>
+                        </div>
+                        <div class="custom_remarks">您可以保存6套自定义模块，方便快速配置</div>
+                    </div>
+                    <div class="template_save">
+                        <el-button type="primary" size="small" @click="SaveTemplate">保存为自定义模版</el-button>
+                    </div>
+                </div>
+            </div>
+            <div class="navigation">
+                <div class="module">
+                    <div class="module_title">导航模块</div>
+                    <div class="module_form" style="margin-top: 50px">
+                        <el-form :model="addForm" :rules="rules" ref="addForm" label-width="100px"
+                                 class="demo-ruleForm" hide-required-asterisk v-show="reveal===0">
+                            <el-form-item>
+                                <div style="position: relative">
+                                    <img :src="formPic.url"
+                                         @click="addphoto"
+                                         style="
+                                         cursor:pointer;
+                                            display: inline-block;
+                                            width: 40px;
+                                            height: 40px;
+                                            background: rgba(241,241,241,1);
+                                            border-radius: 20px 20px 20px 20px;"/>
+                                    <span style="position: absolute;top:8px;margin-left: 10px">点击修改图标</span>
+                                </div>
+                                <el-dialog
+                                        title="图标修改"
+                                        :visible.sync="AddphotoDispatch"
+                                        width="30%">
+                                    <div>
+                                        <div>
+                                            <img :src="picId.url"
+                                                 style="
+                                            display: inline-block;
+                                            width: 40px;
+                                            height: 40px;
+                                            background: rgba(241,241,241,1);
+                                            border-radius: 20px 20px 20px 20px;"/>
+                                            <span>点击修改图标</span>
+                                        </div>
+                                        <div style="
+                                                margin: 0 auto;
+                                                width: 95%;
+                                                height: 239px;
+                                                background:rgba(249,249,249,1);
+                                                border-radius: 5px 5px 5px 5px;
+                                                overflow-x: hidden;
+                                                 overflow-y: scroll;">
+                                            <div style="width: 100%;
+                                                            display:flex;
+                                                            flex-direction:row;
+                                                            flex-wrap:wrap;
+                                                            justify-content:space-around;">
+                                                <span v-for="warehouse_pic in warehouse_pictures">
+                                                    <img :src="warehouse_pic.alipay_url+warehouse_pic.url"
+                                                         alt=""
+                                                         style="width: 60px;
+                                                         height: 60px;
+                                                         margin: 8px;"
+                                                         @click="append_pic(warehouse_pic.alipay_url+warehouse_pic.url,warehouse_pic.alipay_id)">
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span slot="footer" class="dialog-footer">
+                                               <!--<el-button type="primary" @click="dialogVisible = false">确 定</el-button>-->
+                                               <el-button type="primary" @click="Addpic(picId)">确 定</el-button>
+                                               <el-button type="primary" @click="AddphotoDispatch = false"
+                                                          style="color:black">取 消</el-button>
+                                            </span>
+                                </el-dialog>
+                            </el-form-item>
+
+                            <el-form-item label="导航名称" prop="name">
+                                <el-input v-model="addForm.name"></el-input>
+                            </el-form-item>
+                            <el-form-item label="文字介绍" prop="introduce">
+                                <el-input v-model="addForm.introduce"></el-input>
+                            </el-form-item>
+                            <el-form-item label="跳转地址" prop="url">
+                                <el-input v-model="addForm.url"></el-input>
+                            </el-form-item>
+
+                            <!--<el-form-item label="设置热门标签" prop="resource">-->
+                            <!--<el-radio-group v-model="addForm.resource">-->
+                            <!--<el-radio label='null'>不热门</el-radio>-->
+                            <!--<el-radio label=热门>热门</el-radio>-->
+                            <!--</el-radio-group>-->
+                            <!--<span class="notice"></span>-->
+                            <!--</el-form-item>-->
+                            <el-form-item>
+                                <el-button type="primary" @click="submitForm('addForm')">保存到导航库</el-button>
+                            </el-form-item>
+                        </el-form>
+                        <el-form :model="libraryForm" label-width="100px" :rules="onrules" ref="libraryForm"
+                                 class="demo-libraryForm" v-show="reveal===1">
+                            <el-form-item>
+                                <div class="" @click="dialogVisible = true" style="position: relative">
+                                    <img :src="libraryForm_url.url"
+                                         style="
+                                display: inline-block;
+                                width: 40px;
+                                height: 40px;
+                                background: rgba(241,241,241,1);
+                                border-radius: 20px 20px 20px 20px;"/>
+                                    <span style="position: absolute;top:8px;margin-left: 10px">点击修改图标</span>
+                                </div>
+                                <el-dialog
+                                        title="图标修改"
+                                        :visible.sync="dialogVisible"
+                                        width="30%">
+                                    <div>
+                                        <div>
+                                            <img :src="libraryForm_url.url"
+                                                 style="
+                                display: inline-block;
+                                width: 40px;
+                                height: 40px;
+                                background: rgba(241,241,241,1);
+                                border-radius: 20px 20px 20px 20px;"/>
+                                            <span>点击修改图标</span>
+                                        </div>
+                                        <div style="
+                                    margin: 0 auto;
+                                    width: 95%;
+                                    height: 239px;
+                                    background:rgba(249,249,249,1);
+                                    border-radius: 5px 5px 5px 5px;
+                                    overflow-x: hidden;
+                                     overflow-y: scroll;">
+                                            <div style="width: 100%;
+                                                display:flex;
+                                                flex-direction:row;
+                                                flex-wrap:wrap;
+                                                justify-content:space-around;">
+                                            <span v-for="warehouse_pic in warehouse_pictures">
+                                                <img :src="warehouse_pic.alipay_url+warehouse_pic.url"
+                                                     alt=""
+                                                     style="width: 60px;
+                                                     height: 60px;
+                                                     margin: 8px;"
+                                                     @click="editend_pic(warehouse_pic.alipay_url+warehouse_pic.url,warehouse_pic.alipay_id)">
+                                            </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span slot="footer" class="dialog-footer">
+                                   <el-button type="primary" @click="editpic(libraryForm_url)">确 定</el-button>
+                                   <el-button type="primary" @click="dialogVisible = false">取 消</el-button>
+                                </span>
+                                </el-dialog>
+                            </el-form-item>
+                            <el-form-item label="导航名称" prop="title">
+                                <el-input v-model.title="libraryForm.title"></el-input>
+                            </el-form-item>
+                            <el-form-item label="文字介绍" prop="value">
+                                <el-input v-model="libraryForm.value"></el-input>
+                            </el-form-item>
+                            <el-form-item label="跳转地址" prop="more_info_url">
+                                <el-input v-model="libraryForm.more_info_url"></el-input>
+                            </el-form-item>
+                            <el-form-item label="选择分组" prop="GroupTitle" v-show="showGroup">
+                                <el-select v-model="libraryForm.GroupTitle" placeholder="请选择分组" style="display: block">
+                                    <el-option
+                                            v-for="typename in typenames"
+                                            :key="typename"
+                                            :label="typename"
+                                            :value="typename">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item label="设置热门标签" prop="Tag" v-show="showTag">
+                                <el-radio-group v-model="libraryForm.Tag" @change="ChangeHot">
+                                    <el-radio label=null>不热门</el-radio>
+                                    <el-radio label="热门">热门</el-radio>
+                                </el-radio-group>
+                                <span class="notice" style="margin-left: 24px">注：热门只有一个</span>
+                            </el-form-item>
+
+                            <el-form-item>
+                                <el-button type="primary" @click="onSubmitForm('libraryForm')" v-show="buttonshow">
+                                    保存到导航库
+                                </el-button>
+                            </el-form-item>
+                        </el-form>
+                        <el-form :model="paymentCode" label-width="100px"
+                                 class="demo-ruleForm" v-show="reveal===2">
+
+                            <el-form-item label="导航名称">
+                                <el-input v-model="paymentCode.text"></el-input>
+                            </el-form-item>
+
+                            <el-form-item label="跳转地址">
+                                <el-input v-model="paymentCode.url"></el-input>
+                            </el-form-item>
+                        </el-form>
+                        <el-form :model="campusCode" label-width="100px"
+                                 class="demo-ruleForm" v-show="reveal===3">
+                            <el-form-item label="导航名称">
+                                <el-input v-model="campusCode.text"></el-input>
+                            </el-form-item>
+
+                            <el-form-item label="跳转地址">
+                                <el-input v-model="campusCode.url"></el-input>
+                            </el-form-item>
+                        </el-form>
+                    </div>
+                </div>
+                <div class="library">
+                    <div class="library_title">导航库</div>
+                    <div class="library_redact">
+                        <span @click="editLibrary" v-show="editdelete"
+                              style="padding: 2px 5px;cursor: pointer;background-color: #409EFF;color: #fff;">删除</span>
+                        <span @click="edityesLibrary" v-show="edityes"
+                              style="background-color: red;color:white;padding: 2px 5px;cursor: pointer;">完成</span>
+                    </div>
+                    <div class="library_picture">
+                        <div class="library_remarks">双击图标添加导航到左侧功能区</div>
+                        <div class="library_border">
+                            <div class="library_box">
+                                <div style=" width:100%;display:flex; flex-direction:row; flex-wrap:wrap; justify-content:flex-start;">
+                                    <div style="margin: 22px 10px 0 20px" @click="addnavigation">
+                                        <img :src="imagenadd"
+                                             style="width: 70px;height: 70px;">
+                                        <div style="font-size:12px;text-align:center;margin-top: 8px">
+                                            新增导航
+                                        </div>
+                                    </div>
+                                    <div style="position: relative;margin:10px 0 0 10px;"
+                                         @dblclick="ChangeMatter(library_pic,index)"
+                                         @click="CheckMatter(library_pic,index)"
+                                         v-for="(library_pic,index) in library_pictures"
+                                         :class="tabIndex ==index?'roundpic':''">
+                                        <img :src="imageDelete" alt="" v-if="show"
+                                             style="position: absolute;top: -10px;left: 36px;cursor: pointer;"
+                                             @click="Delete(library_pic.ColumId)">
+                                        <img
+                                                :src="JSON.parse(library_pic.T_column_info).IconId|imgurl(warehouse_pictures)"
+                                                style="display:block;margin: 10px 10px;"
+                                                class="library_pic">
+                                        <div class="pic_name">
+                                            {{JSON.parse(library_pic.T_column_info).title}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <el-dialog
+                title="请选择分组"
+                :visible.sync="ChangeGroupVisible"
+                width="30%">
+            <template>
+                <el-select v-model="libraryForm.GroupTitle" placeholder="请选择分组" style="width: 80%;margin-left: 30px">
+                    <el-option
+                            v-for="typename in typenames"
+                            :key="typename"
+                            :label="typename"
+                            :value="typename">
+                    </el-option>
+                </el-select>
+            </template>
+            <span slot="footer" class="dialog-footer">
+    <el-button type="primary" @click="ChangeGroup">确 定</el-button>
+  </span>
+        </el-dialog>
+
+
+    </div>
+</template>
+
+
+<script>
+    import draggable from 'vuedraggable';
+
+    let time = null;  //  在这里定义time 为null
+    export default {
+        name: "CardAdmin_set",
+        components: {
+            draggable
+        },
+        data() {
+            return {
+                imgPhone: require('../../../assets/images/phone.png'),
+                imageUrl: require('../../../assets/images/circle.png'),
+                imageDelete: require('../../../assets/images/delete.jpg'),
+                imageleft: require('../../../assets/images/left.png'),
+                imageright: require('../../../assets/images/right.png'),
+                imageup: require('../../../assets/images/up.png'),
+                imagedown: require('../../../assets/images/down.png'),
+                imageempty: require('../../../assets/images/empty.png'),
+                imagehot: require('../../../assets/images/hot.png'),
+                imageround: require('../../../assets/images/round.png'),
+                imagenone: require('../../../assets/images/noneicon.png'),
+                imagenadd: require('../../../assets/images/newadd.png'),
+                imageback: '',
+                imageIcon: '',
+
+
+                urlData: '',
+                layout: '',
+                radio6: '',
+                hotindex: '',
+                isIndeterminate: true,
+                buttonshow: true,
+                showTag: true,
+                showGroup: true,
+
+
+                radio: '1',//热门标签
+                show: false,//删除标识切换
+                reveal: 0,//from切换
+                layout: 0,//显示模式切换
+                itemTitle: {
+                    titleitem: ''
+                },
+                addItemDispatch: false,
+                addItem: {
+                    title: [
+                        {required: true, message: '请输入活动名称', trigger: 'blur'},
+                        {min: 1, max: 5, message: '长度在 1 到 5 个字符', trigger: 'blur'}
+                    ],
+                },
+                tempformer: [],//获取所有模板
+                TemplateId: "",//模板id
+                phoneSurface: {},//获取手机页面
+                column_info_list: [],//分组列表
+                card_action_list: [],//付款码`校园码
+                paymentCode: {},//付款码
+                campusCode: {},//校园码
+                listpic: {},//手机模块图片url
+                AlterDispatch: false,//修改分组名称弹窗
+                ChangeGroupVisible: false,//导航添加到功能区
+                message: "",
+                oldtitle: "",
+                rule: {
+                    name: [
+                        {required: true, message: '请输入导航名称', trigger: 'blur'},
+                        {min: 1, max: 4, message: '长度在 1 到 4 个字符', trigger: 'blur'}
+                    ],
+                },
+                warehouse_pictures: [],//获取图片列表
+                picback_data: {
+                    'Index': "1",
+                    'name': "88",
+                    'school_id': localStorage.schoolcode
+                },//手机背景图传值
+                picicon_data: {
+                    'Index': "0",
+                    'name': "88",
+                    'school_id': localStorage.schoolcode
+                },
+                backId: {},
+                iconId: {},
+                library_pictures: [],//获取导航库
+                editdelete: true,
+                edityes: false,
+
+                //新增表单
+                AddphotoDispatch: false,
+                picId: {},
+                formPic: {},
+                addForm: {
+                    image: '',
+                    name: '',
+                    introduce: '',
+                    url: '',
+                    grouping: '',
+                    // resource: 'null',
+                },
+                rules: {
+                    image: [
+                        {required: true, message: '请输入导航名称', trigger: 'blur'},
+                    ],
+                    name: [
+                        {required: true, message: '请输入导航名称', trigger: 'blur'},
+                        {min: 1, max: 4, message: '长度在 1 到 4 个字符', trigger: 'blur'}
+                    ],
+                    introduce: [
+                        {required: true, message: '请输入文字介绍', trigger: 'blur'},
+                    ],
+                    url: [
+                        {required: true, message: '请输入地址', trigger: 'blur'},
+                    ],
+                    // resource: [
+                    //     {required: true, message: '是否热门', trigger: 'change'}
+                    // ],
+
+                },
+                // 修改表单
+                libraryData: {},
+                dialogVisible: false,
+                libraryForm_url: {},
+                editformPic: {},
+                libraryForm: {
+                    Tag: ""
+                },
+                onrules: {
+                    image: [
+                        {required: true, message: '请输入导航名称', trigger: 'blur'},
+                    ],
+                    name: [
+                        {required: true, message: '请输入导航名称', trigger: 'blur'},
+                        {min: 1, max: 4, message: '长度在 1 到 4 个字符', trigger: 'blur'}
+                    ],
+                    introduce: [
+                        {required: true, message: '请输入文字介绍', trigger: 'blur'},
+                    ],
+                    url: [
+                        {required: true, message: '请输入地址', trigger: 'blur'},
+                    ],
+                    resource: [
+                        {required: true, message: '是否热门', trigger: 'change'}
+                    ],
+
+                },
+
+
+                typetitle: [],//类型标题push成数组
+                typenames: [],//类型标题去重后的数组
+                dataUrl: "",
+                tabIndex: -1
+            }
+        },
+        created() {
+            this.GetWarehousePicture()
+            this.phoneTable()
+            this.init()
+            this.GetTemplate()
+
+        },
+        methods: {
+            //  获取图片列表
+            GetWarehousePicture() {
+                this.axios.post(`api/SchoolCodr/GetIconList`, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then(res => {
+                    this.warehouse_pictures = res.data.data
+                    this.picId.url = this.imageempty
+                })
+            },
+
+
+            // 获取手机页面
+            phoneTable() {
+                const data = {
+                    "school_id": localStorage.schoolcode,
+                    "card_add_id": this.$route.params.id
+                }
+                this.axios.post(`api/SchoolCodr/GetSschoolTemp`, data, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then(res => {
+                    console.log(res)
+                    this.phoneSurface = res.data
+                    this.imageback = res.data.bgurl
+                    this.imageIcon = res.data.logourl
+                    this.iconId = res.data.logo_id
+                    this.backId = res.data.background_id
+                    this.layout = res.data.layout
+                    this.column_info_list = res.data.column_info_list
+                    this.card_action_list = res.data.card_action_list
+                    this.Coding(this.card_action_list)
+                    if (res.data.layout === "grid") {
+                        this.layout = 0
+                    } else {
+                        this.layout = 1
+                    }
+                    this.column_info_list.map(item => {
+                        this.typetitle.push(item.GroupTitle)
+                    })
+                    var arr = this.typetitle
+                    this.typenames = [...new Set(arr)];
+                })
+            },
+            //付款码、校园码
+            Coding(data) {
+                data.map(item => {
+                    if (item.text === "付款码") {
+                        this.paymentCode = {text: item.text, url: item.url}
+                    } else {
+                        this.campusCode = {text: item.text, url: item.url}
+                    }
+                })
+            },
+
+
+            init() {
+                // 获取导航库
+                const library_data = {
+                    "school_id": localStorage.schoolcode,
+                }
+                this.axios.post(`api/SchoolCodr/GetSchoolCardColumn`, library_data, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then(res => {
+                    console.log(res)
+                    this.library_pictures = res.data
+                })
+                this.formPic.url = require('../../../assets/images/noneicon.png');
+            },
+            //拖动
+            getphonedata(evt) {
+                console.log(evt)
+                console.log(evt.draggedContext.element.id)
+            },
+            PhonedataEnd(evt) {
+                console.log('拖动前的索引 :' + evt.oldIndex)
+                console.log('拖动后的索引 :' + evt.newIndex)
+                this.column_info_list.splice(evt.newIndex, 0, this.column_info_list.splice(evt.oldIndex, 1)[0]);
+                var newArray = this.column_info_list.slice(0);
+                this.column_info_list = [];
+                this.$nextTick(function () {
+                    this.column_info_list = newArray;
+                });
+            },
+
+
+            // 手机背景
+            uploadUrl() {
+                var url = this.axios.defaults.baseURL + "/api/SchoolCodr/Upload/Upload";
+                return url;
+            },
+            handleAvatarSuccess(res, file) {
+                this.imageback = URL.createObjectURL(file.raw);
+                if (res.msg.image_id) {
+                    this.backId = res.msg.image_id
+                }
+            },
+            beforeAvatarUpload(file) {
+            },
+            // 校徽
+            handleAvatarSuccessIcon(res, file) {
+                this.imageIcon = URL.createObjectURL(file.raw);
+                if (res.msg.image_id) {
+                    this.iconId = res.msg.image_id
+                }
+            },
+            beforeAvatarUploadIcon(file) {
+            },
+            // 点击付款码
+            SelectedPaymentcode() {
+                this.reveal = 2
+            },
+            SelectedCampuscode() {
+                this.reveal = 3
+            },
+            //删除分组
+            deleteIcon(index, group) {
+                console.log(index, group)
+                for (var i = 0; i < this.column_info_list.length; i++) {
+                    if (this.column_info_list[i].GroupTitle == group) {
+                        this.column_info_list.splice(i, 1);
+                        i--
+                    }
+                }
+                this.typenames.splice(index, 1)
+            },
+            DeleteItem(index) {
+                this.column_info_list.splice(index, 1)
+            },
+            OpenaddItem() {
+                this.addItemDispatch = true
+                console.log(this.phoneSurface)
+            },
+            addIist(formName) {
+                this.$refs[formName].resetFields();
+                this.typenames.push(this.itemTitle.titleitem)
+                let newlist = {
+                    "GroupTitle": this.itemTitle.titleitem,
+                    "IconId": "c-DtfgivRlaNL5VVzrkVKQAAACMAAQED",
+                    "Tag": null,
+                    "code": "T2018WH10",
+                    "more_info_title": "",
+                    "more_info_url": "http://www.newxiaoyuan.com/entrance/payment/jspay.ashx?schoolcode=10027&url=http%3A%2F%2Fwww.newxiaoyuan.com%2Fentrance%2Fpayment%2Fm%2Fpayment_list.aspx",
+                    "operate_type": "openWeb",
+                    "title": "缴费大厅",
+                    "value": "缴费",
+                }
+                this.column_info_list.push(newlist)
+                this.addItemDispatch = false
+                this.itemTitle.titleitem = ""
+            },
+            addresetForm(formName) {
+                this.addItemDispatch = false
+                this.itemTitle.titleitem = ""
+            },
+            //修改组名。
+            changeMessage() {
+                this.$set(this.typenames, this.index, this.message);
+                for (var i = 0; i < this.column_info_list.length; i++) {
+                    if (this.column_info_list[i].GroupTitle == this.oldtitle) {
+                        this.$set(this.column_info_list[i], 'GroupTitle', this.message)
+                    }
+                }
+                this.AlterDispatch = false;
+            },
+
+            addnavigation() {
+                this.reveal = 0
+                this.tabIndex=-1
+            }
+            ,
+            Changenavigation(data, id) {
+                console.log(data, id)
+                this.hotindex = id
+                this.reveal = 1,
+                    // this.libraryData = data
+                    console.log(this.libraryData)
+                this.libraryForm = data
+                console.log(this.libraryForm)
+                if (data.Tag === null) {
+                    this.$set(this.libraryForm, 'Tag', "null")
+                }
+                this.warehouse_pictures.map(res => {
+                    if (data.IconId === res.alipay_id) {
+                        let libraryForm_url = res.alipay_url + res.url
+                        this.libraryForm_url.url = libraryForm_url
+                        return;
+                    }
+                })
+                console.log(this.libraryForm)
+                this.buttonshow = false
+                this.showTag = true
+                this.showGroup = true
+                if (this.editformPic.url) {
+
+                }
+            },
+            //左移动
+            changeleft(index) {
+                if (index != 0) {
+                    var tempOption = this.column_info_list[index - 1];
+                    this.$set(this.column_info_list, index - 1, this.column_info_list[index]);
+                    this.$set(this.column_info_list, index, tempOption)
+                }
+            },
+            //右移动
+            changeright(index, group) {
+                console.log(index)
+                console.log(group)
+
+                if (this.column_info_list[index + 1].GroupTitle == group) {
+                    var tempOption = this.column_info_list[index + 1];
+                    this.$set(this.column_info_list, index + 1, this.column_info_list[index]);
+                    this.$set(this.column_info_list, index, tempOption)
+                }
+
+            },
+            alter(title, index) {
+                this.index = index
+                this.message = title
+                this.oldtitle = title
+                this.AlterDispatch = true;
+            }
+            ,
+
+            //获取模板
+            GetTemplate() {
+                const CardTempFormer = {
+                    school_id: localStorage.schoolcode,
+                }
+                this.axios.post(`/api/SchoolCodr/GetSchoolCardTempFormer`, CardTempFormer).then(res => {
+                    console.log(res)
+                    this.tempformer = res.data
+                    console.log(this.tempformer)
+                })
+            },
+
+            //点击切换模板
+            TemplateNum(value) {
+                value === this.radio6 ? this.radio6 = '' : this.radio6 = value
+                if (this.tempformer[value - 1] && this.radio6) {
+                    console.log(JSON.parse(this.tempformer[value - 1].T_column_info_list))
+                    this.typenames = []
+                    this.typetitle = []
+                    console.log(this.typenames)
+
+                    this.TemplateId = this.tempformer[value - 1].id
+                    this.column_info_list = JSON.parse(this.tempformer[value - 1].T_column_info_list)
+                    this.card_action_list = JSON.parse(this.tempformer[value - 1].T_card_action_list)
+                    this.backId = this.tempformer[value - 1].background_id
+                    this.iconId = this.tempformer[value - 1].Logo_id
+                    this.imageback = this.tempformer[value - 1].background_url
+                    this.imageIcon = this.tempformer[value - 1].alipay_url
+
+                    JSON.parse(this.tempformer[value - 1].T_column_info_list).map(item => {
+                        this.typetitle.push(item.GroupTitle)
+                        this.$set(JSON.parse(this.tempformer[value - 1].T_column_info_list), 'GroupTitle', item.GroupTitle)
+                    })
+                    var arr = this.typetitle
+
+                    this.typenames = [...new Set(arr)];
+                    console.log(this.typenames)
+                    // console.log(this.column_info_list)
+                    // console.log(value - 1)
+                    //
+                } else {
+                    this.typenames = []
+                    this.typetitle = []
+                    this.phoneTable()
+                }
+            },
+            //保存模板
+            SaveTemplate() {
+                let id = ""
+                if (this.radio6) {
+                    id = this.TemplateId
+                } else {
+                    id = 0
+                }
+                console.log(this.radio6)
+                console.log(id)
+                this.column_info_list.map(item => {
+                    console.log(item)
+                    if (item.Tag === "null") {
+                        this.$set(item, 'Tag', null)
+                    }
+                })
+                const tempformer = {
+                    school_id: localStorage.schoolcode,
+                    Logo_id: this.iconId,
+                    column_info_list: this.column_info_list,
+                    card_action_list: this.card_action_list,
+                    layout: this.layout,
+                    background_id: this.backId,
+                    baseinfoshow: this.radio,
+                    id: id
+                }
+                console.log(tempformer)
+                this.axios.post(`/api/SchoolCodr/SaveSchoolCardTempFormer`, tempformer).then(res => {
+                    console.log(res)
+                    if (res.data.code == "10000") {
+                        this.$message({
+                            message: "模板保存成功",
+                            type: 'success'
+                        });
+                        this.formPic.url = require('../../../assets/images/noneicon.png');
+                        this.GetTemplate()
+                        this.TemplateNum()
+                    }
+                })
+            }
+            ,
+            addphoto() {
+                this.AddphotoDispatch = true
+            }
+            ,
+            append_pic(url, id) {
+                this.picId = {url: url, id: id}
+            }
+            ,
+
+            // 表单头像
+            Addpic(picId) {
+                this.formPic = picId
+                this.AddphotoDispatch = false
+            }
+            ,
+
+
+            // 提交表单
+            submitForm(addForm) {
+                this.$refs[addForm].validate((valid) => {
+                    if (valid) {
+                        const module_data = {
+                            "school_id": localStorage.schoolcode,
+                            "T_column_info": {
+                                "code": "T2018WH10",
+                                "operate_type": "openWeb",
+                                "title": this.addForm.name,
+                                "value": this.addForm.introduce,
+                                "more_info_title": "JSON",
+                                "more_info_url": this.addForm.url,
+                                "IconId": this.formPic.id,
+                                "Tag": null
+                            }
+                        }
+                        console.log(module_data)
+                        this.axios.post(`/api/SchoolCodr/AddSchoolCardColum`, module_data, {
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        }).then(res => {
+                            if (res.data.code == "10000") {
+                                this.$refs[addForm].resetFields();
+                                this.init()
+                                this.$message({
+                                    message: '新增成功',
+                                    type: 'success'
+                                });
+                            } else {
+                                this.$message.error('新增失败');
+                            }
+                        })
+                    } else {
+                        console.log('error submit!!');
+                        return false;
+                    }
+                });
+            }
+            ,
+            // 点击导航栏头像
+            ChangeMatter(data, index) {
+                clearTimeout(time);//清除
+                this.tabIndex = index
+                this.reveal = 1,
+                    this.libraryData = data
+                this.libraryForm = JSON.parse(data.T_column_info)
+                console.log(JSON.parse(data.T_column_info))
+                console.log(this.libraryForm)
+                this.warehouse_pictures.map(res => {
+                    if (this.libraryForm.IconId === res.alipay_id) {
+                        let libraryForm_url = res.alipay_url + res.url
+                        this.libraryForm_url.url = libraryForm_url
+                        return;
+                    }
+                })
+                this.buttonshow = false
+                this.showTag = false
+                this.showGroup = true
+                this.column_info_list.push(this.libraryForm)
+                this.ChangeGroupVisible = true
+            },
+            ChangeGroup() {
+                this.ChangeGroupVisible = false
+            },
+
+
+            CheckMatter(data, index) {
+                clearTimeout(time);  //首先清除计时器
+                time = setTimeout(() => {
+                    this.tabIndex = index
+                    this.reveal = 1,
+                        this.libraryData = data
+                    console.log(this.libraryData)
+                    this.libraryForm = JSON.parse(data.T_column_info)
+                    this.warehouse_pictures.map(res => {
+                        if (this.libraryForm.IconId === res.alipay_id) {
+                            let libraryForm_url = res.alipay_url + res.url
+                            this.libraryForm_url.url = libraryForm_url
+                            return;
+                        }
+                    })
+                    this.buttonshow = true
+                    this.showTag = false
+                    this.showGroup = false
+                }, 300);
+            }
+            ,
+            editend_pic(url, id) {
+                this.libraryForm_url = {url: url, id: id}
+                console.log(this.libraryForm_url)
+            }
+            ,
+            editpic(libraryForm_url) {
+                console.log(libraryForm_url)
+                this.editformPic = libraryForm_url
+                this.dialogVisible = false
+                this.libraryForm.IconId = this.editformPic.id
+            }
+            ,
+
+            onSubmitForm(libraryForm) {
+                console.log(this.libraryForm)
+                console.log(this.editformPic)
+                if (this.editformPic.id) {
+                    this.libraryForm.IconId = this.editformPic.id
+                }
+                this.$refs[libraryForm].validate((valid) => {
+                        if (valid) {
+                            this.libraryForm.Tag = null
+                            this.libraryForm.GroupTitle = ""
+                            const module_data = {
+                                "ColumId": this.libraryData.ColumId,
+                                "T_column_info": this.libraryForm
+                            }
+                            console.log(module_data)
+                            this.axios.post(`/api/SchoolCodr/UpdateSchoolCardColum`, module_data, {
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            }).then(res => {
+                                if (res.data.code == "10000") {
+                                    this.$message({
+                                        message: '修改成功',
+                                        type: 'success'
+                                    });
+                                    this.reveal = 0
+                                    this.init()
+                                } else {
+                                    this.$message.error('修改失败');
+                                }
+                            })
+                        }
+                    }
+                );
+            }
+            ,
+            editLibrary: function () {
+                this.show = !this.show
+                this.editdelete = false
+                this.edityes = true
+            },
+            edityesLibrary: function () {
+                this.show = !this.show
+                this.editdelete = true
+                this.edityes = false
+            },
+
+            //热门
+            ChangeHot(value) {
+                // this.hotindex=index
+                console.log(this.hotindex)
+                console.log(value)
+                if (value == "热门") {
+                    this.column_info_list.map(item => {
+                        item.Tag = null
+                    })
+                    this.column_info_list[this.hotindex].Tag = "热门"
+                }
+            },
+
+            // 删除
+            Delete(id) {
+                console.log(id)
+                const Delete_data = {
+                    "ColumId": id,
+                    "school_id": localStorage.schoolcode,
+                }
+                this.axios.post(`api/SchoolCodr/DelSchoolCardColum`, Delete_data, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then(res => {
+                    if (res.data.code == "10000") {
+                        this.$message({
+                            message: '删除成功',
+                            type: 'success'
+                        });
+                        this.init()
+                    } else {
+                        this.$message.error('删除失败');
+                    }
+
+                })
+
+            }
+            ,
+            // 立即发布
+            ImmediatelyRelease() {
+                console.log(this.radio)
+                this.column_info_list.map(item => {
+                    console.log(item)
+                    if (item.Tag === "null") {
+                        this.$set(item, 'Tag', null)
+                    }
+                })
+                const Release_data = {
+                    "school_id": localStorage.schoolcode,
+                    "baseinfoshow": this.radio,
+                    "card_add_id": this.$route.params.id,
+                    "card_action_list": this.card_action_list,
+                    "column_info_list": this.column_info_list,
+                    "Logo_id": this.iconId,
+                    "background_id": this.backId
+                }
+                console.log(Release_data)
+                this.axios.post(`/api/SchoolCodr/UpdateSchoolCard`, Release_data, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then(res => {
+                    console.log(res)
+                    if (res.data.code == "10000") {
+                        this.$message({
+                            message: '发布成功',
+                            type: 'success'
+                        });
+                        this.$router.push({name: "CardAdmin"})
+                    } else {
+                        this.$message.error('发布失败');
+                    }
+                })
+            }
+
+        },
+        filters: {
+            imgurl(id, data, url) {
+                let urlpic = []
+                data.map(item => {
+                    if (id == item.alipay_id) {
+                        let url = item.alipay_url + item.url
+                        urlpic = url
+                    }
+                })
+                return urlpic
+            },
+            hot(url, value, data) {
+                if (value.Tag == "热门") {
+                    return url
+                }
+            }
+        },
+        components: {
+            draggable
+        },
+
+
+    }
+</script>
+
+<style lang="scss" scoped>
+    .phone_payment {
+        margin-top: 10px;
+    }
+
+    .phone_campus {
+        margin-top: 10px;
+    }
+
+    .phone_campus_title > span {
+        padding-left: 10px;
+        color: rgba(34, 135, 251, 1);
+    }
+
+    .addFunction {
+        width: 100%;
+        height: 80px;
+        background: rgba(241, 241, 241, 1);
+    }
+
+    .addFunction {
+        position: relative;
+        border-radius: 8px;
+    }
+
+    .addFunction span {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        white-space: nowrap
+    }
+
+    .home {
+        height: 100%;
+    }
+
+    .active {
+        background-color: rgba(35, 135, 251, 1);
+        color: #ffffff;
+    }
+
+    /*顶部导航*/
+    .nav {
+        height: 60px;
+        text-align: left;
+        background-color: #fff;
+        padding: 0 30px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .nav_bread {
+        display: flex;
+    }
+
+    .details {
+        margin-top: 15px;
+        margin-right: 25px;
+        border: 1px solid #2387fb;
+        width: 100px;
+        height: 30px;
+    }
+
+    .det_btn {
+        color: #2387fb !important;
+        padding-bottom: 2px;
+    }
+
+    .el-breadcrumb {
+        line-height: 39px;
+        color: #707070;
+        padding-top: 10px;
+        margin-right: 10px;
+    }
+
+    .release {
+        margin-top: 15px;
+    }
+
+    /*主体*/
+    .container {
+        display: flex;
+        margin: 30px 60px 0 60px;
+    }
+
+    .container > div {
+        background-color: #fff;
+        margin: 0 5px;
+    }
+
+    /*卡包设置*/
+
+    .card_set {
+        flex: 1;
+    }
+
+    .al_set {
+        margin: 32px 31px 0 31px;
+    }
+
+    .al_title {
+        font-size: 16px;
+    }
+
+    .template_title {
+        font-size: 16px;
+        color: #2287fb;
+        margin-top: 20px;
+    }
+
+    /*手机*/
+    .phone {
+        width: 235px;
+        margin-top: 20px;
+    }
+
+    .template_phone {
+        background-image: url("../../../assets/images/phone.png");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+        width: 100%;
+        height: 450px;
+        position: relative;
+    }
+
+    .phone_border {
+        position: absolute;
+        width: 86%;
+        height: 342px;
+        margin: 0 auto;
+        top: 53px;
+        left: 16px;
+        overflow: scroll;
+    }
+
+    .phone_border::-webkit-scrollbar {
+        display: none
+    }
+
+    .template_custom {
+        margin-top: 5px;
+    }
+
+    .custom_remarks {
+        font-size: 12px;
+        color: rgba(112, 112, 112, 0.5);
+    }
+
+    .custom_title div {
+        margin-top: 10px;
+    }
+
+    .template_save {
+        text-align: center;
+        margin-top: 10px;
+    }
+
+    /*手机内*/
+    /*背景*/
+
+    avatar-uploaders > div {
+        width: 100%;
+        height: 110px;
+        background-color: rgba(241, 241, 241, 1);
+        border-radius: 10px 10px 10px 10px;
+    }
+
+    .avatar-uploaders .el-upload {
+        border: 1px dashed #d9d9d9;
+        border-radius: 6px;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .avatars-uploader-icon {
+        font-size: 28px;
+        color: #8c939d;
+        height: 178px;
+        line-height: 178px;
+        text-align: center;
+    }
+
+    .avatar {
+        width: 178px;
+        height: 178px;
+        display: block;
+    }
+
+    /*校徽*/
+    /*.avatar-uploader .el-upload {*/
+    /*border: 1px dashed #d9d9d9;*/
+    /*border-radius: 6px;*/
+    /*cursor: pointer;*/
+    /*position: relative;*/
+    /*overflow: hidden;*/
+    /*}*/
+
+    /*.avatar-uploader .el-upload:hover {*/
+    /*border-color: #409EFF;*/
+    /*}*/
+
+    /*.avatar-uploader-icon {*/
+    /*font-size: 28px;*/
+    /*color: #8c939d;*/
+    /*width: 178px;*/
+    /*height: 178px;*/
+    /*line-height: 178px;*/
+    /*text-align: center;*/
+    /*}*/
+
+    .avatar {
+        width: 178px;
+        height: 178px;
+        display: block;
+    }
+
+    .phone_payment {
+        height: 32px;
+        opacity: 1;
+        background: rgba(241, 241, 241, 1);
+        border-radius: 10px 10px 10px 10px;
+        border: 1px solid rgba(112, 112, 112, 0.2);
+        display: flex;
+        justify-content: space-around;
+    }
+
+    .phone_payment > div {
+        flex: 1;
+        text-align: center;
+        margin: 5px;
+        color: rgba(112, 112, 112, 1);
+    }
+
+    .paymentCode {
+        border-right: 1px solid rgba(112, 112, 112, 0.2);
+    }
+
+    .direction {
+        display: none;
+    }
+
+    .directionhot {
+        /*display: none;*/
+    }
+
+    .phone_box:hover .direction {
+        display: block;
+        cursor: pointer;
+    }
+
+    .roundpic {
+        background-image: url('../../../assets/images/round.png');
+        background-repeat: no-repeat;
+        background-position: 6px 6px;
+        background-size: 78px 78px;
+    }
+
+    /*导航模块*/
+    .navigation {
+        flex: 4;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .module {
+        flex: 3;
+        margin: 32px 20px 28px 50px;
+    }
+
+    .module_title {
+        font-size: 16px;
+        color: #323232;
+    }
+
+    /*上传图标*/
+
+    /*导航库*/
+    .library {
+        flex: 2;
+        margin: 32px 80px 28px 20px;
+    }
+
+    .library_title {
+        font-size: 16px;
+        color: #323232;
+    }
+
+    .library_redact {
+        font-size: 14px;
+        color: #2387fb;
+        text-align: right;
+        margin: 30px 0 10px 0;
+    }
+
+    .library_picture {
+        width: 100%;
+        height: 600px;
+        background-color: #f9f9f9;
+        border-radius: 5px;
+        border: solid 1px rgba(112, 112, 112, 0.2);
+
+    }
+
+    .library_border {
+        overflow: scroll;
+        width: 100%;
+        height: 567px;
+    }
+
+    .library_border::-webkit-scrollbar {
+        display: none
+    }
+
+    .library_remarks {
+        margin: 7px;
+        line-height: 19px;
+        color: rgba(112, 112, 112, 0.5);
+        text-align: center;
+    }
+
+    .library_pic {
+        width: 70px;
+        height: 70px;
+    }
+
+    .pic_name {
+        margin-top: 10px;
+        text-align: center;
+    }
+</style>

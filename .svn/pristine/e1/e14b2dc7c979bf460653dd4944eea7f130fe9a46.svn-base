@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>   
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="all,follow">
+    <title>欢迎领取电子校园卡</title>
+	<link rel="stylesheet" href="/css/collarcard.css">
+</head>
+<body>
+	<div class="cx-card" style="display: none;">
+		<div class="pad-box">
+			<div class="eh-br-bo">
+				<div class="top-we1 clearfix">
+					<img src="/images/card/logo.png" class="top-we-lo1 fl">
+					<span class="top-we-lo2 fl">欢迎领取电子校园卡</span>
+				</div>
+				<img src="/images/card/collarcard_banner.png" class="collarcard_banner">
+			</div>
+			<div class="school-name" style="padding-top:10px;font-size: 16px;text-align: center;color: #666;">
+			</div>
+			<div class="top-we2">
+				食，购，学，行，工，一卡在手，校园无忧！<br/>
+				安全，便捷，贴心，更多场景，更多优惠，更多惊喜~
+			</div>
+			<div class="top-we3">
+				<div class="checkbox"><input class="styled" name="newyear" type="checkbox"></div>
+				<label class="checkbox-label">同意<a href="https://render.alipay.com/p/f/fd-j4a1qa0o/index.html">《电子校园卡服务协议》</a>及相关授权条款</label>
+			</div>
+		</div>
+		<div class="bottom-fixed-box">
+			<div class="btn-box"><button class="card-btn cx-submit" >立即领卡</button></div>
+		</div>
+	</div>
+	<script type="text/javascript"  src="/lib/jquery/1.9.1/jquery.min.js"></script>
+	<script type="text/javascript"  src="/lib/layer/2.4/layer.js"></script>
+	<script type="text/javascript"  src="/js/webapi.js"></script>
+	<script>
+        var schoolCode,schooltype,schoolname;
+	 $(function () {
+	     //判断是否是支付宝
+		 is_browser();
+		 //初始化
+         init();
+
+     });
+     function GetQueryString(name) {
+         var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+         var r = window.location.search.substr(1).match(reg);
+         if (r != null) return unescape(r[2]); return null;
+     }
+     function is_browser(){
+         var ua = navigator.userAgent.toLowerCase();
+         if(ua.match(/aliapp/i)=="aliapp"){
+             $(".cx-card").show();
+         }else{
+             location.href = "http://d.alipay.com";
+             return false;
+         }
+     }
+     function init() {
+         schoolCode = GetQueryString('schoolcode');
+         schooltype = GetQueryString('type');
+         schoolname = GetQueryString('schoolname');
+         $(".school-name").text(schoolname);
+     }
+        $(".checkbox").click(function(){
+            $(this).toggleClass("active");
+        });
+        $(".cx-submit").click(function () {
+            if ($(".checkbox").hasClass('active')) {
+                if (schooltype == 1) {
+
+                    window.location.href = apiurl + 'api/SchoolCodr/GetAliauthorize?school_id=' + schoolCode + '&type=' + schooltype;
+                }
+                else {
+                    window.location.href = "information_entry.html?school_id=" + schoolCode + "&type=" + schooltype;
+
+                }
+
+                
+            }else {
+                alert('请仔细阅读并同意《电子校园卡服务协议》');
+            }
+
+        });
+	</script>
+</body>
+</html>

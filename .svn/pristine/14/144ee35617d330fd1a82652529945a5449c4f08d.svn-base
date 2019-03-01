@@ -1,0 +1,133 @@
+<template>
+    <div class="home">
+        <div class="nav-lead clearfix">
+            <div class="fl nav-lead-word"><a href="#" class="active-gray">校园卡人员管理></a><a href="#">新建用户</a></div>
+            <div class="fl">
+                <router-link to="/CardPersonnel" class="cx-back">返回</router-link>
+            </div>
+        </div>
+        <div class="page-content">
+            <div class="clearfix">
+                <div class="col-xs-12 col-sm-12 col-md-12 add-page-box">
+                    <div class="add-page">
+                        <div class="add-page-title">新建用户</div>
+                        <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+
+                            <div class="gray-box-part">
+                                <el-form-item label="卡类型" prop="region">
+                                    <el-select v-model="ruleForm.region" placeholder="请选择卡类型">
+                                        <el-option label="全部" value="quanbu"></el-option>
+                                        <el-option label="学生卡" value="xueshengka"></el-option>
+                                    </el-select>
+                                </el-form-item>
+                                <el-form-item label="学工号" prop="schoolid" placeholder="请输入学工号">
+                                    <el-input v-model="ruleForm.schoolid"></el-input>
+                                </el-form-item>
+                                <el-form-item label="用户姓名" prop="name" placeholder="请输入用户姓名">
+                                    <el-input v-model="ruleForm.name"></el-input>
+                                </el-form-item>
+                                <el-form-item label="身份证号" prop="personid" placeholder="请输入身份证号">
+                                    <el-input v-model="ruleForm.personid"></el-input>
+                                </el-form-item>
+                            </div>
+
+                            <div class="gray-box-part">
+                                <el-form-item label="班级" prop="class">
+                                    <el-select v-model="ruleForm.class" placeholder="请选择班级">
+                                        <el-option label="平面设计01" value="sheji1"></el-option>
+                                        <el-option label="平面设计02" value="sheji2"></el-option>
+                                    </el-select>
+                                </el-form-item>
+                                <el-form-item label="卡有效期" prop="card_validity">
+                                    <el-date-picker
+                                            v-model="ruleForm.card_validity"
+                                            type="date"
+                                            placeholder="选择日期">
+                                    </el-date-picker>
+                                </el-form-item>
+                                <el-form-item label="是否迎新" prop="welcome_flg">
+                                    <el-radio-group v-model="ruleForm.welcome_flg">
+                                        <el-radio label="1">迎新</el-radio>
+                                        <el-radio label="0">不迎新</el-radio>
+                                    </el-radio-group>
+                                </el-form-item>
+                            </div>
+
+                            <el-form-item>
+                                <el-button class="btn-bg" @click="onSubmit('ruleForm',1)">添加</el-button>
+                                <el-button class="btn-border" @click="cancel" >取消</el-button>
+                            </el-form-item>
+
+                        </el-form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+    export default {
+        name: "Campus_user_add",
+        data() {
+            return {
+                ruleForm: {
+                    region: '',
+                    name: '',
+                    class:'',
+                    card_validity:'',
+                    welcome_flg: '',
+                    schoolid:'',
+                    personid:''
+                },
+                rules: {
+                    name: [
+                        {required: true, message: '请输入姓名', trigger: 'blur'},
+                        {min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur'}
+                    ],schoolid: [
+                        {required: true, message: '请输入学工号', trigger: 'blur'},
+                        {min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur'}
+                    ],personid: [
+                        {required: true, message: '请输入身份证号', trigger: 'blur'},
+                        {min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur'}
+                    ],region: [
+                        { required: true, message: '请选择卡类型', trigger: 'change' }
+                    ],card_validity: [
+                        { required: true, message: '请选择卡有限期', trigger: 'change' }
+                    ],class: [
+                        { required: true, message: '请选择班级', trigger: 'change' }
+                    ],welcome_flg: [
+                        { required: true, message: '请选择是否迎新', trigger: 'change' }
+                    ],
+
+                }
+            }
+          },
+        methods: {
+            onSubmit(formName,linkR) {
+                var self = this;
+                self.$refs[formName].validate((valid) => {
+                    if (valid) {
+                        self.$router.push({
+                            path: '/CardPersonnel',
+                            query: {
+                                linkR: linkR
+                            }
+                        });
+
+                    } else {
+                        console.log('error submit!!');
+                        return false;
+                    }
+                });
+            },
+            cancel(){
+                this.$router.push({path: '/CardPersonnel'});
+            }
+        }
+    }
+</script>
+
+<style lang="scss" scoped>
+    
+</style>

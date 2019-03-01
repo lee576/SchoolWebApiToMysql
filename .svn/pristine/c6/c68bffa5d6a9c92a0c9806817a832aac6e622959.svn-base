@@ -1,0 +1,251 @@
+2019-01-05 09:13:22.4428|Microsoft.Extensions.Logging.LoggingExtensions.UsingProfileAsKeyRepositoryWithDPAPI|INFO|User profile is available. Using 'C:\Users\Administrator\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest. 
+2019-01-05 09:13:26.4560|Hangfire.AspNetCore.AspNetCoreLog.Log|INFO|Starting Hangfire Server 
+2019-01-05 09:13:26.4560|Hangfire.AspNetCore.AspNetCoreLog.Log|INFO|Starting Hangfire Server 
+2019-01-05 09:13:26.4670|Hangfire.AspNetCore.AspNetCoreLog.Log|INFO|Using job storage: 'redis://127.0.0.1:6379/0' 
+2019-01-05 09:13:26.4670|Hangfire.AspNetCore.AspNetCoreLog.Log|INFO|Using job storage: 'redis://127.0.0.1:6379/0' 
+2019-01-05 09:13:26.4670|Hangfire.AspNetCore.AspNetCoreLog.Log|INFO|Using the following options for Redis job storage: 
+2019-01-05 09:13:26.4670|Hangfire.AspNetCore.AspNetCoreLog.Log|INFO|Using the following options for Redis job storage: 
+2019-01-05 09:13:26.4670|Hangfire.AspNetCore.AspNetCoreLog.Log|INFO|ConnectionString: 127.0.0.1:6379
+DN: 0 
+2019-01-05 09:13:26.4670|Hangfire.AspNetCore.AspNetCoreLog.Log|INFO|ConnectionString: 127.0.0.1:6379
+DN: 0 
+2019-01-05 09:13:26.4670|Hangfire.AspNetCore.AspNetCoreLog.Log|INFO|Using the following options for Hangfire Server: 
+2019-01-05 09:13:26.4670|Hangfire.AspNetCore.AspNetCoreLog.Log|INFO|Using the following options for Hangfire Server: 
+2019-01-05 09:13:26.4670|Hangfire.AspNetCore.AspNetCoreLog.Log|INFO|    Worker count: 20 
+2019-01-05 09:13:26.4830|Hangfire.AspNetCore.AspNetCoreLog.Log|INFO|    Worker count: 20 
+2019-01-05 09:13:26.4830|Hangfire.AspNetCore.AspNetCoreLog.Log|INFO|    Listening queues: 'default', 'apis', 'jobs' 
+2019-01-05 09:13:26.4830|Hangfire.AspNetCore.AspNetCoreLog.Log|INFO|    Listening queues: 'default', 'apis', 'jobs' 
+2019-01-05 09:13:26.4830|Hangfire.AspNetCore.AspNetCoreLog.Log|INFO|    Shutdown timeout: 00:00:15 
+2019-01-05 09:13:26.4830|Hangfire.AspNetCore.AspNetCoreLog.Log|INFO|    Shutdown timeout: 00:00:15 
+2019-01-05 09:13:26.4830|Hangfire.AspNetCore.AspNetCoreLog.Log|INFO|    Schedule polling interval: 00:00:15 
+2019-01-05 09:13:26.4830|Hangfire.AspNetCore.AspNetCoreLog.Log|INFO|    Schedule polling interval: 00:00:15 
+2019-01-05 09:13:26.6000|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'BackgroundProcessingServer' started. 
+2019-01-05 09:13:26.6310|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'BackgroundProcessingServer' started. 
+2019-01-05 09:13:26.7340|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'ServerHeartbeat' started. 
+2019-01-05 09:13:26.7340|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'ServerHeartbeat' started. 
+2019-01-05 09:13:26.7580|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Hangfire.Redis.FetchedJobsWatcher' started. 
+2019-01-05 09:13:26.7580|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Hangfire.Redis.FetchedJobsWatcher' started. 
+2019-01-05 09:13:26.7810|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'ServerWatchdog' started. 
+2019-01-05 09:13:26.7810|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'ServerWatchdog' started. 
+2019-01-05 09:13:26.8010|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'default' queue... 
+2019-01-05 09:13:26.8010|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'default' queue... 
+2019-01-05 09:13:26.8360|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'default' queue... 
+2019-01-05 09:13:26.8360|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'default' queue... 
+2019-01-05 09:13:26.8900|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'default' queue 
+2019-01-05 09:13:26.8900|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Hangfire.Redis.RedisSubscription' started. 
+2019-01-05 09:13:26.8900|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'default' queue 
+2019-01-05 09:13:26.8900|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Hangfire.Redis.RedisSubscription' started. 
+2019-01-05 09:13:26.9380|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #a5705dd2' started. 
+2019-01-05 09:13:26.9380|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #a5705dd2' started. 
+2019-01-05 09:13:26.9380|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #2907be2d' started. 
+2019-01-05 09:13:26.9380|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #2907be2d' started. 
+2019-01-05 09:13:27.0220|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #3cd0cfab' started. 
+2019-01-05 09:13:27.0330|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #3cd0cfab' started. 
+2019-01-05 09:13:27.0870|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #467e1132' started. 
+2019-01-05 09:13:27.0990|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #467e1132' started. 
+2019-01-05 09:13:27.1700|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #7a46e935' started. 
+2019-01-05 09:13:27.1700|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #7a46e935' started. 
+2019-01-05 09:13:27.1700|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #e358e7d4' started. 
+2019-01-05 09:13:27.2081|Hangfire.AspNetCore.AspNetCoreLog.Log|INFO|1 servers were removed due to timeout 
+2019-01-05 09:13:27.2081|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #e358e7d4' started. 
+2019-01-05 09:13:27.2081|Hangfire.AspNetCore.AspNetCoreLog.Log|INFO|1 servers were removed due to timeout 
+2019-01-05 09:13:27.2251|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #6a3fd48d' started. 
+2019-01-05 09:13:27.2251|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #6a3fd48d' started. 
+2019-01-05 09:13:27.2731|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'jobs' queue... 
+2019-01-05 09:13:27.2731|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'jobs' queue... 
+2019-01-05 09:13:27.3031|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'jobs' queue... 
+2019-01-05 09:13:27.3031|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #6de4c3ac' started. 
+2019-01-05 09:13:27.3231|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #6de4c3ac' started. 
+2019-01-05 09:13:27.3231|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'jobs' queue... 
+2019-01-05 09:13:27.3311|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'jobs' queue 
+2019-01-05 09:13:27.3311|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'jobs' queue 
+2019-01-05 09:13:27.3521|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #9ef34b33' started. 
+2019-01-05 09:13:27.3521|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #9ef34b33' started. 
+2019-01-05 09:13:27.3641|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #8752a30d' started. 
+2019-01-05 09:13:27.3641|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #8752a30d' started. 
+2019-01-05 09:13:27.4221|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #57308991' started. 
+2019-01-05 09:13:27.4411|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #3a8f0e46' started. 
+2019-01-05 09:13:27.4411|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #57308991' started. 
+2019-01-05 09:13:27.4411|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #3a8f0e46' started. 
+2019-01-05 09:13:27.5271|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #683fa318' started. 
+2019-01-05 09:13:27.5371|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #683fa318' started. 
+2019-01-05 09:13:27.6181|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #c14fe24c' started. 
+2019-01-05 09:13:27.6501|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #c14fe24c' started. 
+2019-01-05 09:13:27.6621|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #acf22ddc' started. 
+2019-01-05 09:13:27.6751|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #acf22ddc' started. 
+2019-01-05 09:13:27.6861|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #30de4449' started. 
+2019-01-05 09:13:27.6861|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #30de4449' started. 
+2019-01-05 09:13:27.7391|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #4a5f9a57' started. 
+2019-01-05 09:13:27.7391|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #4a5f9a57' started. 
+2019-01-05 09:13:27.7851|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #326e3c96' started. 
+2019-01-05 09:13:27.7851|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #326e3c96' started. 
+2019-01-05 09:13:27.8241|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #85c5963a' started. 
+2019-01-05 09:13:27.8461|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #85c5963a' started. 
+2019-01-05 09:13:27.8671|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #19217652' started. 
+2019-01-05 09:13:27.8741|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'Worker #19217652' started. 
+2019-01-05 09:13:27.8951|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'DelayedJobScheduler' started. 
+2019-01-05 09:13:27.8951|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'DelayedJobScheduler' started. 
+2019-01-05 09:13:27.9121|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'RecurringJobScheduler' started. 
+2019-01-05 09:13:27.9121|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Background process 'RecurringJobScheduler' started. 
+2019-01-05 09:13:28.0721|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Failed to process the job '89c3967c-9fc1-47d0-92ab-24e81f30100a': an exception occurred. Retry attempt 5 of 10 will be performed in 00:06:56. The type `SchoolWebApi.HangfireJobs.RecurringJobService` does not contain a method with signature `UpdateSchoolUserInfoToDepartmentid(PerformContext)`
+2019-01-05 09:13:28.0791|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Failed to process the job '89c3967c-9fc1-47d0-92ab-24e81f30100a': an exception occurred. Retry attempt 5 of 10 will be performed in 00:06:56. The type `SchoolWebApi.HangfireJobs.RecurringJobService` does not contain a method with signature `UpdateSchoolUserInfoToDepartmentid(PerformContext)`
+2019-01-05 09:13:28.1561|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Failed to process the job '415163b7-3644-495b-860d-908a934de491': an exception occurred. Retry attempt 6 of 10 will be performed in 00:11:16. The type `SchoolWebApi.HangfireJobs.RecurringJobService` does not contain a method with signature `UpdateSchoolUserInfoToDepartmentid(PerformContext)`
+2019-01-05 09:13:28.1561|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Failed to process the job '415163b7-3644-495b-860d-908a934de491': an exception occurred. Retry attempt 6 of 10 will be performed in 00:11:16. The type `SchoolWebApi.HangfireJobs.RecurringJobService` does not contain a method with signature `UpdateSchoolUserInfoToDepartmentid(PerformContext)`
+2019-01-05 09:13:28.1561|Hangfire.AspNetCore.AspNetCoreLog.Log|INFO|2 scheduled job(s) enqueued. 
+2019-01-05 09:13:28.1561|Hangfire.AspNetCore.AspNetCoreLog.Log|INFO|2 scheduled job(s) enqueued. 
+2019-01-05 09:13:28.5101|Microsoft.AspNetCore.Hosting.Internal.HostingApplicationDiagnostics.LogRequestStarting|INFO|Request starting HTTP/1.1 DEBUG http://localhost:52298/  0 
+2019-01-05 09:13:28.5091|Microsoft.AspNetCore.Hosting.Internal.HostingApplicationDiagnostics.LogRequestStarting|INFO|Request starting HTTP/1.1 GET http://localhost:44322/swagger/index.html   
+2019-01-05 09:13:28.5101|Microsoft.AspNetCore.Hosting.Internal.HostingApplicationDiagnostics.LogRequestStarting|INFO|Request starting HTTP/1.1 DEBUG http://localhost:52298/  0 
+2019-01-05 09:13:28.5101|Microsoft.AspNetCore.Hosting.Internal.HostingApplicationDiagnostics.LogRequestStarting|INFO|Request starting HTTP/1.1 GET http://localhost:44322/swagger/index.html   
+2019-01-05 09:13:28.7991|Microsoft.AspNetCore.Hosting.Internal.HostingApplicationDiagnostics.LogRequestFinished|INFO|Request finished in 290.6692ms 200  
+2019-01-05 09:13:28.7991|Microsoft.AspNetCore.Hosting.Internal.HostingApplicationDiagnostics.LogRequestFinished|INFO|Request finished in 290.6692ms 200  
+2019-01-05 09:13:29.6542|Microsoft.AspNetCore.Hosting.Internal.HostingApplicationDiagnostics.LogRequestFinished|INFO|Request finished in 1146.805ms 200 text/html 
+2019-01-05 09:13:29.6542|Microsoft.AspNetCore.Hosting.Internal.HostingApplicationDiagnostics.LogRequestFinished|INFO|Request finished in 1146.805ms 200 text/html 
+2019-01-05 09:13:33.4694|Microsoft.AspNetCore.Hosting.Internal.HostingApplicationDiagnostics.LogRequestStarting|INFO|Request starting HTTP/1.1 GET http://localhost:44322/swagger/v1/swagger.json   
+2019-01-05 09:13:33.4694|Microsoft.AspNetCore.Hosting.Internal.HostingApplicationDiagnostics.LogRequestStarting|INFO|Request starting HTTP/1.1 GET http://localhost:44322/swagger/v1/swagger.json   
+2019-01-05 09:13:34.0934|Microsoft.AspNetCore.Hosting.Internal.HostingApplicationDiagnostics.LogRequestFinished|INFO|Request finished in 624.5327ms 200 application/json;charset=utf-8 
+2019-01-05 09:13:34.1885|Microsoft.AspNetCore.Hosting.Internal.HostingApplicationDiagnostics.LogRequestFinished|INFO|Request finished in 624.5327ms 200 application/json;charset=utf-8 
+2019-01-05 09:14:01.1240|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'RecurringJobService.TestJob1' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:14:01.1240|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'RecurringJobService.TestJob1' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:14:01.1650|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'RecurringJobService.UpdateSchoolUserInfoToDepartmentid' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:14:01.1790|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'RecurringJobService.UpdateSchoolUserInfoToDepartmentid' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:14:01.1990|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'Startup.Fun' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:14:01.1990|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'Startup.Fun' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:14:01.2170|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'Startup.GetOrdersStatus' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:14:01.2170|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'Startup.GetOrdersStatus' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:14:27.3525|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'default' queue... 
+2019-01-05 09:14:27.3545|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'default' queue... 
+2019-01-05 09:14:27.3705|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'default' queue... 
+2019-01-05 09:14:27.3705|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'default' queue... 
+2019-01-05 09:14:27.3705|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'default' queue 
+2019-01-05 09:14:27.3705|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'default' queue 
+2019-01-05 09:14:27.3705|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'jobs' queue... 
+2019-01-05 09:14:27.3705|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'jobs' queue... 
+2019-01-05 09:14:27.3705|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'jobs' queue... 
+2019-01-05 09:14:27.3705|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'jobs' queue... 
+2019-01-05 09:14:27.3865|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'jobs' queue 
+2019-01-05 09:14:27.3865|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'jobs' queue 
+2019-01-05 09:15:00.2624|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'RecurringJobService.TestJob1' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:15:00.2624|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'RecurringJobService.TestJob1' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:15:00.2844|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'RecurringJobService.UpdateSchoolUserInfoToDepartmentid' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:15:00.2844|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'RecurringJobService.UpdateSchoolUserInfoToDepartmentid' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:15:00.2904|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'Startup.Fun' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:15:00.2904|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'Startup.Fun' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:15:00.3084|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'Startup.GetOrdersStatus' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:15:00.3084|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'Startup.GetOrdersStatus' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:15:27.3919|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'default' queue... 
+2019-01-05 09:15:27.3919|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'default' queue... 
+2019-01-05 09:15:27.4109|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'default' queue... 
+2019-01-05 09:15:27.4109|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'default' queue... 
+2019-01-05 09:15:27.4419|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'default' queue 
+2019-01-05 09:15:27.4419|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'default' queue 
+2019-01-05 09:15:27.4469|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'jobs' queue... 
+2019-01-05 09:15:27.4469|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'jobs' queue... 
+2019-01-05 09:15:27.4469|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'jobs' queue... 
+2019-01-05 09:15:27.4469|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'jobs' queue... 
+2019-01-05 09:15:27.4469|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'jobs' queue 
+2019-01-05 09:15:27.4469|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'jobs' queue 
+2019-01-05 09:16:00.3288|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'RecurringJobService.TestJob1' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:16:00.3308|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'RecurringJobService.TestJob1' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:16:00.3308|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'RecurringJobService.UpdateSchoolUserInfoToDepartmentid' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:16:00.3468|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'RecurringJobService.UpdateSchoolUserInfoToDepartmentid' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:16:00.3468|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'Startup.Fun' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:16:00.3468|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'Startup.Fun' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:16:00.3718|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'Startup.GetOrdersStatus' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:16:00.3718|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'Startup.GetOrdersStatus' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:16:27.4774|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'default' queue... 
+2019-01-05 09:16:27.4774|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'default' queue... 
+2019-01-05 09:16:27.4944|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'default' queue... 
+2019-01-05 09:16:27.5084|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'default' queue... 
+2019-01-05 09:16:27.5084|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'default' queue 
+2019-01-05 09:16:27.5084|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'default' queue 
+2019-01-05 09:16:27.5084|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'jobs' queue... 
+2019-01-05 09:16:27.5084|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'jobs' queue... 
+2019-01-05 09:16:27.5084|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'jobs' queue... 
+2019-01-05 09:16:27.5084|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'jobs' queue... 
+2019-01-05 09:16:27.5214|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'jobs' queue 
+2019-01-05 09:16:27.5214|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'jobs' queue 
+2019-01-05 09:17:00.4042|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'RecurringJobService.TestJob1' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:17:00.4042|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'RecurringJobService.TestJob1' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:17:00.4422|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'RecurringJobService.UpdateSchoolUserInfoToDepartmentid' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:17:00.4422|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'RecurringJobService.UpdateSchoolUserInfoToDepartmentid' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:17:00.4582|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'Startup.Fun' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:17:00.4582|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'Startup.Fun' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:17:00.4582|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'Startup.GetOrdersStatus' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:17:00.4582|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'Startup.GetOrdersStatus' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:17:27.5458|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'default' queue... 
+2019-01-05 09:17:27.5458|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'default' queue... 
+2019-01-05 09:17:27.5518|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'default' queue... 
+2019-01-05 09:17:27.5518|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'default' queue... 
+2019-01-05 09:17:27.5518|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'default' queue 
+2019-01-05 09:17:27.5518|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'default' queue 
+2019-01-05 09:17:27.5788|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'jobs' queue... 
+2019-01-05 09:17:27.5788|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'jobs' queue... 
+2019-01-05 09:17:27.5848|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'jobs' queue... 
+2019-01-05 09:17:27.5848|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'jobs' queue... 
+2019-01-05 09:17:27.5848|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'jobs' queue 
+2019-01-05 09:17:27.5848|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'jobs' queue 
+2019-01-05 09:18:00.4777|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'RecurringJobService.TestJob1' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:18:00.4777|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'RecurringJobService.TestJob1' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:18:00.4997|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'RecurringJobService.UpdateSchoolUserInfoToDepartmentid' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:18:00.4997|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'RecurringJobService.UpdateSchoolUserInfoToDepartmentid' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:18:00.5197|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'Startup.Fun' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:18:00.5197|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'Startup.Fun' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:18:00.5197|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'Startup.GetOrdersStatus' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:18:00.5197|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'Startup.GetOrdersStatus' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:18:27.6002|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'default' queue... 
+2019-01-05 09:18:27.6002|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'default' queue... 
+2019-01-05 09:18:27.6222|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'default' queue... 
+2019-01-05 09:18:27.6222|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'default' queue... 
+2019-01-05 09:18:27.6712|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'default' queue 
+2019-01-05 09:18:27.6712|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'default' queue 
+2019-01-05 09:18:27.6762|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'jobs' queue... 
+2019-01-05 09:18:27.6762|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'jobs' queue... 
+2019-01-05 09:18:27.6762|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'jobs' queue... 
+2019-01-05 09:18:27.6762|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'jobs' queue... 
+2019-01-05 09:18:27.6762|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'jobs' queue 
+2019-01-05 09:18:27.6762|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'jobs' queue 
+2019-01-05 09:19:00.5971|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'RecurringJobService.TestJob1' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:19:00.5971|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'RecurringJobService.TestJob1' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:19:00.6301|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'RecurringJobService.UpdateSchoolUserInfoToDepartmentid' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:19:00.6301|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'RecurringJobService.UpdateSchoolUserInfoToDepartmentid' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:19:00.6371|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'Startup.Fun' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:19:00.6371|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'Startup.Fun' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:19:00.6371|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'Startup.GetOrdersStatus' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:19:00.6371|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'Startup.GetOrdersStatus' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:19:27.6917|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'default' queue... 
+2019-01-05 09:19:27.6917|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'default' queue... 
+2019-01-05 09:19:27.7577|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'default' queue... 
+2019-01-05 09:19:27.7577|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'default' queue... 
+2019-01-05 09:19:27.7827|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'default' queue 
+2019-01-05 09:19:27.7827|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'default' queue 
+2019-01-05 09:19:27.7827|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'jobs' queue... 
+2019-01-05 09:19:27.7827|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'jobs' queue... 
+2019-01-05 09:19:27.7977|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'jobs' queue... 
+2019-01-05 09:19:27.7977|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'jobs' queue... 
+2019-01-05 09:19:27.7977|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'jobs' queue 
+2019-01-05 09:19:27.7977|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'jobs' queue 
+2019-01-05 09:20:00.6956|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'RecurringJobService.TestJob1' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:20:00.6956|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'RecurringJobService.TestJob1' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:20:00.7036|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'RecurringJobService.UpdateSchoolUserInfoToDepartmentid' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:20:00.7036|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'RecurringJobService.UpdateSchoolUserInfoToDepartmentid' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:20:00.7036|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'Startup.Fun' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:20:00.7036|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'Startup.Fun' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:20:00.7036|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'Startup.GetOrdersStatus' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:20:00.7166|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Recurring job 'Startup.GetOrdersStatus' can not be scheduled due to job load exception. Could not load the job. See inner exception for the details.
+2019-01-05 09:20:27.8101|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'default' queue... 
+2019-01-05 09:20:27.8101|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'default' queue... 
+2019-01-05 09:20:27.8101|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'default' queue... 
+2019-01-05 09:20:27.8101|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'default' queue... 
+2019-01-05 09:20:27.8301|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'default' queue 
+2019-01-05 09:20:27.8421|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'default' queue 
+2019-01-05 09:20:27.8421|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'jobs' queue... 
+2019-01-05 09:20:27.8421|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Acquiring the lock for the fetched list of the 'jobs' queue... 
+2019-01-05 09:20:27.8421|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'jobs' queue... 
+2019-01-05 09:20:27.8421|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|Looking for timed out jobs in the 'jobs' queue... 
+2019-01-05 09:20:27.8421|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'jobs' queue 
+2019-01-05 09:20:27.8421|Hangfire.AspNetCore.AspNetCoreLog.Log|DEBUG|No timed out jobs were found in the 'jobs' queue 
+2019-01-05 09:20:28.5291|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Failed to process the job '89c3967c-9fc1-47d0-92ab-24e81f30100a': an exception occurred. Retry attempt 6 of 10 will be performed in 00:12:58. The type `SchoolWebApi.HangfireJobs.RecurringJobService` does not contain a method with signature `UpdateSchoolUserInfoToDepartmentid(PerformContext)`
+2019-01-05 09:20:28.5291|Hangfire.AspNetCore.AspNetCoreLog.Log|WARN|Failed to process the job '89c3967c-9fc1-47d0-92ab-24e81f30100a': an exception occurred. Retry attempt 6 of 10 will be performed in 00:12:58. The type `SchoolWebApi.HangfireJobs.RecurringJobService` does not contain a method with signature `UpdateSchoolUserInfoToDepartmentid(PerformContext)`
+2019-01-05 09:20:28.5512|Hangfire.AspNetCore.AspNetCoreLog.Log|INFO|1 scheduled job(s) enqueued. 
+2019-01-05 09:20:28.5512|Hangfire.AspNetCore.AspNetCoreLog.Log|INFO|1 scheduled job(s) enqueued. 

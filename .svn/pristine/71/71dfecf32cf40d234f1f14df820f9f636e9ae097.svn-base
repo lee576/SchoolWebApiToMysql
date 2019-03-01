@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>   
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="all,follow">
+    <title>关于的入学通知</title>
+	<link rel="stylesheet" href="/css/collarcard.css">
+</head>
+<body style="background:#DAEFFB">
+	<div class="pad-box">
+		<div class="eh-br-mo">
+			<div class="new-know">关于的入学通知</div>
+			<img src="/images/card/collarcard_banner_s.png" class="coll-mid">
+			<div class="know-title">一、通知信息</div>
+			<div class="know-end">信息化建设管理处宣</div>
+		</div>
+	</div>
+	<div class="bottom-fixed-box" style="background:#DAEFFB;padding-top:10px;">
+		<div class="btn-box"><button class="card-btn">领取校园卡</button></div>
+	</div>
+	<script src="/lib/jquery/1.9.1/jquery.min.js"></script>
+</body>
+</html>

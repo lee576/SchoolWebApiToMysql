@@ -1,0 +1,31 @@
+﻿{
+  "Env": [
+    {
+      "Name": "SchoolCard",
+      "ServerList": [
+        {
+          "Host": "192.168.1.4:8888",
+          "Token": "666"
+        }
+      ],
+      "LinuxServerList": []
+    }
+  ],
+  "IgnoreList": [],
+  "IIsConfig": {
+    "SdkType": "netcore",
+    "WebSiteName": "test",
+    "LastEnvName": "SchoolCard"
+  },
+  "WindowsServiveConfig": {
+    "StopTimeOutSeconds": "",
+    "ServiceName": "",
+    "SdkType": "netcore",
+    "LastEnvName": null
+  },
+  "DockerConfig": {
+    "Prot": "",
+    "AspNetCoreEnv": "",
+    "LastEnvName": null
+  }
+}

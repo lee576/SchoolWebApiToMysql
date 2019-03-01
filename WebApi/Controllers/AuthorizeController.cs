@@ -1,0 +1,91 @@
+﻿using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using IService;
+using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using Models.ViewModels;
+using SchoolWebApi;
+using SchoolWebApi.Utility;
+
+namespace SchoolWebApi.Controllers
+{
+    /// <summary>
+    /// 生成接口 Token
+    /// </summary>
+    [Route("api/[controller]/[action]")]
+    [ApiController]
+    [Produces("application/json")]
+    [EnableCors("any")]
+    public class AuthorizeController : Controller
+    {
+        private readonly JwtSettings _jwtSettings;
+        private readonly Itb_userinfoService _tb_user;
+        private readonly IHostingEnvironment _env;
+        private readonly Itb_school_InfoService _Itb_school_InfoService;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="jwtSettingsAccesser"></param>
+        /// <param name="tb_user"></param>
+        /// <param name="env"></param>
+        /// <param name="Itb_school_InfoService"></param>
+        public AuthorizeController(IOptions<JwtSettings> jwtSettingsAccesser, Itb_userinfoService tb_user, IHostingEnvironment env, Itb_school_InfoService Itb_school_InfoService)
+        {
+            _jwtSettings = jwtSettingsAccesser.Value;
+            _tb_user = tb_user;
+            _env = env;
+            _Itb_school_InfoService = Itb_school_InfoService;
+        }
+
+        /// <summary>
+        /// 登录验证拿到Token
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public IActionResult Token([FromBody]LoginViewModel model)
+        {
+            var md5Password = _env.IsDevelopment() ? MD5Helper.MD5Encrypt16(model.Password) : MD5Helper.MD5Encrypt32(model.Password);
+            var findUser = _tb_user.FindByClause(t => t.schoolcode == model.SchoolCode && t.loginuser == model.UserName && t.password == md5Password);
+
+
+            if (findUser == null)
+            {
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = "用户名或密码错误!"
+                });
+            }
+            string schoolname = _Itb_school_InfoService.FindByClause(p => p.School_Code == model.SchoolCode).School_name;
+            var claim = new[]{
+                    new Claim(ClaimTypes.Name, model.UserName),
+                    new Claim(ClaimTypes.Role,"admin")
+                };
+
+            //对称秘钥
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
+            //签名证书(秘钥，加密算法)
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            //生成token  [注意]需要nuget添加Microsoft.AspNetCore.Authentication.JwtBearer包，并引用System.IdentityModel.Tokens.Jwt命名空间
+            var token = new JwtSecurityToken(_jwtSettings.Issuer, _jwtSettings.Audience, claim, DateTime.Now, DateTime.Now.AddMinutes(30), creds);
+            return Json(new
+            {
+                schoolcode = findUser.schoolcode,
+                schoolname = schoolname,
+                loginuser = findUser.loginuser,
+                menus = findUser.menus,
+                code = JsonReturnMsg.SuccessCode,
+                msg = JsonReturnMsg.GetSuccess,
+                token = "bearer " + new JwtSecurityTokenHandler().WriteToken(token)
+            });
+        }
+    }
+}

@@ -1,0 +1,147 @@
+﻿using DbModel;
+using IService;
+using Infrastructure.Service;
+using Infrastructure;
+using System.Collections.Generic;
+using SqlSugar;
+using System;
+using Models.ViewModels;
+
+namespace Service
+{
+    public class tb_school_userService : GenericService<tb_school_user>, Itb_school_userService
+    {
+        public bool SynchronizationInfo(List<tb_school_user> list)
+        {
+            try
+            {
+                Itb_school_userService tb_school_user = new tb_school_userService();
+                foreach (var item in list)
+                {
+                    bool isOK = tb_school_user.Any(x => x.user_name == item.user_name && x.passport == item.passport && x.school_id == item.school_id);
+                    if (!isOK)
+                    {
+                        tb_school_user.Insert(item);
+                    }
+                }
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
+        }
+        /// <summary>
+        /// 添加一条数据山东外国语学院
+        /// </summary>
+        /// <param name="list"></param>
+        /// <returns></returns>
+        public bool AddUserInfoToSDYGYXY(tb_school_user user)
+        {
+            try
+            {
+                Itb_school_userService tb_school_user = new tb_school_userService();
+
+                bool isOK = tb_school_user.Any(x => x.user_name == user.user_name && x.passport == user.passport && x.school_id == user.school_id);
+                if (!isOK)
+                {
+                    tb_school_user.Insert(user);
+                }
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        #region 获取校园卡人员管理信息
+        /// <summary>
+        /// 获取校园卡人员管理信息
+        /// </summary>
+        /// <param name="userNameOrId"></param>
+        /// <param name="branchId"></param>
+        /// <param name="departmentId"></param>
+        /// <param name="department_classId"></param>
+        /// <param name="classId"></param>
+        /// <param name="card_state"></param>
+        /// <returns></returns>
+        public List<SchoolStudentViewModel> FindSchoolStudentInfo(string school_Code, int pageIndex, int pageSize, ref int total, string userNameOrId = "", string branchId = "", string departmentId = "",
+            string department_classId = "", string classId = "", string card_state = "")
+        {
+            using (var db = DbFactory.GetSqlSugarClient())
+            {
+                var info = db.Queryable<tb_school_user, tb_school_classinfo, tb_school_departmentinfo>((s, sc, sd) => new object[]
+                   {
+                      JoinType.Left,s.department_id==sc.ID,
+                      JoinType.Left,s.department_id==sd.ID,
+                   })
+                    .Where((s, sc, sd) => s.school_id == school_Code)
+                    .WhereIF(!string.IsNullOrEmpty(classId), (s, sc, sd) => s.class_id == SqlFunc.ToInt32(classId))
+                    .WhereIF(!string.IsNullOrEmpty(card_state), (s, sc, sd) => s.card_state == SqlFunc.ToInt32(card_state))
+                    .WhereIF(!string.IsNullOrEmpty(branchId), (s, sc, sd) => sd.ID == SqlFunc.ToInt32(branchId))
+                    .WhereIF(!string.IsNullOrEmpty(departmentId), (s, sc, sd) => sd.ID == SqlFunc.ToInt32(departmentId))
+                    .WhereIF(!string.IsNullOrEmpty(department_classId), (s, sc, sd) => sd.ID == SqlFunc.ToInt32(department_classId))
+                    .WhereIF(!string.IsNullOrEmpty(userNameOrId), (s, sc, sd) => s.user_name.Contains(userNameOrId) ||
+                                    s.student_id.Contains(userNameOrId))
+                    .OrderBy((s, sc, sd) => s.user_id, OrderByType.Desc)
+                    .Select((s, sc, sd) => new SchoolStudentViewModel()
+                    {
+                        user_id = s.user_id,
+                        class_id = s.class_id,
+                        student_id = s.student_id,
+                        user_name = s.user_name,
+                        card_state = s.card_state,
+                        welcome_flg = s.welcome_flg,
+                    }).ToPageList(pageIndex, pageSize, ref total);
+                return info;
+            }
+        }
+        #endregion
+
+        #region 导出校园卡人员管理信息
+        /// <summary>
+        /// 导出校园卡人员管理信息
+        /// </summary>
+        /// <param name="userNameOrId"></param>
+        /// <param name="branchId"></param>
+        /// <param name="departmentId"></param>
+        /// <param name="department_classId"></param>
+        /// <param name="classId"></param>
+        /// <param name="card_state"></param>
+        /// <returns></returns>
+        public List<InduceSchoolUserViewModel> InduceSchoolUserInfo(string school_Code, string userNameOrId = "", string branchId = "", string departmentId = "",
+            string department_classId = "", string classId = "", string card_state = "")
+        {
+            using (var db = DbFactory.GetSqlSugarClient())
+            {
+                var info = db.Queryable<tb_school_user, tb_school_classinfo, tb_school_departmentinfo>((s, sc, sd) => new object[]
+                   {
+                      JoinType.Left,s.department_id==sc.ID,
+                      JoinType.Left,s.department_id==sd.ID
+                   })
+                    .Where((s, sc, sd) => s.school_id == school_Code)
+                    .WhereIF(!string.IsNullOrEmpty(classId), (s, sc, sd) => s.class_id == SqlFunc.ToInt32(classId))
+                    .WhereIF(!string.IsNullOrEmpty(card_state), (s, sc, sd) => s.card_state == SqlFunc.ToInt32(card_state))
+                    .WhereIF(!string.IsNullOrEmpty(branchId), (s, sc, sd) => sd.ID == SqlFunc.ToInt32(branchId))
+                    .WhereIF(!string.IsNullOrEmpty(departmentId), (s, sc, sd) => sd.ID == SqlFunc.ToInt32(departmentId))
+                    .WhereIF(!string.IsNullOrEmpty(department_classId), (s, sc, sd) => sd.ID == SqlFunc.ToInt32(department_classId))
+                    .WhereIF(!string.IsNullOrEmpty(userNameOrId), (s, sc, sd) => s.user_name.Contains(userNameOrId) || s.student_id.Contains(userNameOrId))
+                    //.OrderBy((s, sc, sd) => s.user_id, OrderByType.Desc)
+                    .Select((s, sc, sd) => new InduceSchoolUserViewModel()
+                    {
+                        class_id = s.class_id.ToString(),
+                        student_id = s.student_id,
+                        user_name = s.user_name,
+                        card_state = s.card_state.ToString(),
+                        passport = s.passport,
+                        create_time = s.create_time,
+                        department = s.department
+                    }).ToList();
+                return info;
+            }
+        }
+        #endregion
+    }
+}

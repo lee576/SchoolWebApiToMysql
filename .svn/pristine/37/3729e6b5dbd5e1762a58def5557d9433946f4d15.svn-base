@@ -1,0 +1,312 @@
+<template>
+    <div class="home">
+        <div class="nav-lead clearfix">
+            <div class="fl nav-lead-word"><a href="#">收款账号管理</a></div>
+            <div class="fr payable-btn">
+                <button class="operation-btn" @click="userOption()">添加收款账号</button>
+            </div>
+        </div>
+        <div class="page-content">
+            <div class="nav-tab clearfix">
+                <ul class="nav-tab-change1 fl">
+                    <li :class="{active:isShowGraph}" @click="isShowGraph=true">
+                        <label class="fl view-img1"></label>
+                        <span class="fl">视图</span>
+                    </li>
+                    <li :class="{active:!isShowGraph}" @click="isShowGraph=false">
+                        <label class="fl view-img3"></label>
+                        <span class="fl">列表</span>
+                    </li>
+                </ul>
+            </div>
+            <ul class="view-tree-box">
+                <!--视图-->
+                <li class="ym-view-box" :style="{display:isShowGraph?'block':'none'}" >
+                    <div class="no-message-tip" :style="{display:isShow?'block':'none'}">
+                        <img src="../../../assets/picture/images/no-mess.png" height="100" width="100"/>
+                        <div class="message-tip-word">暂无内容</div>
+                    </div>
+                    <el-row :gutter="10">
+                        <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12" v-for="(item, index) in configTable.tableArr">
+                            <div class="pay-card">
+                                <div class="pay-man-box1 clearfix">
+                                    <div class="pay-wo4 fl">收款名称 : {{item.name}}</div>
+                                   <!-- <div class="fl pay-man1">{{item.name}}</div>-->
+                                    <div class="fr pay-wo1">
+                                        使用状态 : {{targetType(item.accountstatus)}}
+                                    </div>
+                                </div>
+
+                                <div class="pay-man-box1 clearfix">
+                                    <div class="fl pay-man-totel">
+                                        收款APPID : {{item.appid}}
+                                    </div>
+                                    <div class="fr two-row-on3">
+                                        <el-button type="text" size="small" class="edit-tr-con"  @click="userOption(item.id)">修改</el-button>
+                                        <el-button type="text" size="small" class="del-tr-con" @click="tableDelete(item.id)">删除</el-button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </el-col>
+                      <!--  <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+                            <div class="pay-card">
+                                <div class="pay-man-box1 clearfix">
+                                    <div class="fl pay-man1">201901098987</div>
+                                    <div class="fr pay-wo1">
+                                        已使用
+                                    </div>
+                                </div>
+                                <div class="pay-man-box1 clearfix">
+                                    <div class="pay-wo4 fl">文理学院</div>
+                                </div>
+                                <div class="pay-man-box1 clearfix">
+                                    <div class="fr pay-man-totel">
+                                        6598 6593 9879 3279 368
+                                    </div>
+                                </div>
+                                <div class="clearfix">
+                                    <div class="fr two-row-on3">
+                                        <a href="#" class="row-color2">修改</a>
+                                        <a href="#" class="row-color3">删除</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </el-col>
+                        <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+                            <div class="pay-card ">
+                                <div class="pay-man-box1 clearfix">
+                                    <div class="fl pay-man1">201901098987</div>
+                                    <div class="fr pay-wo1">
+                                        已使用
+                                    </div>
+                                </div>
+                                <div class="pay-man-box1 clearfix">
+                                    <div class="pay-wo4 fl">文理学院</div>
+                                </div>
+                                <div class="pay-man-box1 clearfix">
+                                    <div class="fr pay-man-totel">
+                                        6598 6593 9879 3279 368
+                                    </div>
+                                </div>
+                                <div class="clearfix">
+                                    <div class="fr two-row-on3">
+                                        <a href="#" class="row-color2">修改</a>
+                                        <a href="#" class="row-color3">删除</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </el-col>-->
+                    </el-row>
+                    <div class="block" style="text-align: right;">
+                        <el-pagination
+                                @size-change="handleSizeChange"
+                                @current-change="handleCurrentChange"
+                                :current-page.sync="configTable.currentPage"
+                                :page-size="configTable.iDisplayLength"
+                                layout="total, prev, pager, next"
+                                :total="configTable.total">
+                        </el-pagination>
+                    </div>
+                </li>
+                <!--树状图-->
+                <li class="ym-tree-box" :style="{display:isShowGraph?'none':'block'}">
+                    <div class="payment-item-table">
+                        <div class="table-box">
+                            <template>
+                                <el-table :data="configTable.tableArr" stripe style="width: 100%">
+                                    <el-table-column prop="name" label="收款名称" >
+                                    </el-table-column>
+                                    <el-table-column prop="appid" label="收款APPID">
+                                    </el-table-column>
+                                    <el-table-column prop="pid"  label="收款PID">
+                                    </el-table-column>
+                                    <el-table-column prop="accountstatus" :formatter="userState" label="使用状态">
+                                    </el-table-column>
+                                    <el-table-column  label="操作" width="120">
+                                        <template slot-scope="scope">
+                                            <el-button type="text" size="small" class="edit-tr-con"  @click="userOption(scope.row.id)">修改</el-button>
+                                            <el-button type="text" size="small" class="del-tr-con" @click="tableDelete(scope.row.id)">删除</el-button>
+                                        </template>
+                                    </el-table-column>
+                                </el-table>
+                            </template>
+                        </div>
+                        <div class="block" style="text-align: right;">
+                            <el-pagination
+                                    @size-change="handleSizeChange"
+                                    @current-change="handleCurrentChange"
+                                    :current-page.sync="configTable.currentPage"
+                                    :page-size="configTable.iDisplayLength"
+                                    layout="total, prev, pager, next"
+                                    :total="configTable.total">
+                            </el-pagination>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</template>
+
+<script>
+    export default {
+        name: "ReceivingManage_List",
+        data() {
+            return {
+                isShowGraph:true,
+                isShow:false,
+                configTable:{
+                    tableArr:[],
+                    total:0,
+                    currentPage: 1,
+                    iDisplayStart:0,
+                    iDisplayLength:10,
+                },
+            }
+        },
+        created() {
+            let self=this;
+            self.getParams();
+            self.tableList();
+        },
+        methods: {
+            getParams(){
+                // 取到路由带过来的参数
+                let self = this;
+                if(self.$route.query.type == 1){
+                    self.isShowGraph = self.$route.query.flag;
+                }
+            },
+            tableList(){
+                let self = this;
+                self.axios.get('api/PaymentAR/GetPayMentAccountsPageList', {
+                    params: {
+                        schoolcode: localStorage.schoolcode,
+                        sEcho:self.configTable.currentPage,
+                        iDisplayStart:self.configTable.iDisplayStart,
+                        iDisplayLength:self.configTable.iDisplayLength,
+                    }
+                })
+                    .then(function (response) {
+                        let res = response.data;
+                         if(res.code == '000000'){
+
+                             if(res.data.length == 0){
+                                 self.isShow = true;
+                             }else {
+                                 self.isShow = false;
+                                 self.configTable.tableArr = res.data;
+                                 self.configTable.total = res.iTotalRecords;
+                             }
+                         }else {
+                             self.$message({
+                                 showClose: true,
+                                 message: '获取数据失败',
+                                 type: 'warning'
+                             });
+                         }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+
+            },
+            handleSizeChange(val) {
+                console.log(`每页 ${val} 条`);
+                let self = this;
+                self.configTable.iDisplayLength = val;
+                self.tableList();
+            },
+            handleCurrentChange(val) {
+                console.log(`当前页: ${val}`);
+                let self = this;
+                self.configTable.iDisplayStart = (val - 1)*self.configTable.iDisplayLength;
+                self.tableList();
+            },
+            userState:function(row, column){
+                //收费状态
+                if(row.accountstatus == 0){
+                    return '未使用';
+                }else {
+                    return '已使用';
+                }
+
+            },
+            targetType(type){
+                //收费状态
+                if(type == 0){
+                    return '未使用';
+                }else {
+                    return '已使用';
+                }
+
+            },
+            tableDelete(id){
+                let self = this;
+                self.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    self.axios.post('api/PaymentAR/DelPaymentAccount', {
+                        schoolcode: localStorage.schoolcode,
+                        id: id
+                    })
+                        .then(function (response) {
+
+                            if(response.data.code == '000000'){
+                                self.tableList();
+                                self.$message({
+                                    message:response.data.msg,
+                                    type: 'success'
+                                });
+
+                                console.log(8888)
+                            }else {
+                                self.$message({
+                                    showClose: true,
+                                    message: response.data.msg,
+                                    type: 'warning'
+                                });
+                            }
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        });
+                }).catch(() => {
+                    self.$message({
+                        type: 'info',
+                        message: '已取消'
+                    });
+                });
+
+
+            },
+            userOption(id){
+                var self = this;
+                if(id){
+                    self.$router.push({
+                        path: '/ReceivingManage_Add',
+                        query: {
+                            id: id,
+                            flag:self.isShowGraph
+                        }
+                    });
+                }else {
+                    self.$router.push({
+                        path: '/ReceivingManage_Add',
+                        query: {
+                            flag:self.isShowGraph
+                        }
+                    });
+                }
+
+            }
+        },
+    }
+</script>
+
+<style scoped>
+
+</style>

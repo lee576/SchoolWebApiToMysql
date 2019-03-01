@@ -1,0 +1,406 @@
+<template>
+    <div class="home">
+        <div class="nav-lead clearfix">
+            <div class="fl nav-lead-word"><a href="#">课程表管理</a></div>
+            <div class="fr batch-operation">
+                <button class="operation-btn" @click="dialogVisible = true">批量导入</button>
+            </div>
+        </div>
+        <div class="page-content">
+            <div class="two-part-box">
+                <div class="one-part-tree">
+                   <div class="tree_data">
+                       <el-tree :data="dataArr"  accordion  :default-expanded-keys="[2087]"  :props="defaultProps"   @node-click="handleNodeClick"
+                                node-key="id"
+                       ></el-tree>
+                   </div>
+                </div>
+                <div class="one-part-table">
+                    <div class="clearfix">
+                        <div class="fl on-part-search1">
+                            <div class="fl form-timerange">
+                                <el-date-picker
+                                        v-model="dateStr"
+                                        type="date"
+                                        placeholder="选择日期">
+                                </el-date-picker>
+                            </div>
+                        </div>
+                        <div class="fl on-part-search1">
+                            <div class="fl form-timerange">
+                                <el-select placeholder="请选择代课老师" style="width:220px" v-model="teacherStr" @change="teacherChoose">
+                                    <el-option v-for="item in teacherArr" :label="item" :value="item" :key="item"></el-option>
+                                </el-select>
+                            </div>
+                        </div>
+                        <div class="fl on-part-search1">
+                            <div class="fl form-timerange">
+                                <el-select placeholder="请选择教室" style="width:220px" v-model="roomStr" @change="roomChoose">
+                                    <el-option v-for="item in roomArr" :label="item" :value="item" :key="item"></el-option>
+                                </el-select>
+                            </div>
+                        </div>
+                        <div class="fl on-part-search">
+                            <div class="fl search-button" style="margin-left:0; "><button class="btn-pro" @click="search">查询</button></div>
+                        </div>
+                    </div>
+
+                    <div class="table-box">
+                        <template>
+                            <el-table
+                                    :data="configTable.tableArr"
+                                    stripe
+                                    style="width: 100%">
+                                <el-table-column
+                                        prop="festivals"
+                                        label="节次"
+                                >
+                                </el-table-column>
+                                <el-table-column
+                                        label="周一"
+                                >
+                                    <template slot-scope="scope">
+                                        <span >{{parseArr(scope.row.Monday).course}}</span><br/>
+                                        <span :style="{color:(parseArr(scope.row.Monday).teacherStr ==teacherStr)?'red':'' }">{{parseArr(scope.row.Monday).teacherStr }}</span><br/>
+                                        <span :style="{color:(parseArr(scope.row.Monday).roomStr ==teacherStr)?'red':'' }">{{ parseArr(scope.row.Monday).roomStr}}</span>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column
+                                        prop="Tuesday"
+                                        label="周二">
+                                </el-table-column>
+                                <el-table-column
+                                        prop="Wednesday"
+                                        label="周三"
+                                >
+                                </el-table-column>
+                                <el-table-column
+                                        prop="Thursday"
+                                        label="周四">
+                                </el-table-column>
+
+
+                                <el-table-column
+                                        prop="Friday"
+                                        label="周五">
+                                </el-table-column>
+                                <el-table-column
+                                        prop="Saturday"
+                                        label="周六">
+                                </el-table-column>
+                                <el-table-column
+                                        prop="Sunday"
+                                        label="周日"
+                                >
+                                </el-table-column>
+                            </el-table>
+                        </template>
+                    </div>
+                    <div class="block" style="text-align: right;">
+                        <el-pagination
+                                @size-change="handleSizeChange"
+                                @current-change="handleCurrentChange"
+                                :current-page.sync="configTable.currentPage"
+                                :page-size="configTable.iDisplayLength"
+                                layout="total, prev, pager, next"
+                                :total="configTable.total">
+                        </el-pagination>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--批量导入-->
+        <el-dialog title="批量导入" :visible.sync="dialogVisible" width="600px" top="20vh">
+            <div class="gray-import">
+                <div class="improt-word1">注意事项：</div>
+                <ul class="improt-word2">
+                    <li>1、必须按照指定的模板格式才能导入成功。</li>
+                    <li>2、如果Excel中数据已存在，则会覆盖原有信息。</li>
+                    <li>3、请按照对应的卡片导入数据。</li>
+                    <li>4、请上传Excel后缀为.xls文件。</li>
+                </ul>
+                <div class="improt-word3">下载模板：<span @click="download($event)" class="tb-edit">应缴费数据导入示例表</span></div>
+            </div>
+            <div class="gray-import" style="margin-top:10px;">
+                <el-upload
+                        class="upload-demo"
+                        ref="upload"
+                        drag
+                        :action="uploadUrl()"
+                        :headers="{schoolcode: schoolcode}"
+                        method="post"
+                        :file-list="fileList"
+                        :before-upload="handlePreview"
+                        :auto-upload=false>
+                    <i class="el-icon-upload"></i>
+                    <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+                    <div class="el-upload__tip" slot="tip">只能上传jpg/png文件，且不超过500kb</div>
+                </el-upload>
+
+            </div>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="dialogVisible = false">取 消</el-button>
+                <el-button  type="primary"  @click="submitUpload" class="sure-btn">确 定</el-button>
+            </div>
+        </el-dialog>
+    </div>
+</template>
+
+<script>
+    import { getDateType } from './../../../util/getDate'
+    import { export_json_to_excel } from './../../../assets/js/Export2Excel'
+    export default {
+        name: "CourseSchedule",
+        data() {
+            return {
+                dialogVisible:false,
+                dataArr:[],
+                schoolcode:'',
+                defaultProps: {
+                    children: "children",
+                    label: "label"
+                },
+                configTable:{
+                    tableArr:[],
+                    total:0,
+                    currentPage: 1,
+                    iDisplayStart:0,
+                    iDisplayLength:10,
+                },
+                teacherArr:[],
+                teacherStr:'',
+                roomArr:[],
+                roomStr:'',
+                dateStr:'',
+                exportListData:[],
+                fileList:[],
+                classId:'',
+                currentPage1:1,
+                tableData: [{
+                    festivals:'第一节',
+                    monday: '语文',
+                    tuesday:"高数"
+                }, {
+                    festivals:'第二节',
+                    monday: '语文',
+                    tuesday:"高数"
+                }, {
+                    festivals:'第三节',
+                    monday: '语文',
+                    tuesday:"高数"
+                }, {
+                    festivals:'第四节',
+                    monday: '语文',
+                    tuesday:"高数"
+                }],
+            }
+        },
+        created() {
+            this.dateStr = getDateType(1,0);
+            this.schoolcode = localStorage.schoolcode;
+            this.treeList();
+            // this.tableList();
+            // this.teacherList();
+            // this.roomList();
+        },
+        filters:{
+            getDateType:getDateType,
+            export_json_to_excel:export_json_to_excel
+
+        },
+        methods: {
+            tableList(){
+                let self = this;
+
+                self.axios.get('api/SchoolTimetable/GetSchoolTimetableInfoToClassID2', {
+                    params: {
+                        schoolcode: localStorage.schoolcode,
+                        sEcho:self.configTable.currentPage,
+                        iDisplayStart:self.configTable.iDisplayStart,
+                        iDisplayLength:self.configTable.iDisplayLength,
+                        classID:self.classId,
+                        staTime:self.dateStr,
+                        teacherName:self.teacherStr,
+                        address:self.roomStr
+                    }
+                })
+                    .then(function (response) {
+                        let res = response.data;
+                        if(res.code == '0'){
+                            self.configTable.tableArr = res.data;
+                            self.configTable.total = res.iTotalRecords;
+                        }else {
+                            self.$message({
+                                showClose: true,
+                                message: res.msg,
+                                type: 'warning'
+                            });
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+
+            },
+            search(){
+                this.configTable.iDisplayStart = 0;
+                this.configTable.currentPage = 1;
+                this.tableList();
+            },
+            treeList() {
+                let self = this;
+                self.axios.get('api/SchoolDepartment/GetSchoolDepartmentTree', {
+                    params: {
+                        schoolcode: localStorage.schoolcode,
+                    }
+                })
+                    .then(function (response) {
+                        let res = response.data;
+                        console.log(response)
+                        var arr = [];
+                        if (res.code == '000000') {
+                            arr.push(res.data);
+                            self.dataArr = arr;
+                            // self.defaultProps = res.defaultProps;
+                            // self.schoolCourts = res.data.children
+                            console.log(self.schoolCourts)
+                        } else {
+                            self.$message({
+                                showClose: true,
+                                message: res.msg,
+                                type: 'warning'
+                            });
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            },
+            teacherList(){
+                let self = this;
+                self.axios.get('api/SchoolTimetable/GetTeacherName', {
+                    params: {
+                        schoolcode: localStorage.schoolcode,
+                        classID:self.classId,
+                        staTime:self.dateStr,
+                    }
+                })
+                    .then(function (response) {
+                        let res = response.data;
+                        if(res.code == '000000'){
+                            self.paymentArr= res.data;
+                        }else {
+                            self.$message({
+                                showClose: true,
+                                message: '获取数据失败',
+                                type: 'warning'
+                            });
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            },
+            teacherChoose(val){
+                this.teacherStr = val;
+            },
+            roomList(){
+                let self = this;
+                self.axios.get('api/SchoolTimetable/GetAddressInfo', {
+                    params: {
+                        schoolcode: localStorage.schoolcode,
+                        classID:self.classId,
+                        staTime:self.dateStr,
+                    }
+                })
+                    .then(function (response) {
+                        let res = response.data;
+                        if(res.code == '000000'){
+                            self.paymentArr= res.data;
+                        }else {
+                            self.$message({
+                                showClose: true,
+                                message: '获取数据失败',
+                                type: 'warning'
+                            });
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            },
+            roomChoose(val){
+                this.roomStr = val;
+            },
+            formatJson(filterVal, jsonData) {
+                return jsonData.map(v => filterVal.map(j => v[j]))
+            },
+            uploadUrl(){
+                var url = this.axios.defaults.baseURL+"/api/SchoolTimetable/AddSchoolTimetable";
+                return url;
+            },
+            handlePreview(file){
+                var fileName=new Array()
+                fileName =file.name.split('.');
+                // const extension = fileName[fileName.length-1] === 'xls';
+                const extension2 =  fileName[fileName.length-1]=== 'xlsx';
+                // !extension &&
+                if ( !extension2) {
+                    this.$message({
+                        message: '上传模板只能是xlsx格式!',
+                        type: 'warning'
+                    });
+                }
+
+
+            },
+            submitUpload(file){
+                this.dialogVisible = false;
+                this.$refs.upload.submit();
+                this.tableList();
+
+            },
+            handleNodeClick(data) {
+                console.log(data);
+                if(data.treeLever == '3'){;
+                    this.classId = data.classid;
+                    this.tableList();
+                }
+            },
+            handleSizeChange(val) {
+                console.log(`每页 ${val} 条`);
+            },
+            handleCurrentChange(val) {
+                console.log(`当前页: ${val}`);
+            },
+            download(e){
+                window.open(this.platUrl+'Template/PayablePay.xlsx');
+
+            }
+        },
+        computed: {
+            parseArr(o){
+                return function(o){
+                    return {
+                        course:o.split('|')[0],
+                        teacherstr: o.split('|')[1],
+                        roomStr:o.split('|')[2]
+                    };
+                }
+            }
+        }
+
+    }
+</script>
+
+<style scoped>
+    .tree_data{
+        overflow: scroll;
+    }
+    .tree_data::-webkit-scrollbar {display:none;}
+
+    .table-box{
+        overflow: scroll;
+    }
+    .table-box::-webkit-scrollbar {display:none;}
+</style>

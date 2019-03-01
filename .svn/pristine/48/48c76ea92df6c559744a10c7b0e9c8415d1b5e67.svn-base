@@ -1,0 +1,595 @@
+﻿using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using IService;
+using Models.ViewModels;
+using SchoolWebApi.Utility;
+using NPOI.SS.UserModel;
+using Exceptionless.Json.Linq;
+using NLog.Fluent;
+using System.IO;
+using NPOI.HSSF.UserModel;
+using DbModel;
+
+namespace SchoolWebApi.Controllers
+{
+    /// <summary>
+    /// 成绩单管理
+    /// </summary>
+    [Route("api/[controller]/[action]")]
+    [ApiController]
+    [Produces("application/json")]
+    [EnableCors("any")]
+    public class SchoolUserGradeController : Controller
+    {
+        private static string tempPath = @"C:\Temp\";
+        private static NLog.Logger log = NLog.LogManager.GetCurrentClassLogger();
+        private readonly Itb_school_user_gradeService _School_User_GradeService;
+        private Itb_school_InfoService _tb_school_InfoService;
+        private Itb_school_userService _tb_school_userService;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="school_User_GradeService"></param>
+        /// <param name="tb_school_InfoService"></param>
+        /// <param name="itb_School_UserService"></param>
+        public SchoolUserGradeController(Itb_school_user_gradeService school_User_GradeService, Itb_school_InfoService tb_school_InfoService,
+            Itb_school_userService itb_School_UserService)
+        {
+            _School_User_GradeService = school_User_GradeService;
+            _tb_school_InfoService = tb_school_InfoService;
+            _tb_school_userService = itb_School_UserService;
+        }
+
+        #region 获取登录的学校编号
+        /// <summary>
+        /// 获取登录的学校编号
+        /// </summary>
+        /// <param name="schoolCode"></param>
+        /// <returns></returns>
+        private string GetSchoolCode(string schoolCode)
+        {
+            var headers = HttpContext.Request.Headers;
+            if (headers.TryGetValue("schoolcode", out var headerValues))
+            {
+                schoolCode = headerValues.First();
+            }
+            return schoolCode;
+        }
+        #endregion
+
+        #region 成绩单管理列表
+        /// <summary>
+        /// 成绩单管理列表
+        /// </summary>
+        /// <param name="sEcho"></param>
+        /// <param name="iDisplayStart"></param>
+        /// <param name="iDisplayLength"></param>
+        /// <param name="schoolCode"></param>
+        /// <param name="discipline"></param>
+        /// <param name="student_idOrName"></param>
+        /// <param name="startTime"></param>
+        /// <param name="endTime"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public JsonResult GetSchoolUserGardeList(int sEcho, int iDisplayStart, int iDisplayLength, string schoolCode, string discipline, string student_idOrName, string startTime, string endTime)
+        {
+            try
+            {
+                int pageStart = iDisplayStart;
+                int pageSize = iDisplayLength;
+                int pageIndex = (pageStart / pageSize) + 1;
+                int totalRecordNum = default(int);
+                var pageRecords = _School_User_GradeService.FindSchoolUserGradeList(pageIndex, pageSize, ref totalRecordNum,
+                    schoolCode, discipline, student_idOrName, startTime, endTime);
+                return Json(new
+                {
+                    code = JsonReturnMsg.GetSuccess,
+                    sEcho = sEcho,
+                    iTotalRecords = totalRecordNum,
+                    iTotalDisplayRecords = totalRecordNum,
+                    aaData = pageRecords
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        #endregion
+
+        #region 根据学校编号获取学校的学科列表数据
+        /// <summary>
+        /// 根据学校编号获取学校的学科列表数据
+        /// </summary>
+        /// <param name="schoolCode"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public JsonResult GetDisciplineListBySchoolCode(string schoolCode)
+        {
+            try
+            {
+                var disList = _School_User_GradeService.FindDisciplineBySchoolCode(schoolCode);
+                return Json(new
+                {
+                    code = JsonReturnMsg.GetSuccess,
+                    aaData = disList
+                });
+            }
+            catch (Exception ex)
+            {
+
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        #endregion
+
+        #region 导出成绩单管理列表页数据
+        /// <summary>
+        /// 导出成绩单管理列表页数据
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public FileContentResult InduceSchoolUserGradeLIst(string schoolCode, string discipline, string student_idOrName, string startTime, string endTime)
+        {
+            try
+            {
+                //根据条件查询导出的成绩单的数据
+                var data = _School_User_GradeService.InduceSchoolUserGradeLIst(schoolCode, discipline, student_idOrName, startTime, endTime);
+                if (data == null)
+                {
+                    return null;
+                }
+                return ExcelHelper.ExportAction(@"成绩单管理列表数据.xls",
+                    new List<string> { "学号", "姓名", "学科", "考试时间", "考试名称", "学期", "分数", "是否合格" }, data.ToArray(),
+                    FillCell);
+
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return null;
+            }
+        }
+        private void FillCell(IRow row, SchoolUserGradeModel[] list, int i)
+        {
+            row.CreateCell(0).SetCellValue(list[i].student_id);
+            row.CreateCell(1).SetCellValue(list[i].user_name);
+            row.CreateCell(2).SetCellValue(list[i].discipline);
+            try
+            {
+                row.CreateCell(3).SetCellValue(DateTime.Parse(list[i].examinationTime + "").ToString("yyyy-MM-dd hh:mm:ss"));
+            }
+            catch (Exception)
+            {
+                row.CreateCell(3).SetCellValue("");
+            }
+            row.CreateCell(4).SetCellValue(list[i].examinationName);
+            row.CreateCell(5).SetCellValue(list[i].term);
+            row.CreateCell(6).SetCellValue(list[i].grade.ToString());
+            try
+            {
+                row.CreateCell(7).SetCellValue(list[i].isQualified == true ? "合格" : "不合格");
+            }
+            catch (Exception)
+            {
+                row.CreateCell(7).SetCellValue("");
+            }
+
+        }
+        #endregion
+
+        #region 导入成绩单管理列表页数据
+        /// <summary>
+        /// 导入成绩单管理列表页数据
+        /// </summary>
+        /// <param name="schoolcode"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public JsonResult LeadingInSchoolUserGradeLIst(string schoolcode)
+        {
+            var files = HttpContext.Request.Form.Files;
+            var filePath = string.Empty;
+            try
+            {
+
+                if (files.Count > 0)
+                {
+                    var file = files[0];
+                    //给文件一个随机的名字
+                    var fileNewName = Guid.NewGuid().ToString();
+                    string fileExt = file.FileName.Split('.')[1];
+                    if (!(fileExt.ToUpper()).Equals("XLS"))
+                    {
+                        return Json(new
+                        {
+                            code = JsonReturnMsg.FailCode,
+                            msg = JsonReturnMsg.GetFail,
+                            data = "请上传xls文件"
+                        });
+                    }
+                    FileHelper.CreateFiles(tempPath, true);
+                    filePath = tempPath + $@"{fileNewName}.{fileExt}";
+                    //保存文件到临时文件夹下
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        file.CopyTo(stream);
+                    }
+                    using (FileStream stream = System.IO.File.Open(filePath, FileMode.Open, FileAccess.Read))
+                    {
+                        HSSFWorkbook workbook = new HSSFWorkbook(stream);
+                        var sheetNum = workbook.NumberOfSheets;
+                        var returnData = "";
+                        if (sheetNum > 0 && !string.IsNullOrEmpty(schoolcode))
+                        {
+                            ISheet sheet = workbook.GetSheetAt(0);
+                            //获取sheet的首行
+                            IRow headerRow = sheet.GetRow(0);
+                            //获取sheet的最后一列
+                            int cellCount = headerRow.LastCellNum;
+                            //获取sheet的最后一行
+                            int rowCount = sheet.LastRowNum;
+                            //检测excel数据正确性
+                            List<string> aridList = new List<string>();//批号集合方便查询是否重复批号
+                            for (int i = (sheet.FirstRowNum + 1); i <= sheet.LastRowNum; i++)
+                            {
+                                IRow row = sheet.GetRow(i);
+                                for (int j = row.FirstCellNum; j < cellCount; j++)
+                                {
+                                    if (!string.IsNullOrEmpty(row.GetCell(j) + ""))
+                                    {
+                                        if (j == 0)
+                                        {
+                                            aridList.Add(row.GetCell(j) + "");
+                                        }
+                                    }
+                                }
+                            }
+                            //准备数据库录入数据
+                            if (cellCount > 8 || cellCount < 8)
+                            {
+                                return Json(new
+                                {
+                                    code = JsonReturnMsg.FailCode,
+                                    msg = JsonReturnMsg.GetFail,
+                                    data = "请使用新模板!"
+                                });
+                            }
+                            bool isBreak = false;
+
+                            //根据学校编号获取所有学生编号
+                            var sIdList = _tb_school_userService.FindListByClause(x => x.school_id == schoolcode, x => x.student_id).Distinct().ToList();
+                            List<tb_school_user_grade> list = new List<tb_school_user_grade>();
+                            LimitedConcurrencyLevelTaskScheduler lcts = new LimitedConcurrencyLevelTaskScheduler(600);
+                            TaskFactory factory = new TaskFactory(lcts);
+                            List<Task> tasks = new List<Task>();
+                            for (int i = (sheet.FirstRowNum + 1); i <= sheet.LastRowNum; i++)
+                            {
+                                IRow row = sheet.GetRow(i);
+                                for (int j = row.FirstCellNum; j < cellCount; j++)
+                                {
+                                    if (string.IsNullOrEmpty(row.GetCell(j) + ""))
+                                    {
+                                        isBreak = true;
+                                        break;
+                                    }
+                                }
+                                if (isBreak)
+                                    break;
+                                //获取学生编号
+                                var studentIdValue = row.GetCell(0).ToString();
+                                //判断数据库中是否存在此学号
+                                bool isExistSid = _tb_school_userService.Any(t => t.student_id == studentIdValue && t.school_id == schoolcode);
+
+                                if (isExistSid)
+                                {
+                                    //获取学生分数
+                                    var gradeValue = Double.Parse(row.GetCell(6).ToString());
+                                    //获取学生考试时间
+                                    var examinationTimeValue = Convert.ToDateTime(SetExcelTime(row.GetCell(3)));
+                                    //获取学期数据
+                                    var termValue = row.GetCell(5).ToString();
+                                    var studentGradeInfoList = _School_User_GradeService.FindAll().Distinct().ToList();
+                                    foreach (var item in sIdList)
+                                    {
+                                        //已存在此学生编号时 可添加数据
+                                        if (studentIdValue == item.student_id)
+                                        {
+                                            //根据学号获取成绩单
+                                            //如果这个学生编号和成绩还有时期是同样的，那么把之前的那个时段的全部删除，然后重新插入
+                                            var sGradeList = studentGradeInfoList.Select(t => t.student_id == studentIdValue && t.school_code == schoolcode
+                                            && t.grade == gradeValue && t.term == termValue).ToList();
+                                            if (sGradeList.Count > 0)
+                                            {
+
+                                                _School_User_GradeService.Delete(s => s.student_id == studentIdValue && s.school_code == schoolcode
+                                                 && s.grade == gradeValue && s.term == termValue);
+                                            }
+
+                                            bool? isQualifiedValue;
+                                            if (row.GetCell(7).ToString() == "合格")
+                                            {
+                                                isQualifiedValue = true;
+                                            }
+                                            else
+                                            {
+                                                isQualifiedValue = false;
+                                            }
+                                            tb_school_user_grade tbGrade = new tb_school_user_grade
+                                            {
+                                                school_code = schoolcode,
+                                                student_id = studentIdValue,
+                                                discipline = row.GetCell(2).ToString(),
+                                                examinationTime = examinationTimeValue,
+                                                examinationName = row.GetCell(4).ToString(),
+                                                term = termValue,
+                                                grade = gradeValue,
+                                                isQualified = isQualifiedValue,
+                                            };
+                                            list.Add(tbGrade);
+                                            break;
+                                        }
+
+                                    }
+                                }
+                                else
+                                {
+                                    returnData = studentIdValue + ",";
+
+                                }
+                            }
+                            Task.WaitAll(tasks.ToArray());
+                            if (list.Count > 0)
+                            {
+                                //入库
+                                _School_User_GradeService.Insert(list);
+                            }
+                        }
+                        if (returnData != "")
+                        {
+                            return Json(new
+                            {
+                                code = JsonReturnMsg.FailCode,
+                                msg = JsonReturnMsg.GetFail,
+                                data = "学号为" + returnData.Trim(',') + "的数据存储失败，请查看数据是否正确!"
+                            });
+                        }
+                        else
+                        {
+                            return Json(new
+                            {
+                                code = JsonReturnMsg.SuccessCode,
+                                msg = JsonReturnMsg.GetSuccess,
+                            });
+                        }
+                    }
+                }
+                else
+                {
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.FailCode,
+                        msg = JsonReturnMsg.GetFail,
+                        data = "文件上传失败"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail,
+                    data = "数据存储失败，请查看表是否按模板规则!"
+                });
+            }
+            finally
+            {
+                //清理临时上传的文件
+                if (!string.IsNullOrEmpty(filePath) && FileHelper.IsExist(filePath, false))
+                {
+                    FileHelper.DeleteFiles(filePath, false);
+                }
+            }
+        }
+
+        private string SetExcelTime(ICell cell)
+        {
+            string unit = "";
+            if (cell.CellType == CellType.Numeric && DateUtil.IsCellDateFormatted(cell))
+            {
+                unit = cell.DateCellValue.ToString();
+            }
+            else
+            {
+                unit = cell.ToString();
+            }
+            return unit;
+        }
+        #endregion
+
+        #region 根据ali_user_id或学期获取学生成绩单信息
+        /// <summary>
+        /// 根据ali_user_id或学期获取学生成绩单信息
+        /// </summary>
+        /// <param name="ali_user_id"></param>
+        /// <param name="term"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public JsonResult SelectSchoolUserGradeLIst(string ali_user_id, string term)
+        {
+            try
+            {
+                List<SchoolUserGradeViewModel> studentInfo = new List<SchoolUserGradeViewModel>();
+                SchoolUserGradeViewModel schoolUser = new SchoolUserGradeViewModel();
+                var sInfo = _tb_school_userService.FindListByClause(x => x.ali_user_id == ali_user_id, x => x.student_id).FirstOrDefault();
+
+                List<string> termLists = new List<string>();
+                if (sInfo != null)
+                {
+                    //学生姓名及学号
+                    schoolUser.student_Name = sInfo.user_name;
+                    schoolUser.student_Id = sInfo.student_id;
+                    studentInfo.Add(schoolUser);
+                    string schoolCode = sInfo.school_id;
+                    //获取学科数据
+
+                    var studentGredeInfo = _School_User_GradeService.FindListByClause(x => x.student_id == sInfo.student_id && x.school_code == schoolCode, x => x.term, SqlSugar.OrderByType.Desc).ToList();
+                    var sGradeinfo = studentGredeInfo.Select(x => x.term).Distinct().ToList();
+                    foreach (var item in sGradeinfo)
+                    {
+                        string termValue = item;
+                        termLists.Add(termValue);
+                    }
+                    if (term == null && sGradeinfo != null)
+                    {
+                        term = sGradeinfo.FirstOrDefault();
+                    }
+                    //获取成绩单列表
+                    var studentGradeLists = _School_User_GradeService.SelectSchoolUserGradeLIst(schoolUser.student_Id, schoolCode, term).ToList();
+
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.GetSuccess,
+                        aaData = new { sInfo.user_name, sInfo.student_id, studentGradeLists, termLists }
+                    });
+                }
+                else
+                {
+                    string user_name = null;
+                    string student_id = null;
+                    Array studentGradeLists = null;
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.FailCode,
+                        msg = JsonReturnMsg.GetFail,
+                        aaData = new { user_name, student_id, studentGradeLists, termLists }
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        #endregion
+
+        #region 对外添加数据接口（学校录入学生成绩信息）
+        /// <summary>
+        /// 对外添加数据接口（学校录入学生成绩信息）
+        /// </summary>
+        /// <param name="gradeViewModels"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public IActionResult AddSchoolStudentGradeInfo([FromBody]AddSchoolStudentGradeViewModel gradeViewModels)
+        {
+            try
+            {
+                var schoolinfo = _tb_school_InfoService.FindByClause(x => x.School_Code == gradeViewModels.school_code);
+                if (schoolinfo == null)
+                {
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.FailCode,
+                        msg = "校园编号不存在，数据添加失败"
+                    });
+                }
+                if (gradeViewModels.gradeInfos.Count <= 0)
+                {
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.FailCode,
+                        msg = "成绩单数据不能为空！"
+                    });
+                }
+                else
+                {
+                    var returnData = "";
+                    List<tb_school_user_grade> gradeList = new List<tb_school_user_grade>();
+                    var studentInfoList = _tb_school_userService.FindAll().Distinct().ToList();
+                    var studentGradeInfoList = _School_User_GradeService.FindAll().Distinct().ToList();
+                    foreach (var item in gradeViewModels.gradeInfos)
+                    {
+                        //判断数据库中是否存在此学号
+                        var studentList = studentInfoList.Select(t => t.student_id == item.student_id && t.school_id == gradeViewModels.school_code).ToList();
+                        if (studentList.Count > 0)
+                        {
+                            var sGradeList = studentGradeInfoList.Select(t => t.student_id == item.student_id && t.school_code == gradeViewModels.school_code
+                                      && t.grade == item.grade && t.term == item.term).ToList();
+                            if (sGradeList.Count > 0)
+                            {
+                                _School_User_GradeService.Delete(s => s.student_id == item.student_id && s.school_code == gradeViewModels.school_code
+                                       && s.grade == item.grade && s.term == item.term);
+                            }
+                            tb_school_user_grade _User_Grade = new tb_school_user_grade();
+                            _User_Grade.school_code = gradeViewModels.school_code;
+                            _User_Grade.student_id = item.student_id;
+                            _User_Grade.discipline = item.discipline;
+                            _User_Grade.examinationTime = item.examinationTime;
+                            _User_Grade.examinationName = item.examinationName;
+                            _User_Grade.term = item.term;
+                            _User_Grade.grade = item.grade;
+                            _User_Grade.isQualified = item.isQualified;
+                            gradeList.Add(_User_Grade);
+                        }
+                        else
+                        {
+                            returnData = item.student_id + ",";
+                        }
+                    }
+                    if (gradeList.Count > 0)
+                    {
+                        //入库
+                        _School_User_GradeService.Insert(gradeList);
+                    }
+                    if (returnData != "")
+                    {
+                        return Json(new
+                        {
+                            code = JsonReturnMsg.FailCode,
+                            msg = "学号为" + returnData.Trim(',') + "的数据存储失败，请查看数据是否正确!"
+                        });
+                    }
+                    else
+                    {
+                        return Json(new
+                        {
+                            code = JsonReturnMsg.SuccessCode,
+                            msg = JsonReturnMsg.UploadSuccess,
+                            data = "数据保存成功！"
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.AddFail
+                });
+            }
+        }
+        #endregion
+    }
+}

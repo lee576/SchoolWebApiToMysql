@@ -1,0 +1,418 @@
+<template>
+    <div class="home">
+        <div class="nav-lead clearfix">
+            <div class="fl nav-lead-word"><a href="#">常规缴费项管理</a></div>
+            <div class="fr batch-operation">
+                <router-link to="/RoutneAdmin_Add" class="operation-btn">创建收费项</router-link>
+            </div>
+        </div>
+        <div class="page-content">
+            <el-row :gutter="10">
+                <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
+                    <div class="nav-tab clearfix">
+                        <ul class="nav-tab-change1 fl">
+                            <li :class="{active:isShowGraph}" @click="isShowGraph=true">
+                                <label class="fl view-img1"></label>
+                                <span class="fl">视图</span>
+                            </li>
+                            <li :class="{active:!isShowGraph}" @click="isShowGraph=false">
+                                <label class="fl view-img3"></label>
+                                <span class="fl">列表</span>
+                            </li>
+                        </ul>
+                        <div class="fl">
+                            <div class="fl search-input"><input type="text" class="se-input" v-model="feeName" @keyup.enter="search"  placeholder="请输入收费名称"></div>
+                            <div class="fl search-button"><button class="btn-pro" @click="search()">搜索</button></div>
+                        </div>
+                        <div class="fr right-btn-ta">
+                                <router-link to="/RoutineAdmin_Check"><button class="btn">管理分类</button></router-link>
+                        </div>
+                    </div>
+                </el-col>
+            </el-row>
+            <ul class="view-tree-box">
+                <!--视图-->
+                <li class="ym-view-box" :style="{display:isShowGraph?'block':'none'}">
+                    <el-row :gutter="10">
+                        <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12" v-for="(item, index) in configTable.tableArr">
+                            <div class="pay-card">
+                                <div class="clearfix">
+                                    <div class="fl">
+                                        <div class="clearfix">
+                                            <div class="fl">
+                                                <img :src='"../../../assets/images/payIcon/choose-icon"+item.icon+".png"' height="40" width="40"/>
+                                            </div>
+                                            <div class="fl pay-logo-word">{{item.name}}</div>
+                                        </div>
+                                        <div class="pay-money">收费金额 :<span class="pay-money-bold">{{ item.money | currency('￥') }}</span></div>
+                                    </div>
+                                    <div class="fr">
+                                        <div class="pay-person">缴费人数</div>
+                                        <div class="pay-person-num">{{ item.count | currency('',false) }}</div>
+                                    </div>
+                                </div>
+                                <div class="two-row-mg clearfix">
+                                    <div class="fl two-row-on1">{{targetType(item.target)}}</div>
+                                    <div class="fl two-row-on2">截止日期：{{item.dateto | dateSubstr() }}</div>
+                                    <div class="fr two-row-on3">
+                                        <a href="javascript:void(0);" @click="viewDetail(item)"  class="row-color1">查看
+                                            <!--<router-link to="/PaymentDetail" >查看</router-link>-->
+                                        </a>
+                                        <a href="#" class="row-color2">修改</a>
+                                        <a href="#" class="row-color3"@click="tableDelete(item.id)" >删除</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </el-col>
+                       <!-- <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+                            <div class="pay-card gray-card">
+                                <div class="clearfix">
+                                    <div class="fl">
+                                        <div class="clearfix">
+                                            <div class="pay-logo-img1 fl"></div>
+                                            <div class="fl pay-logo-word">爱心捐赠</div>
+                                        </div>
+                                        <div class="pay-money">收费金额 :<span class="pay-money-bold">￥100.00</span></div>
+                                    </div>
+                                    <div class="fr">
+                                        <div class="pay-person">缴费人数</div>
+                                        <div class="pay-person-num">3689</div>
+                                    </div>
+                                </div>
+                                <div class="two-row-mg clearfix">
+                                    <div class="fl two-row-on1">校园卡</div>
+                                    <div class="fl two-row-on2">截止日期：2019-09-01</div>
+                                    <div class="fr two-row-on3">
+                                        <a href="javascript:void(0);">
+                                            <router-link to="/PaymentDetail" class="row-color1">查看</router-link>
+                                        </a>
+                                        <a href="#" class="row-color2">修改</a>
+                                        <a href="#" class="row-color3">删除</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </el-col>
+                        <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+                            <div class="pay-card">
+                                <div class="clearfix">
+                                    <div class="fl">
+                                        <div class="clearfix">
+                                            <div class="pay-logo-img2 fl"></div>
+                                            <div class="fl pay-logo-word">电费</div>
+                                        </div>
+                                        <div class="pay-money">收费金额 :<span class="pay-money-bold">￥100.00</span></div>
+                                    </div>
+                                    <div class="fr">
+                                        <div class="pay-person">缴费人数</div>
+                                        <div class="pay-person-num">3689</div>
+                                    </div>
+                                </div>
+                                <div class="two-row-mg clearfix">
+                                    <div class="fl two-row-on1">校园卡</div>
+                                    <div class="fl two-row-on2">截止日期：2019-09-01</div>
+                                    <div class="fr two-row-on3">
+                                        <a href="javascript:void(0);">
+                                            <router-link to="/PaymentDetail" class="row-color1">查看</router-link>
+                                        </a>
+                                        <a href="#" class="row-color2">修改</a>
+                                        <a href="#" class="row-color3">删除</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </el-col>
+                        <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+                            <div class="pay-card gray-card">
+                                <div class="clearfix">
+                                    <div class="fl">
+                                        <div class="clearfix">
+                                            <div class="pay-logo-img2 fl"></div>
+                                            <div class="fl pay-logo-word">电费</div>
+                                        </div>
+                                        <div class="pay-money">收费金额 :<span class="pay-money-bold">￥100.00</span></div>
+                                    </div>
+                                    <div class="fr">
+                                        <div class="pay-person">缴费人数</div>
+                                        <div class="pay-person-num">3689</div>
+                                    </div>
+                                </div>
+                                <div class="two-row-mg clearfix">
+                                    <div class="fl two-row-on1">校园卡</div>
+                                    <div class="fl two-row-on2">截止日期：2019-09-01</div>
+                                    <div class="fr two-row-on3">
+                                        <a href="javascript:void(0);">
+                                            <router-link to="/PaymentDetail" class="row-color1">查看</router-link>
+                                        </a>
+                                        <a href="#" class="row-color2">修改</a>
+                                        <a href="#" class="row-color3">删除</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </el-col>
+                        <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+                            <div class="pay-card">
+                                <div class="clearfix">
+                                    <div class="fl">
+                                        <div class="clearfix">
+                                            <div class="pay-logo-img3 fl"></div>
+                                            <div class="fl pay-logo-word">借阅费</div>
+                                        </div>
+                                        <div class="pay-money">收费金额 :<span class="pay-money-bold">￥100.00</span></div>
+                                    </div>
+                                    <div class="fr">
+                                        <div class="pay-person">缴费人数</div>
+                                        <div class="pay-person-num">3689</div>
+                                    </div>
+                                </div>
+                                <div class="two-row-mg clearfix">
+                                    <div class="fl two-row-on1">校园卡</div>
+                                    <div class="fl two-row-on2">截止日期：2019-09-01</div>
+                                    <div class="fr two-row-on3">
+                                        <a href="javascript:void(0);">
+                                            <router-link to="/PaymentDetail" class="row-color1">查看</router-link>
+                                        </a>
+                                        <a href="#" class="row-color2">修改</a>
+                                        <a href="#" class="row-color3">删除</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </el-col>
+                        <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+                            <div class="pay-card">
+                                <div class="clearfix">
+                                    <div class="fl">
+                                        <div class="clearfix">
+                                            <div class="pay-logo-img4 fl"></div>
+                                            <div class="fl pay-logo-word">书本费</div>
+                                        </div>
+                                        <div class="pay-money">收费金额 :<span class="pay-money-bold">￥100.00</span></div>
+                                    </div>
+                                    <div class="fr">
+                                        <div class="pay-person">缴费人数</div>
+                                        <div class="pay-person-num">3689</div>
+                                    </div>
+                                </div>
+                                <div class="two-row-mg clearfix">
+                                    <div class="fl two-row-on1">校园卡</div>
+                                    <div class="fl two-row-on2">截止日期：2019-09-01</div>
+                                    <div class="fr two-row-on3">
+                                        <a href="javascript:void(0);">
+                                            <router-link to="/PaymentDetail" class="row-color1">查看</router-link>
+                                        </a>
+                                        <a href="#" class="row-color2">修改</a>
+                                        <a href="#" class="row-color3">删除</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </el-col>-->
+                    </el-row>
+                    <div class="block" style="text-align: right;">
+                        <el-pagination
+                                @size-change="handleSizeChange"
+                                @current-change="handleCurrentChange"
+                                :current-page.sync="configTable.currentPage"
+                                :page-size="configTable.iDisplayLength"
+                                layout="total, prev, pager, next"
+                                :total="configTable.total">
+                        </el-pagination>
+                    </div>
+                </li>
+                <!--树状图-->
+                <li class="ym-tree-box" :style="{display:isShowGraph?'none':'block'}">
+                    <div class="payment-item-table">
+                        <div class="table-box">
+                            <template>
+                                <el-table :data="configTable.tableArr" stripe style="width: 100%">
+                                    <el-table-column prop="name" label="收费名称" >
+                                    </el-table-column>
+                                    <el-table-column prop="target" :formatter="targetTypeTable"  label="收费对象">
+                                    </el-table-column>
+                                    <el-table-column prop="money" :formatter="moneyTable" label="收费金额">
+                                    </el-table-column>
+                                    <el-table-column prop="dateto" :formatter="dateSubstrTable" label="收费截止日期">
+                                    </el-table-column>
+                                    <el-table-column prop="tname" label="分类">
+                                    </el-table-column>
+                                    <el-table-column prop="account" label="收款账号">
+                                    </el-table-column>
+                                    <el-table-column prop="status" :formatter="feeStateTable" label="收款状态">
+                                    </el-table-column>
+                                    <el-table-column prop="count" :formatter="amountTable"  label="当前收款人数">
+                                    </el-table-column>
+                                    <el-table-column  label="操作" width="140">
+                                        <template slot-scope="scope">
+                                            <el-button type="text" size="small" class="view-tr-con" @click="viewDetail(scope.row)">查看</el-button>
+                                            <el-button type="text" size="small" class="edit-tr-con">修改</el-button>
+                                            <el-button type="text" size="small" class="del-tr-con" @click="tableDelete(scope.row.id)">删除</el-button>
+                                        </template>
+                                    </el-table-column>
+                                </el-table>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="block" style="text-align: right;">
+                        <el-pagination
+                                @size-change="handleSizeChange"
+                                @current-change="handleCurrentChange"
+                                :current-page.sync="configTable.currentPage"
+                                :page-size="configTable.iDisplayLength"
+                                layout="total, prev, pager, next"
+                                :total="configTable.total">
+                        </el-pagination>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</template>
+
+<script>
+    import { currency } from './../../../util/currency'
+    import { getDateType } from './../../../util/getDate'
+    import { dateSubstr } from './../../../util/getDate'
+    export default {
+        name: "Payment_item_list",
+        data() {
+            return {
+                isShowGraph:true,
+                configTable:{
+                    tableArr:[],
+                    total:1000,
+                    currentPage: 1,
+                    iDisplayStart:0,
+                    iDisplayLength:10
+                },
+                feeName:''
+            }
+        },
+        filters:{
+            currency: currency,
+            dateSubstr: dateSubstr,
+            getDateType:getDateType
+        },
+        created() {
+            let self=this;
+            self.paregrahList(self);
+        },
+        mounted(){
+            console.log(2222);
+        },
+        methods: {
+            handleSizeChange(val) {
+                console.log(`每页 ${val} 条`);
+                let self = this;
+                self.configTable.iDisplayLength = val;
+                self.paregrahList(self);
+            },
+            handleCurrentChange(val) {
+                console.log(`当前页: ${val}`);
+                let self = this;
+                self.configTable.iDisplayStart = (val - 1)*self.configTable.iDisplayLength;
+                self.paregrahList(self);
+            },
+            paregrahList(self){
+                self.axios.get('api/PaymentItem/GetPaymentlist', {
+                    params: {
+                        jfName:self.feeName,
+                        schoolcode: localStorage.schoolcode,
+                        sEcho:self.configTable.currentPage,
+                        iDisplayStart:self.configTable.iDisplayStart,
+                        iDisplayLength:self.configTable.iDisplayLength
+                    }
+                })
+                    .then(function (response) {
+                        let res = response.data;
+                        if(res.code == '000000'){
+                            self.configTable.tableArr = res.data;
+                            self.configTable.total = res.iTotalRecords;
+                        }else {
+                            self.$message({
+                                showClose: true,
+                                message: '获取数据失败',
+                                type: 'warning'
+                            });
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            },
+            targetType(type){
+                switch (type) {
+                    case '0':
+                        alert(222)
+                        return "不限制";
+                        break;
+                    case '1':
+                        return "校园卡";
+                        break;
+                }
+            },
+            viewDetail(item){
+                this.$router.push({name: 'PaymentDetail', params: {list:item}})
+            },
+            dateSubstrTable:function(row, column){
+                var date = row.dateto;
+                if (date == undefined) {
+                    return "";
+                }
+                return date.split(' ')[0];
+            },
+            targetTypeTable:function(row, column){
+                //收费对象
+               return this.targetType(row.target);
+            },
+            feeStateTable:function(row, column){
+                //收费状态
+                switch (row.status) {
+                    case '0':
+                        return "收费中";
+                        break;
+                    case '1':
+                        return "已收费";
+                        break;
+                    case '2':
+                        return "已关闭";
+                        break;
+                }
+            },
+            amountTable:function(row, column){
+                //人数
+                return  currency(row.count,'',false);
+            },
+            moneyTable:function(row, column){
+                //金额
+               return  currency(row.money,'￥');
+            },
+            search(){
+                this.paregrahList(this);
+            },
+            tableDelete(id){
+                this.axios.post('api/PaymentItem/DeletePaymentItem', {
+                    schoolcode: localStorage.schoolcode,
+                    id: id
+                })
+                    .then(function (response) {
+                        if(response.data.code == '000000'){
+                            self.$message({
+                                showClose: true,
+                                message: response.data.msg,
+                                type: 'success'
+                            });
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            }
+        },
+        computed:{
+
+        }
+    }
+</script>
+
+<style scoped>
+.fee-img{
+    width: 40px;
+}
+</style>

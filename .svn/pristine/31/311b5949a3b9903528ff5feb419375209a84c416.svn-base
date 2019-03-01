@@ -1,0 +1,53 @@
+﻿using DbModel;
+using Infrastructure;
+using Infrastructure.Service;
+using IService;
+using Models.ViewModels;
+using SqlSugar;
+using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
+
+namespace Service
+{
+    public class Payment_ARInfoService : GenericService<Payment_ARInfo>, IPayment_ARInfoService
+    {
+        public IEnumerable<PaymentARExcel> GetPaymentInfo(string schoolcode, string stime, string etime, string arid = "")
+        {
+
+            using (var db = DbFactory.GetSqlSugarClient())
+            {
+                DateTime STime = new DateTime();
+                DateTime ETime = new DateTime();
+                if (!string.IsNullOrEmpty(stime)&&!string.IsNullOrEmpty(etime))
+                {
+                    STime = Convert.ToDateTime(stime + " 00:00:00");
+                    ETime = Convert.ToDateTime(etime + " 23:59:59");
+                }
+                var pay_amount = db.Queryable<tb_payment_ar, tb_school_user, tb_payment_ar_record>((pa, su, par) => new object[]{
+                                        JoinType.Left,pa.passport == su.passport,
+                                        JoinType.Left,pa.passport == par.payer_passport&&pa.id == par.ar_id&&par.status == 1,
+                                    })
+                               .WhereIF(!string.IsNullOrWhiteSpace(stime), (pa, su, par) => par.pay_time >= STime && par.pay_time <= ETime)
+                               .WhereIF(!string.IsNullOrWhiteSpace(arid), (pa, su, par) => pa.ARID == arid)
+                               .Where((pa, su, par) => pa.schoolcode == schoolcode)
+                               .Select((pa, su, par) => new PaymentARExcel
+                               {
+                                   trade_no = par.trade_no,
+                                   passport = su.passport,
+                                   ARID = pa.ARID,
+                                   name = pa.name,
+                                   username = su.user_name,
+                                   studentid = su.student_id,
+                                   amount = SqlFunc.ToDecimal(pa.amount),
+                                   fact_amount = SqlFunc.ToDecimal(pa.fact_amount),
+                                   pay_time = SqlFunc.ToDate(par.pay_time)
+
+                               })
+                              .ToList();
+                var data = pay_amount;
+                return data;
+            }
+        }
+    }
+}

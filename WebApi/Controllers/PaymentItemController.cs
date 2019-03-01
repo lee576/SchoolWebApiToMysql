@@ -1,0 +1,735 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using IService;
+using Models.ViewModels;
+using Exceptionless.Json.Linq;
+using DbModel;
+using Exceptionless.Json;
+
+namespace SchoolWebApi.Controllers
+{
+    /// <summary>
+    /// 缴费大厅控制层
+    /// </summary>
+    [Route("api/[controller]/[action]")]
+    [ApiController]
+    [Produces("application/json")]
+    [EnableCors("any")]
+    public class PaymentItemController : Controller
+    {
+        private static NLog.Logger Log = NLog.LogManager.GetCurrentClassLogger();
+        private IPaymentItemService _paymentItemService;
+        private Itb_payment_accountsService _tb_payment_accountsService;
+        private Itb_payment_typeService _tb_payment_typeService;
+        private Itb_payment_itemService _tb_payment_itemService;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="paymentItemService"></param>
+        /// <param name="tb_payment_accountsService"></param>
+        /// <param name="tb_payment_typeService"></param>
+        /// <param name="tb_payment_itemService"></param>
+        public PaymentItemController(IPaymentItemService paymentItemService,
+            Itb_payment_accountsService tb_payment_accountsService,
+            Itb_payment_typeService tb_payment_typeService,
+            Itb_payment_itemService tb_payment_itemService)
+        {
+            _paymentItemService = paymentItemService;
+            _tb_payment_accountsService = tb_payment_accountsService;
+            _tb_payment_typeService = tb_payment_typeService;
+            _tb_payment_itemService = tb_payment_itemService;
+        }
+        /// <summary>
+        /// 获取账单信息
+        /// </summary>
+        /// <param name="schoolcode">学校code</param>
+        /// <param name="studnetid">学生id</param>
+        /// <param name="time">年例如2018 </param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetPaymentItemInfoToStudentid(string schoolcode, string studnetid, string time)
+        {
+            try
+            {
+                var paymentitem = _paymentItemService.GetPayRecord(schoolcode, studnetid, time);
+                if (paymentitem == null)
+                {
+                    return Json(new
+                    {
+                        code = "0",
+                        msg = "暂无消费数据"
+                    });
+                }
+                decimal receipt_amount = paymentitem.Sum(item => item.receipt_amount);
+                return Json(new
+                {
+                    code = "1",
+                    data = paymentitem,
+                    receipt_amount = receipt_amount
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = "0",
+                    msg = "商家授权失败"
+                });
+            }
+        }
+        /// <summary>
+        /// 修改常规缴费状态0 正常 1为暂停
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public IActionResult UpdatePaymentItemStatus([FromBody]JObject obj)
+        {
+            try
+            {
+                var id = Convert.ToInt32(obj["id"].ToString());
+                var status = Convert.ToInt32(obj["status"].ToString());
+                _tb_payment_itemService.UpdateColumnsByConditon(x=> new tb_payment_item { status = status }, x => x.id == id);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.UpdateSuccess
+                });
+            }
+            catch (Exception ex)
+            {
+
+                Log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.UpdateFail
+                });
+            }
+        }
+        /// <summary>
+        /// 常规缴费列表
+        /// </summary>
+        /// <param name="sEcho"></param>
+        /// <param name="iDisplayStart"></param>
+        /// <param name="iDisplayLength"></param>
+        /// <param name="schoolcode"></param>
+        /// <param name="jfName"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetPaymentlist(int sEcho,
+            int iDisplayStart,
+            int iDisplayLength,
+            string schoolcode,
+            string jfName = "")
+        {
+            try
+            {
+                int pageStart = iDisplayStart;
+                int pageSize = iDisplayLength;
+                int pageIndex = (pageStart / pageSize) + 1;
+                int totalRecordNum = default(int);
+                //int sEcho, int pageIndex, int pageSize, ref int total, string schoolCode, string jfName = ""
+                List<Paymentlist> lst = _paymentItemService.GetPaymentlist(sEcho, pageIndex, pageSize, ref totalRecordNum, schoolcode, jfName);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                    sEcho = sEcho,
+                    iTotalRecords = totalRecordNum,
+                    iTotalDisplayRecords = totalRecordNum,
+                    data = lst
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        /// <summary>
+        /// 收款账号
+        /// </summary>
+        /// <param name="schoolcode"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetPaymentAccountList(string schoolcode)
+        {
+            try
+            {
+                var data = _tb_payment_accountsService.FindListByClause(x => x.schoolcode == schoolcode, t => t.id, SqlSugar.OrderByType.Asc);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                    data = data
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        /// <summary>
+        /// 收费分类
+        /// </summary>
+        /// <param name="schoolcode"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetPaymentTypeList(string schoolcode)
+        {
+            try
+            {
+                var data = _tb_payment_typeService.FindListByClause(x => x.schoolcode == schoolcode, t => t.id, SqlSugar.OrderByType.Asc);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                    data = data
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        /// <summary>
+        /// 收费分类分页
+        /// </summary>
+        /// <param name="sEcho"></param>
+        /// <param name="iDisplayStart"></param>
+        /// <param name="iDisplayLength"></param>
+        /// <param name="schoolcode"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetPaymentTypePageList(int sEcho, int iDisplayStart, int iDisplayLength, string schoolcode,string pgName="")
+        {
+            try
+            {
+                int pageStart = iDisplayStart;
+                int pageSize = iDisplayLength;
+                int pageIndex = (pageStart / pageSize) + 1;
+                Infrastructure.Service.IPagedList<tb_payment_type> data = null;
+                if (string.IsNullOrWhiteSpace(pgName))
+                {
+                    data = _tb_payment_typeService.FindPagedListOrderyType(z => z.schoolcode == schoolcode, pageIndex: pageIndex, pageSize: pageSize, expression: x => x.id, type: SqlSugar.OrderByType.Desc);
+                }
+                else
+                {
+                    data = _tb_payment_typeService.FindPagedListOrderyType(z => z.schoolcode == schoolcode&&z.name==pgName , pageIndex: pageIndex, pageSize: pageSize, expression: x => x.id, type: SqlSugar.OrderByType.Desc);
+                }
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    sEcho = sEcho,
+                    iTotalRecords = data.TotalCount,
+                    iTotalDisplayRecords = data.TotalCount,
+                    aaData = data
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        /// <summary>
+        /// 通过id获取收费分类
+        /// </summary>
+        /// <param name="schoolcode"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetPaymentTypeToID(string schoolcode,int id)
+        {
+            try
+            {
+                var data = _tb_payment_typeService.FindByClause(z => z.schoolcode == schoolcode&&z.id == id);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    data = data
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        /// <summary>
+        /// 删除收费分类
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public IActionResult DeletePaymentType([FromBody]JObject obj)
+        {
+            try
+            {
+                var data = _tb_payment_typeService.FindByClause(x => x.id == Convert.ToInt32(obj["id"].ToString()) && x.schoolcode == obj["schoolcode"].ToString());
+                _tb_payment_typeService.Delete(data);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.DeleteSuccess
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.DeleteFail
+                });
+            }
+        }
+
+        /// <summary>
+        /// 修改收费分类
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public IActionResult UpdatePaymentType([FromBody]JObject obj)
+        {
+            try
+            {
+                var data = _tb_payment_typeService.FindByClause(x => x.id == Convert.ToInt32(obj["id"].ToString()) && x.schoolcode == obj["schoolcode"].ToString());
+                data.name = obj["name"].ToString();
+                data.introduction = obj["introduction"].ToString();
+                data.is_display = Convert.ToInt32(obj["is_display"].ToString());
+                data.icon = Convert.ToInt32(obj["icon"].ToString());
+                _tb_payment_typeService.Update(data);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.UpdateSuccess
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.UpdateFail
+                });
+            }
+        }
+        /// <summary>
+        /// 添加收费分类
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public IActionResult AddPaymentType([FromBody]JObject obj)
+        {
+            try
+            {
+                tb_payment_type model = new tb_payment_type();
+                model.icon = Convert.ToInt32(obj["icon"].ToString());
+                model.name = obj["name"].ToString();
+                model.introduction = obj["introduction"].ToString();
+                model.is_display = Convert.ToInt32(obj["is_display"].ToString());
+                model.schoolcode = obj["schoolcode"].ToString();
+                model.create_time = DateTime.Now;
+                _tb_payment_typeService.Insert(model);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.AddSuccess
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.AddFail
+                });
+            }
+        }
+        /// <summary>
+        /// 创建收费项
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public IActionResult AddPaymentItem([FromBody]JObject obj)
+        {
+            try
+            {
+                tb_payment_item itemModel = new tb_payment_item();
+                itemModel.schoolcode = obj["schoolcode"].ToString();//校园编号
+                itemModel.account = obj["account"].ToString();//收款账号
+                itemModel.name = obj["name"].ToString();//收费名称
+                itemModel.is_external = Convert.ToInt32(obj["is_external"].ToString());//固定填写0
+                itemModel.target = Convert.ToInt32(obj["target"].ToString());//收费对象（校园卡，不限制）具体看老的payment_info.js
+                itemModel.@fixed = Convert.ToInt32(obj["fixed"].ToString());//具体看老的payment_info.js
+                itemModel.money = Convert.ToDecimal(obj["money"].ToString());//收费金额
+                itemModel.type = Convert.ToInt32(obj["type"].ToString());//收费分类
+                itemModel.introduction = obj["introduction"].ToString();//收费介绍
+                itemModel.icon = Convert.ToInt32(obj["icon"].ToString());//常规缴费小图标
+                itemModel.group = Convert.ToInt32(obj["group"].ToString());//具体看老的payment_info.js
+                itemModel.method = Convert.ToInt32(obj["method"].ToString());//固定填写1
+                itemModel.nessary_info = obj["nessary_info"].ToString();//具体看老的payment_info.js
+                itemModel.date_from = Convert.ToDateTime(obj["date_from"].ToString());//开始时间
+                itemModel.date_to = Convert.ToDateTime(obj["date_to"].ToString());//结束时间
+                itemModel.count = Convert.ToInt32(obj["count"].ToString());//固定填写1
+                itemModel.notify_link = obj["notify_link"] + "";//通知链接
+                itemModel.notify_key = obj["notify_key"] + "";//通知密钥
+                itemModel.notify_msg = obj["notify_msg"] + "";//通知密言
+                itemModel.remark = obj["remark"] + "";//备注
+                itemModel.status = Convert.ToInt32(obj["status"].ToString());
+                itemModel.can_set_count = Convert.ToInt32(obj["can_set_count"].ToString());
+                itemModel.limit = string.IsNullOrEmpty(obj["limit"] + "") ? 0 : Convert.ToInt32(obj["limit"].ToString());//具体看老的payment_info.js
+                itemModel.class_id = Convert.ToInt32((obj["class_id"] + "").Equals("")?"0": obj["class_id"] + "");//班级id
+                _tb_payment_itemService.Insert(itemModel);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.AddSuccess,
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.AddFail
+                });
+            }
+
+        }
+        /// <summary>
+        /// 修改收费项，通过id获取数据
+        /// </summary>
+        /// <param name="schoolcode"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetPaymentItemToID(string schoolcode,int id)
+        {
+            try
+            {
+                var data = _tb_payment_itemService.FindListByClause(x=>x.schoolcode==schoolcode&&x.id==id,t=>t.id,SqlSugar.OrderByType.Asc);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                    data = data
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        /// <summary>
+        /// 修改收费项
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public IActionResult UpdatePaymentItem([FromBody]JObject obj)
+        {
+            try
+            {
+                tb_payment_item itemModel = new tb_payment_item();
+                itemModel.id = Convert.ToInt32(obj["id"]);
+                itemModel.schoolcode = obj["schoolcode"].ToString();
+                itemModel.account = obj["account"].ToString();
+                itemModel.name = obj["name"].ToString();
+                itemModel.is_external = Convert.ToInt32(obj["is_external"].ToString());
+                itemModel.target = Convert.ToInt32(obj["target"].ToString());
+                itemModel.@fixed = Convert.ToInt32(obj["fixed"].ToString());
+                itemModel.money = Convert.ToDecimal(obj["money"].ToString());
+                itemModel.type = Convert.ToInt32(obj["type"].ToString());
+                itemModel.introduction = obj["introduction"].ToString();
+                itemModel.icon = Convert.ToInt32(obj["icon"].ToString());
+                itemModel.group = Convert.ToInt32(obj["group"].ToString());
+                itemModel.method = Convert.ToInt32(obj["method"].ToString());
+                itemModel.nessary_info = obj["nessary_info"].ToString();
+                itemModel.date_from = Convert.ToDateTime(obj["date_from"].ToString());
+                itemModel.date_to = Convert.ToDateTime(obj["date_to"].ToString());
+                itemModel.count = Convert.ToInt32(obj["count"].ToString());
+                itemModel.notify_link = obj["notify_link"] + "";
+                itemModel.notify_key = obj["notify_key"] + "";
+                itemModel.notify_msg = obj["notify_msg"] + "";
+                itemModel.remark = obj["remark"] + "";
+                itemModel.status = Convert.ToInt32(obj["status"].ToString());
+                itemModel.can_set_count = Convert.ToInt32(obj["can_set_count"].ToString());
+                itemModel.limit = string.IsNullOrEmpty(obj["limit"] + "") ? 0 : Convert.ToInt32(obj["limit"].ToString());
+                _tb_payment_itemService.Update(itemModel);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.UpdateSuccess,
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.UpdateFail
+                });
+            }
+        }
+        /// <summary>
+        /// 删除收费项
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public IActionResult DeletePaymentItem([FromBody]JObject obj)
+        {
+            try
+            {
+                var model = _tb_payment_itemService.FindByClause(x => x.schoolcode == obj["schoolcode"].ToString() && x.id == Convert.ToInt32(obj["id"].ToString()));
+                _tb_payment_itemService.Delete(model);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.DeleteSuccess,
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.DeleteFail
+                });
+            }
+        }
+       
+        /// <summary>
+        /// 展示数据Payment_item
+        /// </summary>
+        /// <param name="schoolcode"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetPayment_item(string schoolcode, int id)
+        {
+            try
+            {
+                var data = _paymentItemService.GetPayment_item(schoolcode, id);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                    data = data
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        /// <summary>
+        /// 通过学校schoolcode获取缴费项信息
+        /// </summary>
+        /// <param name="schoolcode"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetPayment_itemToSchoolcode(string schoolcode)
+        {
+            try
+            {
+                var data = _tb_payment_itemService.FindListByClause(x=>x.schoolcode==schoolcode,t=>t.id,SqlSugar.OrderByType.Asc);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                    data = data
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        /// <summary>
+        /// 常规缴费项管理 列表
+        /// </summary>
+        /// <param name="sEcho"></param>
+        /// <param name="iDisplayStart"></param>
+        /// <param name="iDisplayLength"></param>
+        /// <param name="schoolcode"></param>
+        /// <param name="id">缴费项ID</param>
+        /// <param name="stime"></param>
+        /// <param name="etime"></param>
+        /// <param name="selectinfo">查询条件</param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult Getpayment_itemInfoList(int sEcho,
+            int iDisplayStart,
+            int iDisplayLength,
+            string schoolcode,
+            int id,
+            string stime,
+            string etime,
+            string selectinfo)
+        {
+            try
+            {
+                int pageStart = iDisplayStart;
+                int pageSize = iDisplayLength;
+                int pageIndex = (pageStart / pageSize) + 1;
+                int totalRecordNum = default(int);
+                var lst = _paymentItemService.Getpayment_itemInfoList(sEcho, pageIndex, pageSize, ref totalRecordNum, schoolcode, id,stime,etime,selectinfo);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                    sEcho = sEcho,
+                    iTotalRecords = totalRecordNum,
+                    iTotalDisplayRecords = totalRecordNum,
+                    data = lst
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        /// <summary>
+        /// 常规缴费查询
+        /// </summary>
+        /// <param name="sEcho"></param>
+        /// <param name="iDisplayStart"></param>
+        /// <param name="iDisplayLength"></param>
+        /// <param name="schoolcode"></param>
+        /// <param name="selectinfo">学号，订单编号，付款姓名查询</param>
+        /// <param name="sTime">开始时间</param>
+        /// <param name="eTime">结束时间</param>
+        /// <param name="tb_payment_sub_adminItem">缴费项id</param>
+        /// <param name="classID">班级id</param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetPaymentInfoSearch(int sEcho, int iDisplayStart, int iDisplayLength, string schoolcode,
+            string selectinfo = "", string sTime = "", string eTime = "", string tb_payment_sub_adminItem = "", string classID = "", string status = "")
+        {
+            try
+            {
+                int pageStart = iDisplayStart;
+                int pageSize = iDisplayLength;
+                int pageIndex = (pageStart / pageSize) + 1;
+                int totalRecordNum = default(int);
+                var data = _paymentItemService.GetPaymentInfoSearch(sEcho, pageIndex, pageSize, ref totalRecordNum, schoolcode, selectinfo, sTime, eTime, tb_payment_sub_adminItem, classID, status);
+                var totle = _paymentItemService.GetPaymentInfoTotle(schoolcode, selectinfo, sTime, eTime, tb_payment_sub_adminItem, classID,status);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                    sEcho = sEcho,
+                    iTotalRecords = totalRecordNum,
+                    iTotalDisplayRecords = totalRecordNum,
+                    data = data,
+                    totle = totle
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail//Getpayment_ARDetailed
+                });
+            }
+        }
+        /// <summary>
+        /// 常规缴费查询导出数据
+        /// </summary>
+        /// <param name="sEcho"></param>
+        /// <param name="iDisplayStart"></param>
+        /// <param name="iDisplayLength"></param>
+        /// <param name="schoolcode"></param>
+        /// <param name="selectinfo">学号，订单编号，付款姓名查询</param>
+        /// <param name="sTime">开始时间</param>
+        /// <param name="eTime">结束时间</param>
+        /// <param name="tb_payment_sub_adminItem">缴费项id</param>
+        /// <param name="classID">班级id</param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetPaymentInfoSearchToExcel(string schoolcode,string selectinfo = "", string sTime = "", string eTime = "", string tb_payment_sub_adminItem = "", string classID = "")
+        {
+            try
+            {
+                var data = _paymentItemService.GetPaymentInfoSearchToExcel(schoolcode, selectinfo, sTime, eTime, tb_payment_sub_adminItem, classID);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                    data = data,
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail//Getpayment_ARDetailed
+                });
+            }
+        }
+    }
+}

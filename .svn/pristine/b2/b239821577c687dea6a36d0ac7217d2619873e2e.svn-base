@@ -1,0 +1,99 @@
+﻿using DbModel;
+using IService;
+using Infrastructure.Service;
+using Infrastructure;
+using SqlSugar;
+using Models.ViewModels;
+using System.Text;
+using System.Data.SqlClient;
+using System;
+
+namespace Service
+{
+    public class tb_payment_ar_recordService : GenericService<tb_payment_ar_record>, Itb_payment_ar_recordService
+    {
+        public payOk GetPayOk(string out_trade_no)
+        {
+            using (var db = DbFactory.GetSqlSugarClient())
+            {
+                var data = db.Queryable<tb_payment_ar_record, tb_payment_ar, tb_school_user>(
+                (par, ar, u) =>
+                new object[] {
+                    JoinType.Inner,par.ar_id==ar.id,
+                    JoinType.Inner,u.user_name==ar.st_name && u.passport==ar.passport
+                }
+                )
+                .Where((par, ar, u) => par.out_trade_no == out_trade_no)
+                .Select((par, ar, u) => new payOk
+                {
+                    out_trade_no = par.out_trade_no,
+                    name = ar.st_name,
+                    payTime = SqlFunc.ToString(par.pay_time),
+                    student_id = u.student_id,
+                    price = SqlFunc.ToString(ar.amount)
+                })
+                .ToList();
+                if (data.Count==0)
+                {
+                        data = db.Queryable<tb_payment_record, tb_school_user>(
+                    (pr, su) =>
+                    new object[] {
+                        JoinType.Inner,pr.student_id == su.student_id
+                    }
+                    )
+                    .Where((pr, su) => pr.out_order_no == out_trade_no)
+                    .Select((pr, su) => new payOk
+                    {
+                        out_trade_no=pr.out_order_no,
+                        name = su.user_name,
+                        payTime = SqlFunc.ToString(pr.pay_time),
+                        student_id = su.student_id,
+                        price = SqlFunc.ToString(pr.pay_amount)
+                    })
+                    .ToList();
+                }
+                return data[0];
+            }
+            //payOk model = new payOk();
+            //model.out_trade_no = out_trade_no;
+            //StringBuilder sb3 = new StringBuilder();
+            //sb3.Append(" SELECT par.out_trade_no,ar.st_name,u.user_name,u.student_id,ar.amount,par.pay_time ");
+            //sb3.Append(" FROM tb_payment_ar_record par ");
+            //sb3.Append(" INNER JOIN tb_payment_ar ar ON par.ar_id=ar.id ");
+            //sb3.Append(" INNER JOIN tb_school_user u ON u.user_name=ar.st_name AND u.passport=ar.passport ");
+            //sb3.Append(" WHERE par.out_trade_no=@out_trade_no ");
+            //string strCon = DbFactory.GetSqlSugarClient().Ado.Connection.ConnectionString;
+
+            //System.Data.SqlClient.SqlDataAdapter da = new System.Data.SqlClient.SqlDataAdapter(sb3.ToString(), strCon);
+            //da.SelectCommand.Parameters.Add(new SqlParameter("@out_trade_no", out_trade_no));
+            //System.Data.DataSet ds = new System.Data.DataSet();
+            //da.Fill(ds, "table");
+            //if (ds.Tables[0].Rows.Count > 0)
+            //{
+            //    model.name = ds.Tables[0].Rows[0]["st_name"].ToString();
+            //    model.payTime = DateTime.Parse(ds.Tables[0].Rows[0]["pay_time"].ToString()).ToString("yyyy-MM-dd");
+            //    model.student_id = ds.Tables[0].Rows[0]["student_id"].ToString();
+            //    model.price = ds.Tables[0].Rows[0]["amount"].ToString();
+            //}
+            //else
+            //{
+            //    StringBuilder sb = new StringBuilder();
+            //    sb.Append(@" SELECT pr.out_order_no,su.user_name,su.student_id,pr.pay_amount,pay_time,'' pay_name FROM dbo.tb_payment_record pr
+            //                    INNER JOIN tb_school_user su ON pr.student_id=su.student_id
+            //                    WHERE out_order_no=@out_order_no ");
+            //    System.Data.SqlClient.SqlDataAdapter da1 = new System.Data.SqlClient.SqlDataAdapter(sb.ToString(), strCon);
+            //    da1.SelectCommand.Parameters.Add(new SqlParameter("@out_order_no", out_trade_no));
+            //    System.Data.DataSet ds1 = new System.Data.DataSet();
+            //    da1.Fill(ds1, "table");
+            //    if (ds1.Tables[0].Rows.Count > 0)
+            //    {
+            //        model.name = ds1.Tables[0].Rows[0]["user_name"].ToString();
+            //        model.payTime = DateTime.Parse(ds1.Tables[0].Rows[0]["pay_time"].ToString()).ToString("yyyy-MM-dd");
+            //        model.student_id = ds1.Tables[0].Rows[0]["student_id"].ToString();
+            //        model.price = ds1.Tables[0].Rows[0]["pay_amount"].ToString();
+            //    }
+            //}
+            //return model;
+        }
+    }
+}

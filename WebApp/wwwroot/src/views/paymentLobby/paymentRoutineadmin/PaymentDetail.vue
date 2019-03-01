@@ -1,0 +1,209 @@
+<template>
+    <div class="home">
+        <div class="nav-lead clearfix">
+            <div class="fl nav-lead-word"><a href="#" class="active-gray">常规缴费项管理></a><a href="#">收费项</a></div>
+            <div class="fl">
+                <router-link to="/RoutineAdmin" class="cx-back">返回</router-link>
+            </div>
+        </div>
+        <div class="page-content">
+            <div class="pay-card">
+                <div class="clearfix">
+                    <div class="fl pay-right-line">
+                        <div class="clearfix">
+                            <div class=" fl">
+                                <img :src='"../../../assets/images/payIcon/choose-icon"+detailList.icon+".png"' height="40" width="40"/>
+                            </div>
+                            <div class="fl pay-logo-word">{{detailList.name}}</div>
+                        </div>
+                        <div class="pay-money">应缴金额 :<span class="pay-money-bold">{{ detailList.money | currency('￥') }}</span></div>
+                        <div class="two-row-mg clearfix">
+                            <div class="fl two-row-on1">校园卡</div>
+                            <div class="fl two-row-on2">截止日期：{{detailList.dateto | dateSubstr() }}</div>
+                        </div>
+                    </div>
+                    <div class="fl pay-on-mg">
+                        <div class="pay-person">缴费人数</div>
+                        <div class="pay-person-num">{{ detailList.count | currency('',false) }}</div>
+                    </div>
+                    <div class="fl pay-on-box1">
+                        <div class="ja-on-time1 clearfix">
+                            <div class="fl time-word1">缴费时间 : </div>
+                            <div class="fl time-word2 form-timerange">
+                                <el-date-picker
+                                        v-model="dateArr"
+                                        value-format="yyyy-MM-dd"
+                                        type="daterange"
+                                        range-separator="至"
+                                        start-placeholder="开始日期"
+                                        end-placeholder="结束日期"
+                                        :picker-options="pickerOptions2">
+                                </el-date-picker>
+                            </div>
+                        </div>
+                        <div class="ja-on-time2 clearfix">
+                            <div class="fl search-input1"><input type="text" v-model="inputOrder" class="se-input"  @keyup.enter="search"  placeholder="请输入订单编号、手机号、姓名进行搜索" autocomplete="off"></div>
+                            <div class="fl search-button"><button class="btn-pro" @click="search()">搜索</button></div>
+                            <div class="fl search-button"><button class="btn-pro" @click="reset()">重置</button></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pay-card">
+                <div class="table-box">
+                    <template>
+                        <el-table :data="configTable.tableArr" stripe style="width: 100%">
+                            <el-table-column prop="out_order_no" label="订单编号" >
+                            </el-table-column>
+                            <el-table-column prop="pay_time" label="缴费时间">
+                            </el-table-column>
+                            <el-table-column prop="pay_amount" :formatter="moneyTable" label="实缴金额">
+                            </el-table-column>
+                            <el-table-column prop="pay_name" label="姓名">
+                            </el-table-column>
+                            <el-table-column prop="phone" label="手机号">
+                            </el-table-column>
+                            <el-table-column prop="status" :formatter="feeStateTable" label="缴费状态">
+                            </el-table-column>
+                        </el-table>
+                    </template>
+                </div>
+                <div class="block" style="text-align: right;">
+                    <el-pagination
+                            @size-change="handleSizeChange"
+                            @current-change="handleCurrentChange"
+                            :current-page.sync="configTable.currentPage"
+                            :page-size="configTable.iDisplayLength"
+                            layout="total, prev, pager, next"
+                            :total="configTable.total">
+                    </el-pagination>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+    import { currency } from './../../../util/currency'
+    import { getDateType } from './../../../util/getDate'
+    import { dateSubstr } from './../../../util/getDate'
+    export default {
+        name: "payment-detail",
+        data() {
+            return {
+                value2:"" ,
+                configTable:{
+                    tableArr:[],
+                    total:1000,
+                    currentPage: 1,
+                    iDisplayStart:0,
+                    iDisplayLength:10
+                },
+                dateArr:'',
+                inputOrder:'',
+                detailList:{},
+                pickerOptions2: {
+                    disabledDate(time) {
+                        return time.getTime() > Date.now() - 8.64e6
+                    },
+                },
+            }
+        },
+        filters:{
+            currency: currency,
+            dateSubstr: dateSubstr,
+            getDateType:getDateType
+        },
+        created() {
+            this.getParams();
+            let self=this;
+
+            self.tableList(self);
+        },
+        methods:{
+            handleSizeChange(val) {
+                console.log(`每页 ${val} 条`);
+                let self = this;
+                self.configTable.iDisplayLength = val;
+                self.tableList(self);
+            },
+            handleCurrentChange(val) {
+                console.log(`当前页: ${val}`);
+                let self = this;
+                self.configTable.iDisplayStart = (val - 1)*self.configTable.iDisplayLength;
+                self.tableList(self);
+            },
+            getParams(){
+                // 取到路由带过来的参数
+                //详情展示数据
+                this.detailList = this.$route.params.list;
+            },
+            tableList(self){
+                console.log(1111)
+                console.log(self.dateArr);
+                let stime = self.dateArr?(self.dateArr[0]):'';
+                let etime = self.dateArr?(self.dateArr[1]):'';
+                self.axios.get('api/PaymentItem/Getpayment_itemInfoList', {
+                    params: {
+                        schoolcode: localStorage.schoolcode,
+                        id:self.detailList.id,
+                        selectinfo:self.inputOrder,
+                        stime:stime,
+                        etime:etime,
+                        sEcho:self.configTable.currentPage,
+                        iDisplayStart:self.configTable.iDisplayStart,
+                        iDisplayLength:self.configTable.iDisplayLength
+                    }
+                })
+                    .then(function (response) {
+                        let res = response.data;
+                        if(res.code == '000000'){
+                            self.configTable.tableArr = res.data;
+                            self.configTable.total = res.iTotalRecords;
+                        }else {
+                            self.$message({
+                                showClose: true,
+                                message: '获取数据失败',
+                                type: 'warning'
+                            });
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            },
+            feeStateTable:function(row, column){
+                //收费状态
+                if(row.status == '0'){
+                    return '未交费';
+                }else if(row.status == '1'){
+                    return '已交费';
+                }
+            },
+            moneyTable:function(row, column){
+                //金额
+                return  currency(row.pay_amount,'￥');
+            },
+            search(){
+                this.configTable.iDisplayStart = 0;
+                this.configTable.currentPage = 1;
+                this.tableList(this);
+            },
+            reset(){
+                this.dateArr = [];
+                this.inputOrder = '';
+                this.configTable.iDisplayStart = 0;
+                this.configTable.currentPage = 1;
+                this.tableList(this);
+            }
+
+
+
+
+        }
+    }
+</script>
+
+<style scoped>
+
+</style>

@@ -1,0 +1,495 @@
+<template>
+    <div class="home">
+        <div class="nav-lead clearfix">
+            <div class="fl nav-lead-word"><a href="#">缴费大厅</a></div>
+            <!-- <div class="fl"><button class="btn btn-blue-line">返回</button></div> -->
+        </div>
+        <div class="page-content">
+            <el-row :gutter="10">
+                <el-col :xs="24" :sm="24" :md="24" :lg="14" :xl="14">
+
+                    <div class="ant-card clearfix">
+                        <div class="ym-on-pa1 fl">
+                            <div class="ym-pro-word">进行中<br/>应缴项目</div>
+                            <div class="ym-pro-num">{{payProj}}</div>
+                        </div>
+                        <div class="ym-on-pa2 fl">
+                            <div class="process-box fl">
+                                <el-progress :text-inside="true" :stroke-width="30" :percentage=Number(parseRate.amountRate)></el-progress>
+                            </div>
+                            <div class="fl">
+                                <div class="shi-price">实缴费用<span class="need-price">/应缴费用</span></div>
+                                <div class="shi-price-num">{{ paidAmount | currency('￥') }}<span
+                                        class="need-price-num">/{{ payableAmount| currency('￥') }}</span></div>
+                            </div>
+                        </div>
+                        <div class="ym-on-pa3 fl">
+                            <div class="process-box fl">
+                                <el-progress :text-inside="true" :stroke-width="30" :percentage=Number(parseRate.noRate)
+                                             color="#FFB758"></el-progress>
+                            </div>
+                            <div class="fl">
+                                <div class="shi-price">实缴笔数<span class="need-price">/应缴笔数</span></div>
+                                <div class="shi-bi-num">{{ paidNo | currency('',false) }}<span class="need-price-num">/{{ PayableNo | currency('',false) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </el-col>
+                <el-col :xs="24" :sm="24" :md="24" :lg="10" :xl="10">
+
+                    <div class="ant-card clearfix">
+                        <div class="ym-on-pa1 fl">
+                            <div class="ym-pro-word">正在<br/>收款项目</div>
+                            <div class="ym-pro-num">{{accountProj}}</div>
+                        </div>
+                        <div class="ym-on-pa4 fl">
+                            <div class="ym-day1">今日收款</div>
+                            <div class="ym-day2">￥ {{todayAmount}}</div>
+                            <!--<div class="ym-day3" >{{toNumber}}</div>-->
+                            <div class="ym-day4" style="margin-top: 29px;">今日付款人数</div>
+                            <div class="ym-day5">{{todayPerson}}</div>
+                        </div>
+                    </div>
+
+                </el-col>
+            </el-row>
+            <el-row :gutter="10">
+                <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
+                    <div class="ym-body">
+                        <div class="ym-body-title">收费情况</div>
+                        <div class="right-picker-time">
+                            <el-date-picker
+                                    v-model="dateArr1"
+                                    value-format="yyyy-MM-dd"
+                                    type="daterange"
+                                    align="right"
+                                    unlink-panels
+                                    range-separator="至"
+                                    start-placeholder="开始日期"
+                                    end-placeholder="结束日期"
+                                    :picker-options="pickerOptions2">
+                            </el-date-picker>
+                            <button class="search-in-time" @click="search()">搜索</button>
+                        </div>
+                        <div id="myChart"  :style="{width: '100%', height: '450px',background:'#f9f9f9'}"></div>
+                    </div>
+                </el-col>
+            </el-row>
+        </div>
+    </div>
+</template>
+
+<script>
+    // 引入基本模板
+    let echarts = require('echarts/lib/echarts');
+    // 引入柱状图组件
+    require('echarts/lib/chart/bar');
+    // 引入提示框和title组件
+    require('echarts/lib/component/tooltip');
+    require('echarts/lib/component/title');
+    import { currency } from './../../../util/currency'
+    import { getDateType } from './../../../util/getDate'
+    export default {
+        name: 'PaymentSurvey',
+        data() {
+            return {
+                pickerOptions2: {
+                    disabledDate(time) {
+                        return time.getTime() > Date.now() - 8.64e6
+                    },
+                    shortcuts: [{
+                        text: '今天',
+                        onClick(picker) {
+                            const end = new Date();
+                            const start = new Date();
+                            start.setTime(start.getTime());
+                            picker.$emit('pick', [start, end]);
+                        }
+                    }, {
+                        text: '昨天',
+                        onClick(picker) {
+                            const end = new Date();
+                            const start = new Date();
+                            start.setTime(start.getTime() - 3600 * 1000 * 24 * 1);
+                            picker.$emit('pick', [start, end]);
+                        }
+                    }, {
+                        text: '最近三天',
+                        onClick(picker) {
+                            const end = new Date();
+                            const start = new Date();
+                            start.setTime(start.getTime() - 3600 * 1000 * 24 * 3);
+                            picker.$emit('pick', [start, end]);
+                        }
+                    }, {
+                        text: '最近一周',
+                        onClick(picker) {
+                            const end = new Date();
+                            const start = new Date();
+                            start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
+                            picker.$emit('pick', [start, end]);
+                        }
+                    }]
+                },
+                dateArr1:[],
+                paidAmount: 0,
+                payableAmount: 1,
+                payProj:0,
+                currentProj:0,
+                paidNo: 0,
+                accountProj:0,
+                PayableNo: 1,
+                dateArr: [],
+                payArr: [],
+                todayAmount:0,
+                todayPerson:0,
+            };
+        },
+        created() {
+            this.dateArr1 = [getDateType(1,-7),getDateType(1,0)];
+            this.dataRecord();
+            this.todayRecord();
+        },
+        mounted() {
+            this.drawLine();
+
+        },
+        filters:{
+            currency: currency,
+            getDateType:getDateType
+        },
+        methods: {
+            dataRecord() {
+                let self = this;
+                self.axios.get('api/PaymentAR/GetPaymentARAccount?schoolcode=' + localStorage.schoolcode)
+                    .then(response => {
+                         let resp = response.data.resp;
+                         if(response.data.code == '000000'){
+                             //实缴金额
+                             self.paidAmount = resp.SJJE.toFixed(2);
+                             //应缴金额
+                             self.payableAmount = resp.YJJE.toFixed(2);
+                             //进行应缴项目
+                             self.payProj = resp.YJXM;
+                             //实缴笔数
+                             self.paidNo = resp.SJRS;
+                             //应缴笔数
+                             self.PayableNo = resp.YJRS;
+                         }else {
+                             self.$message({
+                                 showClose: true,
+                                 message: res.data.msg,
+                                 type: 'warning'
+                             });
+                         }
+
+                    })
+                    .catch(function (error) {
+
+                        console.log(error);
+
+                    });
+            },
+            todayRecord() {
+                let self = this;
+                self.axios.get('api/PaymentAR/GetTodayRecord?schoolcode=' + localStorage.schoolcode)
+                    .then(response => {
+                        console.log(response)
+                        let resp = response.data;
+                        if(resp.code == '000000'){
+                            //正在收款项目
+                            self.accountProj = resp.zzskxm;
+
+                            //今日收款
+                            self.todayAmount = resp.jrsk.toFixed(2);
+                            //今日收款人数
+                            self.todayPerson = resp.jrskrs;
+                        }else {
+                            self.$message({
+                                showClose: true,
+                                message: res.data.msg,
+                                type: 'warning'
+                            });
+                        }
+
+                    })
+                    .catch(function (error) {
+
+                        console.log(error);
+
+                    });
+            },
+            drawLine(stime,etime) {
+
+                // 基于准备好的dom，初始化echarts实例
+                let myChart = echarts.init(document.getElementById('myChart'));
+                let self = this;
+                if(!stime){
+                    stime   = self.dateArr1[0];
+                }else{
+                    stime  = stime;
+                }
+                if(!etime){
+                    etime = self.dateArr1[1];
+                }else {
+                    etime = etime;
+                }
+                self.axios.get('api/PaymentAR/GetWeekPayment_item?schoolcode=' + localStorage.schoolcode+'&stime='+stime+'&etime='+etime)
+                    .then(res => {
+                        console.log(res);
+                        if(res.data.code == '000000'){
+                            self.dateArr = res.data.rqs.reverse();
+                            self.payArr = res.data.amounts.reverse();
+                            myChart.setOption({
+                                tooltip: {
+                                    trigger: 'axis'
+                                },
+                                legend: {
+                                    data: ['收费'],
+                                    formatter: function (name) {
+                                        return name;
+                                    },
+                                    orient: 'vertical',
+                                    align: 'right',
+                                    itemWidth: 20,
+                                    itemHeight: 20,
+                                    right: 0,
+                                    top: 'middle',
+                                    textStyle: {
+                                        // 图例的公用文本样式。
+                                        fontWight: 'bold',
+                                        fontSize: 20,
+                                        color: '#707070'
+                                    },
+                                    symbolKeepAspect: true,
+                                    itemGap: 20,
+
+                                },
+
+                                toolbox: {
+                                    show: false,
+                                    top: '0',
+                                    right: '120',
+                                    bottom: 'auto',
+                                    left: 'auto',
+                                    feature: {
+                                        dataView: {show: true, readOnly: false},
+                                        magicType: {show: true, type: ['line', 'bar']},
+                                        restore: {show: true},
+                                        saveAsImage: {show: true}
+                                    }
+                                },
+                                calculable: true,
+                                xAxis: [
+                                    {
+                                        type: 'category',
+                                        //    boundaryGap : false,
+                                        data: self.dateArr,
+                                        splitLine: {
+                                            show: true,
+                                            lineStyle: {
+                                                color: ['#ccc'],
+                                                width: 1,
+                                                type: 'dashed'
+                                            }
+
+                                        }
+
+                                    }
+                                ],
+                                yAxis: [
+                                    {
+                                        type: 'value',
+                                        splitLine: {
+                                            show: true,
+                                            lineStyle: {
+                                                color: ['#ccc'],
+                                                width: 1,
+                                                type: 'dashed'
+                                            }
+
+                                        }
+                                    }
+                                ],
+                                grid: {
+                                    borderWidth: 2,
+                                    borderColor: '#ccc',
+                                    top: '80',
+                                    right: '120',
+                                    bottom: '40',
+                                    left: '30'
+
+                                },
+                                series: [
+                                    {
+                                        itemStyle: {
+                                            normal: {
+                                                color: ['#6c7fff'],
+                                                barBorderRadius: [8, 8, 0, 0]
+                                            }
+                                        },
+                                        name: '收费',
+                                        type: 'bar',
+                                        data: self.payArr,
+                                        markLine: {
+                                            data: [
+                                                {type: 'average', name: '平均值'}
+                                            ]
+                                        },
+                                        barWidth: 30
+                                    }
+                                ],
+                                show: true,
+
+                            });
+                        }else {
+                            self.$message({
+                                showClose: true,
+                                message: res.data.msg,
+                                type: 'warning'
+                            });
+                        }
+
+                    })
+                    .catch(function (error) {
+
+                        console.log(error);
+
+                    });
+
+            },
+            search(){
+                let schoolcode = localStorage.schoolcode;
+
+                if(!this.dateArr1){
+                     this.$message({
+                        showClose: true,
+                        message: '请填写完整',
+                        type: 'error'
+                    });
+                }else{
+                    let stime = '',etime = '';
+                    stime = this.dateArr1[0];
+                    etime = this.dateArr1[1];
+                    if(this.timeDif(stime,etime)>30){
+                        this.$message({
+                            showClose: true,
+                            message: '时间差不能超过30天',
+                            type: 'error'
+                        });
+                    }else {
+                        this.drawLine(stime,etime);
+                    }
+
+                }
+
+            },
+            timeDif(sDate1,sDate2){
+                var dateSpan,
+                    tempDate,
+                    iDays;
+                sDate1 = Date.parse(sDate1);
+                sDate2 = Date.parse(sDate2);
+                dateSpan = sDate2 - sDate1;
+                dateSpan = Math.abs(dateSpan);
+                iDays = Math.floor(dateSpan / (24 * 3600 * 1000));
+                return iDays
+            },
+            changeData(money){
+                let dw2 = new Array("","万","亿");//大单位
+                let dw1 = new Array("拾","佰","仟");//小单位
+                var dw = new Array("0","1","2","3","4","5","6","7","8","9");//整数部分用
+                let source = money.split(".");
+                let num = source[0];
+                let dig = source[1];
+                //转换整数部分
+                let k1=0;//计小单位
+                let k2=0;//计大单位
+                let sum = 0;
+                let str="";
+                var len = num.length;//整数的长度
+                var i = 1;
+                for(i=1;i<=len;i++){
+                    var n = source[0].charAt(len-i);//取得某个位数上的数字
+                    var bn = 0;
+                    if(len-i-1>=0){
+                        bn = source[0].charAt(len-i-1);//取得某个位数前一位上的数字
+                    }
+                    sum = sum+Number(n);
+                    if(sum!=0){
+                        str = dw[Number(n)].concat(str);//取得该数字对应的大写数字，并插入到str字符串的前面
+                        //str = Number(n).concat(str);
+                        if(n=='0')sum = 0;
+                    }
+                    if(len-i-1>=0){//在数字范围内
+                        if(k1!=3){//加小单位
+                            if(bn!=0){
+                                str = dw1[k1].concat(str);
+                            }
+                            k1++;
+                        }else{//不加小单位，加大单位
+                            k1=0;
+                            var temp = str.charAt(0);
+                            if(temp=="万" || temp=="亿")//若大单位前没有数字则舍去大单位
+                                str = str.substr( 1, str.length-1);
+                            str = dw2[k2].concat(str);
+                            sum = 0;
+                        }
+                    }
+                    if(k1==3)//小单位到千则大单位进一
+                    { k2++;}
+                }
+
+                //转换小数部分
+                var strdig="";
+                if(dig!=""){
+                    var n = dig.charAt(0);
+                    if(n!=0){
+                        strdig += dw[Number(n)]+"角";//加数字
+                    }
+                    var n = dig.charAt(1);
+                    if(n!=0){
+                        strdig += dw[Number(n)]+"分";//加数字
+                    }
+                     str += "元"+strdig;
+                }
+             return str;
+            }
+        },
+        computed: {
+            toNumber:function() {
+                let self = this;
+                if(self.paidAmount != 0){
+                    return self.changeData(self.paidAmount);
+                }
+            },
+            parseRate:function () {
+                let self = this,paidAmount=0,payableAmount = 1,amountRate = 0,noRate = 0,paidNo = 0,PayableNo = 1;
+                if(self.paidAmount != 0){
+                    paidAmount = self.paidAmount;
+                }
+                if(self.payableAmount != 0){
+                    payableAmount = self.payableAmount;
+                }
+                //金额比例
+                amountRate  = (paidAmount * 100/ payableAmount).toFixed(2);
+                if(self.paidNo != 0){
+                    paidNo = self.paidNo;
+                }
+                if(self.PayableNo != 0){
+                    PayableNo = self.PayableNo;
+                }
+                //笔数比例
+                noRate  = (paidNo * 100/ PayableNo).toFixed(2);
+                return {amountRate: amountRate,noRate:noRate}
+
+            }
+
+        }
+    }
+</script>
+
+<style scoped>
+
+</style>

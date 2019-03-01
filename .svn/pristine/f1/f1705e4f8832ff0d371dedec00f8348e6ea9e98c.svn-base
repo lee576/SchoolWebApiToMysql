@@ -1,0 +1,214 @@
+<template>
+    <div class="home">
+        <div class="nav-lead clearfix">
+            <div class="fl nav-lead-word"><a href="#" class="active-gray">常规缴费项管理></a><a href="#" class="active-gray">分类管理></a><a href="#">{{id?'修改分类':'添加分类'}}</a></div>
+            <div class="fl">
+                <router-link to="/RoutineAdmin_Check" class="cx-back">返回</router-link>
+            </div>
+        </div>
+        <div class="page-content">
+            <div class="add-page-box">
+                <div class="add-page">
+                    <div class="add-page-title">{{id?'修改分类':'添加分类'}}</div>
+                    <el-form :model="checkaddForm" :rules="checkaddrules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+                        <div class="choose-logo" >
+                            <img @click="dialogVisible = true" :src='"../../../assets/images/payIcon/choose-icon"+checkaddForm.icon+".png"' class="choose-logo-img">
+                            <div class="choose-logo-word">点击修改收费图标</div>
+                        </div>
+                        <div class="gray-box-part">
+                            <el-form-item label="类别名称" prop="name">
+                                <el-input v-model="checkaddForm.name" placeholder="请输入类别名称"> </el-input>
+                            </el-form-item>
+                            <el-form-item label="类别介绍" prop="introduction">
+                                <el-input type="textarea" placeholder="请输入类别介绍" v-model="checkaddForm.introduction"></el-input>
+                            </el-form-item>
+                            <el-form-item label="收费对象">
+                                <el-radio label="0" v-model="checkaddForm.is_display" border>显示</el-radio>
+                                <el-radio label="1" v-model="checkaddForm.is_display" border>不显示</el-radio>
+                            </el-form-item>
+                        </div>
+                        <el-form-item>
+                            <el-button class="btn-bg" @click="onSubmit('ruleForm')">{{id?'修改':'添加'}}</el-button>
+                            <el-button class="btn-border" @click="cancel" >取消</el-button>
+                        </el-form-item>
+                    </el-form>
+                </div>
+            </div>
+        </div>
+        <el-dialog title="图标修改" :visible.sync="dialogVisible" width="600px" top="20vh">
+
+            <div class="edit-choose-logo">
+                <img :src='"../../../assets/images/payIcon/choose-icon"+imageUrl+".png"' class="edit-logo-img">
+                <div class="edit-logo-word">选中图标</div>
+            </div>
+            <ul class="edit-logo-box clearfix">
+                <li  v-for="(item,index) in iconArr" :class="radio==index?'active':''"><img :src='"../../../assets/images/payIcon/choose-icon"+item+".png"' style="cursor: pointer"  @click="changeIcon(item)" class="edit-logo"></li>
+            </ul>
+            <div slot="footer" class="dialog-footer diff-button-footer">
+                <el-button @click="dialogVisible = false">取 消</el-button>
+                <el-button type="primary" @click="dialogVisible = false;checkaddForm.icon=imageUrl;" class="sure-btn">确 定</el-button>
+            </div>
+
+        </el-dialog>
+    </div>
+</template>
+
+<script>
+    export default {
+        name: "RoutineAdmin_Check_add",
+        data() {
+            return {
+                iconArr:22,
+                dialogVisible:false,
+                radioFlag:true,
+                radio:'0',
+                imageUrl:1,
+                id:'',
+                checkaddForm: {
+                    icon:'1',
+                    name:'',
+                    introduction:'',
+                    is_display:'0'
+                },checkaddrules: {
+                    name: [
+                        {required: true, message: '请输入类别名称', trigger: 'blur'}
+                    ],introduction: [
+                        {required: true, message: '请输入类别介绍', trigger: 'blur'}
+                    ]
+                }
+            }
+        },
+        created(){
+            this.getParams();
+            this.bandData(this.id);
+        },
+        methods: {
+            getParams(){
+                // 取到路由带过来的参数
+                this.id = this.$route.query.id;
+            },
+            onSubmit(ruleForm) {
+                var self = this;
+                const json = {
+                    id:self.id,
+                    schoolcode: localStorage.schoolcode,
+                    icon:parseInt(self.checkaddForm.icon),
+                    name:self.checkaddForm.name,
+                    introduction:self.checkaddForm.introduction,
+                    is_display:parseInt(self.checkaddForm.is_display),
+                };
+                if(self.id){
+                    //修改
+                    self.$refs[ruleForm].validate((valid) => {
+                        if (valid) {
+                            self.axios.post('api/PaymentItem/UpdatePaymentType',json)
+                                .then(function (response) {
+                                    console.log(response);
+                                    if(response.data.code == '000000'){
+                                        self.$router.push({name: 'RoutineAdmin_Check'});
+                                        self.$message({
+                                            showClose: true,
+                                            message: response.data.msg,
+                                            type: 'success'
+                                        });
+                                    }else {
+                                        self.$message({
+                                            showClose: true,
+                                            message: response.data.msg,
+                                            type: 'warning'
+                                        });
+                                    }
+                                })
+                                .catch(function (error) {
+                                    console.log(error);
+                                });
+                        } else {
+                            console.log('error submit!!');
+                            return false;
+                        }
+                    });
+                }else {
+                    //添加
+                    self.$refs[ruleForm].validate((valid) => {
+                        if (valid) {
+                            self.axios.post('api/PaymentItem/AddPaymentType',json)
+                                .then(function (response) {
+                                    console.log(response);
+                                    if(response.data.code == '000000'){
+                                        self.$router.push({name: 'RoutineAdmin_Check'});
+                                        self.$message({
+                                            showClose: true,
+                                            message: response.data.msg,
+                                            type: 'success'
+                                        });
+                                    }else {
+                                        self.$message({
+                                            showClose: true,
+                                            message: response.data.msg,
+                                            type: 'warning'
+                                        });
+                                    }
+                                })
+                                .catch(function (error) {
+                                    console.log(error);
+                                });
+                        } else {
+                            console.log('error submit!!');
+                            return false;
+                        }
+                    });
+                }
+
+            },
+            cancel(){
+                this.$router.push({path: '/RoutineAdmin_Check'});
+            },
+            handleChange(value) {
+                console.log(value);
+            },
+            changeIcon(icon){
+                console.log(icon)
+                this.radio = icon -1;
+                this.imageUrl=icon;
+            },
+            bandData(id){
+                //展示数据
+                let self = this;
+                if(id){
+                    self.axios.get('api/PaymentItem/GetPaymentTypeToID', {
+                        params: {
+                            schoolcode: localStorage.schoolcode,
+                            id:self.id,
+
+                        }
+                    })
+                        .then(function (response) {
+                            let res = response.data;
+                            if(res.code == '000000'){
+                                self.checkaddForm.icon = res.data.icon?res.data.icon:1;
+                                self.checkaddForm.name = res.data.name;
+                                self.checkaddForm.introduction = res.data.introduction;
+                                self.checkaddForm.is_display = res.data.is_display.toString();
+                                console.log(self.checkaddForm.is_display);
+                                self.radio = res.data.icon?res.data.icon:1 - 1;
+                                self.imageUrl = res.data.icon?res.data.icon:1;
+                            }else {
+                                self.$message({
+                                    showClose: true,
+                                    message: '获取数据失败',
+                                    type: 'warning'
+                                });
+                            }
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        });
+                }
+            }
+        }
+    }
+</script>
+
+<style scoped>
+
+</style>

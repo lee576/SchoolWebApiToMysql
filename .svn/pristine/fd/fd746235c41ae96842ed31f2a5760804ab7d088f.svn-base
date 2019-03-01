@@ -1,0 +1,200 @@
+<!--<template>-->
+    <!--<div class="home">-->
+
+            <!--<div class="module_form">-->
+                <!--<el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px"-->
+                         <!--class="demo-ruleForm" :hide-required-asterisk="true">-->
+
+                    <!--<div class="" @click="dialogVisible = true">-->
+                        <!--<img :src="formPic.url"-->
+                             <!--style="-->
+                                <!--display: inline-block;-->
+                                <!--width: 40px;-->
+                                <!--height: 40px;-->
+                                <!--background: rgba(241,241,241,1);-->
+                                <!--border-radius: 20px 20px 20px 20px;"/>-->
+                        <!--<span>点击修改图标</span>-->
+                    <!--</div>-->
+
+                    <!--<el-dialog-->
+                            <!--title="图标修改"-->
+                            <!--:visible.sync="dialogVisible"-->
+                            <!--width="30%">-->
+                        <!--<div>-->
+                            <!--<div>-->
+                                <!--<img :src="picId.url"-->
+                                     <!--style="-->
+                                <!--display: inline-block;-->
+                                <!--width: 40px;-->
+                                <!--height: 40px;-->
+                                <!--background: rgba(241,241,241,1);-->
+                                <!--border-radius: 20px 20px 20px 20px;"/>-->
+                                <!--<span>点击修改图标</span>-->
+                            <!--</div>-->
+                            <!--<div style="-->
+                                    <!--margin: 0 auto;-->
+                                    <!--width: 95%;-->
+                                    <!--height: 239px;-->
+                                    <!--background:rgba(249,249,249,1);-->
+                                    <!--border-radius: 5px 5px 5px 5px;-->
+                                    <!--overflow-x: hidden;-->
+                                     <!--overflow-y: scroll;">-->
+                                <!--<div style="width: 100%;-->
+                                                <!--display:flex;-->
+                                                <!--flex-direction:row;-->
+                                                <!--flex-wrap:wrap;-->
+                                                <!--justify-content:space-around;">-->
+                                            <!--<span v-for="warehouse_pic in warehouse_pictures">-->
+                                                <!--<img :src="warehouse_pic.alipay_url+warehouse_pic.url"-->
+                                                     <!--alt=""-->
+                                                     <!--style="width: 60px;-->
+                                                     <!--height: 60px;-->
+                                                     <!--margin: 8px;"-->
+                                                     <!--@click="append_pic(warehouse_pic.alipay_url+warehouse_pic.url,warehouse_pic.alipay_id)">-->
+                                            <!--</span>-->
+                                <!--</div>-->
+                            <!--</div>-->
+                        <!--</div>-->
+                        <!--<span slot="footer" class="dialog-footer">-->
+                                   <!--&lt;!&ndash;<el-button type="primary" @click="dialogVisible = false">确 定</el-button>&ndash;&gt;-->
+                                   <!--<el-button type="primary" @click="Addpic(picId)">确 定</el-button>-->
+                                   <!--<el-button @click="dialogVisible = false">取 消</el-button>-->
+                                <!--</span>-->
+                    <!--</el-dialog>-->
+                    <!--<el-form-item label="导航名称" prop="name">-->
+                        <!--<el-input v-model="ruleForm.name"></el-input>-->
+                    <!--</el-form-item>-->
+                    <!--<el-form-item label="文字介绍" prop="introduce">-->
+                        <!--<el-input v-model="ruleForm.introduce"></el-input>-->
+                    <!--</el-form-item>-->
+                    <!--<el-form-item label="跳转地址" prop="url">-->
+                        <!--<el-input v-model="ruleForm.url"></el-input>-->
+                    <!--</el-form-item>-->
+                    <!--<el-form-item label="选择分组" prop="grouping">-->
+                        <!--<el-select v-model="ruleForm.grouping" placeholder="请选择分组" style="display: block">-->
+                            <!--<el-option label="生活日常" value="生活日常"></el-option>-->
+                            <!--<el-option label="线上缴费" value="线上缴费"></el-option>-->
+                        <!--</el-select>-->
+                    <!--</el-form-item>-->
+                    <!--<el-form-item label="设置热门标签" prop="resource">-->
+                        <!--<el-radio-group v-model="ruleForm.resource">-->
+                            <!--<el-radio label="null"></el-radio>-->
+                            <!--<el-radio label="是"></el-radio>-->
+                        <!--</el-radio-group>-->
+                        <!--<span class="notice"></span>-->
+                    <!--</el-form-item>-->
+
+                    <!--<el-form-item>-->
+                        <!--<el-button type="primary" @click="submitForm('ruleForm')">保存到导航库</el-button>-->
+                    <!--</el-form-item>-->
+                <!--</el-form>-->
+            <!--</div>-->
+        <!--</div>-->
+
+<!--</template>-->
+
+<!--<script>-->
+    <!--export default {-->
+        <!--name: "Library_add",-->
+        <!--data() {-->
+            <!--return {-->
+                <!--warehouse_pictures:[],-->
+                <!--dialogVisible: false,-->
+                <!--picId: {},-->
+                <!--formPic: {},-->
+                <!--ruleForm: {-->
+                    <!--image: '',-->
+                    <!--name: '',-->
+                    <!--introduce: '',-->
+                    <!--url: '',-->
+                    <!--grouping: '',-->
+                    <!--resource: '',-->
+                <!--},-->
+                <!--rules: {-->
+                    <!--image: [-->
+                        <!--{required: true, message: '请输入导航名称', trigger: 'blur'},-->
+                    <!--],-->
+                    <!--name: [-->
+                        <!--{required: true, message: '请输入导航名称', trigger: 'blur'},-->
+                        <!--{min: 1, max: 4, message: '长度在 1 到 4 个字符', trigger: 'blur'}-->
+                    <!--],-->
+                    <!--introduce: [-->
+                        <!--{required: true, message: '请输入文字介绍', trigger: 'blur'},-->
+                    <!--],-->
+                    <!--url: [-->
+                        <!--{required: true, message: '请输入地址', trigger: 'blur'},-->
+                    <!--],-->
+                    <!--grouping: [-->
+                        <!--{required: true, message: '请选择活动区域', trigger: 'change'}-->
+                    <!--],-->
+                    <!--resource: [-->
+                        <!--{required: true, message: '请选择活动资源', trigger: 'change'}-->
+                    <!--],-->
+                <!--}-->
+            <!--}-->
+        <!--},-->
+        <!--created(){-->
+            <!--this.init()-->
+        <!--},-->
+        <!--methods: {-->
+            <!--init() {-->
+                <!--let id = this.$route.params.id-->
+                <!--//  获取图片列表-->
+                <!--this.axios.post(`api/SchoolCodr/GetIconList`, {-->
+                    <!--headers: {-->
+                        <!--'Content-Type': 'application/json'-->
+                    <!--}-->
+                <!--}).then(res => {-->
+                    <!--console.log(res.data.data)-->
+                    <!--this.warehouse_pictures = res.data.data-->
+                <!--})-->
+            <!--},-->
+            <!--append_pic(url, id) {-->
+                <!--this.picId = {url: url, id: id}-->
+            <!--},-->
+            <!--// 表单头像-->
+            <!--Addpic(picId) {-->
+                <!--console.log(picId)-->
+                <!--this.formPic = picId-->
+                <!--this.dialogVisible = false-->
+            <!--},-->
+            <!--// 提交表单-->
+            <!--submitForm(formName) {-->
+                <!--this.$refs[formName].validate((valid) => {-->
+                    <!--if (valid) {-->
+                        <!--const module_data = {-->
+                            <!--"school_id": localStorage.schoolcode,-->
+                            <!--"T_column_info": {-->
+                                <!--"code": "T2018WH10",-->
+                                <!--"operate_type": "openWeb",-->
+                                <!--"title": this.ruleForm.name,-->
+                                <!--"value": this.ruleForm.introduce,-->
+                                <!--"more_info_title": "JSON",-->
+                                <!--"more_info_url": this.ruleForm.url,-->
+                                <!--"IconId": this.picId.id,-->
+                                <!--"GroupTitle": this.ruleForm.grouping,-->
+                                <!--"Tag": this.ruleForm.resource,-->
+                            <!--}-->
+                        <!--}-->
+                        <!--this.axios.post(`/api/SchoolCodr/AddSchoolCardColum`, module_data, {-->
+                            <!--headers: {-->
+                                <!--'Content-Type': 'application/json'-->
+                            <!--}-->
+                        <!--}).then(res => {-->
+                            <!--console.log(res)-->
+                            <!--location.reload()-->
+                        <!--})-->
+                    <!--} else {-->
+                        <!--console.log('error submit!!');-->
+                        <!--return false;-->
+                    <!--}-->
+                <!--});-->
+            <!--},-->
+
+        <!--}-->
+    <!--}-->
+<!--</script>-->
+
+<!--<style scoped>-->
+
+<!--</style>-->

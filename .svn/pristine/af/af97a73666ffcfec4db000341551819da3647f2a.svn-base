@@ -1,0 +1,124 @@
+﻿using DbModel;
+using IService;
+using Infrastructure.Service;
+using Models.ViewModels;
+using System.Collections.Generic;
+using Infrastructure;
+using System;
+using SqlSugar;
+
+namespace Service
+{
+    public class tb_payment_itemService : GenericService<tb_payment_item>, Itb_payment_itemService
+    {
+        public List<view_payment_item> FindListBySchoolCode(string school_code)
+        {
+            using (var db = DbFactory.GetSqlSugarClient())
+            {
+                var pageResult = db.Queryable<tb_payment_item, tb_payment_accounts>(
+                                        (pi, pa) =>
+                                        new object[] {
+                                            JoinType.Left,pi.account==pa.id.ToString()
+                                    })
+                                    .Where((pi, pa) =>
+                                        pi.status == 0
+                                        && pi.schoolcode.Equals(school_code) 
+                                        && pi.date_to > DateTime.Now
+                                    )
+                                    .Select((pi, pa) => new view_payment_item {
+                                        id=pi.id,
+                                        //schoolcode=pi.schoolcode,
+                                        name=pi.name,
+                                        //is_external=pi.is_external,
+                                        //account=pi.account,
+                                        //target=pi.target,
+                                        //@fixed=pi.@fixed,
+                                        //money=pi.money,
+                                        type=pi.type,
+                                        //introduction=pi.introduction,
+                                        //icon=pi.icon,
+                                        //group=pi.group,
+                                        //method=pi.method,
+                                        //can_set_count=pi.can_set_count,
+                                        //nessary_info=pi.nessary_info,
+                                        //date_from=pi.date_from,
+                                        //date_to=pi.date_to,
+                                        //count=pi.count,
+                                        //notify_link=pi.notify_link,
+                                        //notify_key=pi.notify_key,
+                                        //notify_msg=pi.notify_msg,
+                                        //remark=pi.remark,
+                                        //status=pi.status,
+                                        //limit=pi.limit,
+                                        AccountId=pa.id,
+                                        AccountName=pa.name
+                                    });
+                return pageResult.ToList();
+            }
+        }
+
+        public (List<searchPayment>,int) searchPayment(int start, int end, string schoolcode, string student, string name, string status,string sdate,string edate)
+        {
+            //int intStart = end / (end - start);
+            List<searchPayment> lstResult = new List<searchPayment>();
+            using (var db = DbFactory.GetSqlSugarClient())
+            {
+                var pageResult = db.Queryable<tb_payment_record, tb_payment_item>(
+                                        (t, tpi) =>
+                                        new object[] {
+                                            JoinType.Inner,t.payment_id == tpi.id
+                                    })
+                                    .Where((t, tpi) =>
+                                        tpi.schoolcode == schoolcode
+                                    )
+                                    .WhereIF(!string.IsNullOrWhiteSpace(student), (t, tpi) => t.student_id == student)
+                                    .WhereIF(!string.IsNullOrWhiteSpace(name), (t, tpi) => tpi.name == name)
+                                    .WhereIF(!string.IsNullOrWhiteSpace(status), (t, tpi) => t.status.ToString() == status)
+                                    .WhereIF(!string.IsNullOrWhiteSpace(sdate.ToString()), (t, tpi) => t.pay_time >= DateTime.Parse(sdate) && t.pay_time <= DateTime.Parse(edate))
+                                    .WhereIF(!string.IsNullOrWhiteSpace(schoolcode), (t, tpi) => tpi.schoolcode == schoolcode)
+                                    .Select((t, tpi) => new searchPayment
+                                    {
+                                        order_no = t.order_no,
+                                        out_order_no = t.out_order_no,
+                                        name = tpi.name,
+                                        total_amount = t.total_amount.ToString(),
+                                        pay_amount = t.pay_amount.ToString(),
+                                        receipt_amount = t.receipt_amount.ToString(),
+                                        refund_amount = t.refund_amount.ToString(),
+                                        pay_time = t.pay_time.ToString(),
+                                        status = t.status.ToString(),
+                                        student_id = t.student_id.ToString(),
+                                        passport = t.passport.ToString(),
+                                        pay_name = t.pay_name,
+                                        phone = t.phone
+                                    }).ToList();
+                                    //}).ToPageList(intStart, end - start);
+                int intCount = pageResult.Count;
+                //for (int i = 0; i < pageResult.Count; i++)
+                //{
+                //    pageResult[i].rn = start + i;
+                //}
+                List<searchPayment> lstSearchPayment = new List<searchPayment>();
+                for (int i = start; i < end; i++)
+                {
+                    pageResult[i].rn = start + 1;
+                    lstResult.Add(pageResult[i]);
+                }
+                //int intCount = db.Queryable<tb_payment_record, tb_payment_item>(
+                //                        (t, tpi) =>
+                //                        new object[] {
+                //                            JoinType.Inner,t.payment_id == tpi.id
+                //                    })
+                //                    .Where((t, tpi) =>
+                //                        tpi.schoolcode == schoolcode
+                //                    )
+                //                    .WhereIF(!string.IsNullOrWhiteSpace(student), (t, tpi) => t.student_id == student)
+                //                    .WhereIF(!string.IsNullOrWhiteSpace(name), (t, tpi) => tpi.name == name)
+                //                    .WhereIF(!string.IsNullOrWhiteSpace(status), (t, tpi) => t.status.ToString() == status)
+                //                    .WhereIF(!string.IsNullOrWhiteSpace(sdate.ToString()), (t, tpi) => t.pay_time >= DateTime.Parse(sdate) && t.pay_time <= DateTime.Parse(edate))
+                //                    .WhereIF(!string.IsNullOrWhiteSpace(schoolcode), (t, tpi) => tpi.schoolcode == schoolcode).ToList().Count;
+                return (lstResult,intCount);
+            }
+        }
+    }
+}

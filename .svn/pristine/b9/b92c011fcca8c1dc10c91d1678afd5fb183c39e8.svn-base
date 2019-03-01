@@ -1,0 +1,68 @@
+﻿using DbModel;
+using IService;
+using Infrastructure.Service;
+using System.Collections.Generic;
+using Models.ViewModels;
+using Infrastructure;
+using SqlSugar;
+
+
+namespace Service
+{
+
+    public class tb_payment_waterrentService : GenericService<tb_payment_waterrent>,Itb_payment_waterrentService
+    {
+        /// <summary>
+        /// 获取水费已付款订单信息
+        /// </summary>
+        /// <param name="pageIndex"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="schoolcode"></param>
+        /// <param name="total"></param>
+        /// <param name="ordernumber"></param>
+        /// <param name="stime"></param>
+        /// <param name="etime"></param>
+        /// <returns></returns>
+        public IEnumerable<tb_payment_waterrent> GetWaterInfo(int pageIndex, int pageSize, int schoolcode, ref int total,
+         string ordernumber = "", string stime = "", string etime = "")
+        {
+            using (var db = DbFactory.GetSqlSugarClient())
+            {
+               var result= db.Queryable<tb_payment_waterrent>()
+                    .Where(p=>p.deptId==schoolcode)
+                    .WhereIF(!string.IsNullOrEmpty(ordernumber), p => p.orderId == ordernumber)
+                    .WhereIF(!string.IsNullOrEmpty(stime) && !string.IsNullOrEmpty(etime),p => p.posDataTime >= SqlFunc.ToDate(stime) && p.posDataTime <= SqlFunc.ToDate(etime))
+                    .OrderBy(a => a.posDataTime, OrderByType.Desc).ToPageList(pageIndex,pageSize,ref total);
+
+
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// 返回订单总金额和总比数
+        /// </summary>
+        /// <param name="schoolcode"></param>
+        /// <returns></returns>
+        public List<WaterrentCount> GetSumOrderandSumPay(int schoolcode)
+        {
+
+            using (var db = DbFactory.GetSqlSugarClient())
+            {
+
+
+
+                return db.Queryable<tb_payment_waterrent>().Where(p => p.deptId == schoolcode).Select(p => new WaterrentCount { wcount = SqlFunc.AggregateCount(p.id), sumprice = SqlFunc.AggregateSum(SqlFunc.ToDouble(p.posPay)) }).GroupBy("deptId").ToList() ; 
+
+            }
+
+        }
+
+
+
+
+
+
+
+    }
+}

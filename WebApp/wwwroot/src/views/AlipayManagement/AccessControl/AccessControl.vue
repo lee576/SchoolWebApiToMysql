@@ -1,0 +1,295 @@
+<template>
+    <div class="home">
+        <div class="nav-lead clearfix">
+            <div class="fl nav-lead-word"><a href="#">门禁管理</a></div>
+            <div class="fr batch-operation">
+                <button class="operation-btn fl" @click="download">导出Excel</button>
+            </div>
+            <div class="fr batch-operation" style="margin-right: 15px">
+                <router-link to="/AccessControlAnalysis"><button class="operation-btn fl">分析数据信息</button></router-link>
+            </div>
+        </div>
+        <div class="page-content">
+            <div class="nav-tab-box">
+                <div class="nav-tab1 clearfix">
+                    <div class="fl on-part-search1">
+                        <div class="fl left-word-on1">设备</div>
+                        <div class="fl form-timerange">
+                            <div class="fl form-timerange">
+                                <el-select placeholder="请选择设备" style="width:180px" v-model="equipStr">
+                                    <el-option v-for="item in equipArr" :label="item.name" :value="item.id" :key="item.id"></el-option>
+                                </el-select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="fl on-part-search1">
+                        <div class="fl left-word-on1">人员类别</div>
+                        <div class="fl form-timerange">
+                            <div class="fl form-timerange">
+                                <el-select placeholder="请选择人员类别" style="width:180px" v-model="emplyeeStr" @change="employeeChoose">
+                                    <el-option v-for="item in emplyeeArr" :label="item.label" :value="item.value" :key="item.value"></el-option>
+                                </el-select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="fl on-part-search1">
+                        <div class="fl left-word-on1" style="width:90px">姓名或者学号</div>
+                        <div class="fl form-timerange">
+                            <div class="fl form-timerange">
+                                <el-input v-model="studentNo" placeholder="请输入姓名或者学号"></el-input>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="fl on-part-search1">
+                        <div class="fl left-word-on1">门禁时间</div>
+                        <div class="fl form-timerange">
+                            <el-date-picker
+                                    v-model="dateArr"
+                                    value-format="yyyy-MM-dd"
+                                    type="daterange"
+                                    range-separator="至"
+                                    start-placeholder="开始日期"
+                                    end-placeholder="结束日期" style="width:250px" :picker-options="pickerOptions2">
+                            </el-date-picker>
+                        </div>
+                        <div class="fl on-part-search">
+                            <div class="fl search-button"><button class="btn-pro" @click="search">搜索</button></div>
+                        </div>
+                    </div>
+                    <div class="fr right-btn-ta" style="margin-bottom: 10px">
+                        <router-link to="/EquipmentMaintenance"><button class="btn">门禁设备维护</button></router-link>
+                    </div>
+                </div>
+            </div>
+            <div class="payment-item-table" style="margin-top: 15px">
+                <div class="table-box">
+                    <template>
+                        <el-table
+                                :data="configTable.tableArr"
+                                stripe
+                                style="width: 100%">
+                            <el-table-column
+                                    prop="student_id"
+                                    label="人员ID"
+                            >
+                            </el-table-column>
+                            <el-table-column
+                                    prop="user_realname"
+                                    label="人员姓名"
+                            >
+                            </el-table-column>
+                            <el-table-column
+                                    prop="device_id"
+                                    label="设备号"
+                            >
+                            </el-table-column>
+                            <el-table-column
+                                    prop="device_name"
+                                    label="设备名称">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="school_name"
+                                    label="学校名称">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="open_time"
+                                    label="进出时间">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="entrance_status"
+                                    label="门禁状态">
+                            </el-table-column>
+                        </el-table>
+                    </template>
+                </div>
+                <div class="block" style="text-align: right;">
+                    <el-pagination
+                            @size-change="handleSizeChange"
+                            @current-change="handleCurrentChange"
+                            :current-page.sync="configTable.currentPage"
+                            :page-size="configTable.iDisplayLength"
+                            layout="total, prev, pager, next"
+                            :total="configTable.total">
+                    </el-pagination>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+    import { currency } from './../../../util/currency'
+    import { getDateType } from './../../../util/getDate'
+    import { export_json_to_excel } from './../../../assets/js/Export2Excel'
+    export default {
+        name: "AccessControl",
+        data() {
+            return {
+                dateArr:[],
+                emplyeeStr:null,
+                emplyeeArr:[{value:null , label: '全部'},{value: '0', label: '进行中'},{value: '1', label: '终止'}],
+                equipStr:null,
+                equipArr:[],
+                studentNo:'',
+                exportListData:[],
+                configTable:{
+                    tableArr:[],
+                    total:0,
+                    currentPage: 1,
+                    iDisplayStart:0,
+                    iDisplayLength:10,
+                },
+                pickerOptions2: {
+                    disabledDate(time) {
+                        return time.getTime() > Date.now() - 8.64e6
+                    },
+                },
+            }
+        },
+        filters:{
+            currency: currency,
+            getDateType:getDateType,
+            export_json_to_excel:export_json_to_excel
+        },
+        created() {
+            this.dateArr = [getDateType(1,0),getDateType(1,0)];
+            this.equipList();
+            this.tableList();
+        },
+        methods: {
+            formatJson(filterVal, jsonData) {
+                return jsonData.map(v => filterVal.map(j => v[j]))
+            },
+            //点击下载
+            download(){
+                let self = this,stime = '',etime = '';
+                if(self.dateArr.length>0){
+                    stime = self.dateArr[0];
+                    etime = self.dateArr[1];
+                }
+                self.axios.get('api/Dormitory/GetEntranceRecord2', {
+                    params: {
+                        schoolCode: localStorage.schoolcode,
+                        startTime:stime,
+                        endTime:etime,
+                        deviceId:self.equipStr,
+                        stuffType:self.emplyeeStr,
+                        studentIdentity:self.studentNo
+                    }
+                })
+                    .then(function (response) {
+                        let res = response.data;
+                        if(res.code == '000000'){
+                            self.exportListData = res.data;
+                            require.ensure([], () => {
+
+                                const tHeader = ["人员ID", "人员姓名", "设备号", "设备名称", "学校名称", "门禁时间", "门禁状态"]; //这个是表头名称 可以是iveiw表格中表头属性的title的数组
+                                const filterVal = ["student_id", "user_realname", "device_id", "device_name", "school_name", "open_time ", "entrance_status"]; //与表格数据配合 可以是iview表格中的key的数组
+                                const list = self.exportListData; //表格数据，iview中表单数据也是这种格式！
+                                const data = self.formatJson(filterVal, list)
+                                export_json_to_excel(tHeader, data, '交易流水') //列表excel  这个是导出表单的名称
+                            });
+                        }else {
+                            self.$message({
+                                showClose: true,
+                                message: res.msg,
+                                type: 'warning'
+                            });
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+
+
+            },
+            tableList(){
+                let self = this,stime = '',etime = '';
+                if(self.dateArr.length>0){
+                    stime = self.dateArr[0];
+                    etime = self.dateArr[1];
+                }
+                self.axios.get('api/Dormitory/GetEntranceResultPage', {
+                    params: {
+                        schoolCode: localStorage.schoolcode,
+                        sEcho:self.configTable.currentPage,
+                        iDisplayStart:self.configTable.iDisplayStart,
+                        iDisplayLength:self.configTable.iDisplayLength,
+                        startTime:stime,
+                        endTime:etime,
+                        deviceId:self.equipStr,
+                        stuffType:self.emplyeeStr,
+                        studentIdentity:self.studentNo
+                    }
+                })
+                    .then(function (response) {
+                        let res = response.data;
+                        if(res.return_code == '990005'){
+                            self.configTable.tableArr = res.aaData;
+                            self.configTable.total = res.iTotalRecords;
+                        }else {
+                            self.$message({
+                                showClose: true,
+                                message: '查询失败',
+                                type: 'warning'
+                            });
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+
+            },
+            equipList(){
+                let self = this;
+                self.axios.get('api/Dormitory/DealQueryDevice', {
+                    params: {
+                        schoolcode: localStorage.schoolcode,
+                    }
+                })
+                    .then(function (response) {
+                        let res = response.data;
+                        if(res.return_code == '0'){
+                            self.equipArr = res.data;
+                            self.equipArr.unshift({id:null , name: '全部'});
+                        }else {
+                            self.$message({
+                                showClose: true,
+                                message: '获取数据失败',
+                                type: 'warning'
+                            });
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            },
+            handleSizeChange(val) {
+                console.log(`每页 ${val} 条`);
+                let self = this;
+                self.configTable.iDisplayLength = val;
+                self.tableList();
+            },
+            handleCurrentChange(val) {
+                console.log(`当前页: ${val}`);
+                let self = this;
+                self.configTable.iDisplayStart = (val - 1)*self.configTable.iDisplayLength;
+                self.tableList();
+            },
+            search(){
+                this.configTable.iDisplayStart = 0;
+                this.configTable.currentPage = 1;
+                this.tableList();
+            },
+            employeeChoose(val){
+                this.emplyeeStr = val;
+            },
+
+        }
+    }
+</script>
+
+<style scoped>
+
+</style>

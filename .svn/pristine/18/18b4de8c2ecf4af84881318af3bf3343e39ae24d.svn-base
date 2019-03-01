@@ -1,0 +1,249 @@
+<template>
+    <div class="home">
+        <div class="nav-lead clearfix">
+            <div class="fl nav-lead-word"><a href="#" class="active-gray">常规缴费项管理></a><a href="#">创建收费项</a></div>
+            <div class="fl">
+                <router-link to="/RoutineAdmin" class="cx-back">返回</router-link>
+            </div>
+        </div>
+        <div class="page-content">
+            <div class="add-page-box">
+                    <div class="add-page">
+                        <div class="add-page-title">创建收费项</div>
+                        <el-form :model="adminForm" :rules="adminrules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+                            <div class="choose-logo" @click="dialogVisible = true">
+                                <img :src='"../../../assets/images/payIcon/choose-icon"+slectIcon+".png"' class="choose-logo-img">
+                                <div class="choose-logo-word">点击修改收费图标</div>
+                            </div>
+                            <div class="gray-box-part">
+                                <el-form-item label="收款账号" prop="account">
+                                    <el-input v-model="adminForm.account"></el-input>
+                                </el-form-item>
+                                <el-form-item label="收款分类" prop="kind">
+                                    <el-select v-model="adminForm.kind" placeholder="请选择收款分类">
+                                        <el-option label="爱心捐赠" value="sheji1"></el-option>
+                                        <el-option label="2019学费" value="sheji2"></el-option>
+                                    </el-select>
+                                </el-form-item>
+                                <el-form-item label="收费名称" prop="account">
+                                    <el-input v-model="adminForm.account"></el-input>
+                                </el-form-item>
+                                <el-form-item label="收费介绍" prop="desc">
+                                    <el-input type="textarea" v-model="adminForm.desc"></el-input>
+                                </el-form-item>
+                            </div>
+                            <div class="gray-box-part">
+                                <el-form-item label="收费对象" prop="Charging">
+                                    <el-radio label="1" v-model="adminForm.feeRadio" border @change="radioFlag=true">校园卡</el-radio>
+                                    <el-radio label="2" v-model="adminForm.feeRadio" border @change="radioFlag=false">不限制</el-radio>
+                                </el-form-item>
+                                <el-form-item label="收费群体" prop="campusRadio" :style="{display:radioFlag?'block':'none'}">
+                                    <el-radio-group v-model="adminForm.resource">
+                                        <div  class="classchoose">
+                                            <el-radio label="1" v-model="adminForm.campusRadio">所有电子校园卡用户</el-radio>
+                                        </div>
+                                        <div class="classchoose">
+                                            <el-radio label="2" v-model="adminForm.campusRadio">指定班级</el-radio>
+                                            <el-select v-model="adminForm.monk" placeholder="请选择收款分类">
+                                                <el-option label="平面设计01" value="sheji1"></el-option>
+                                                <el-option label="平面设计02" value="sheji2"></el-option>
+                                            </el-select>
+                                        </div>
+                                    </el-radio-group>
+                                </el-form-item>
+                                <el-form-item label="收费群体" prop="allRadio" :style="{display:!radioFlag?'block':'none'}">
+                                    <el-radio-group v-model="adminForm.allRadio">
+                                        <div  class="classchoose">
+                                            <el-radio label="1" v-model="adminForm.allRadio">所有用户</el-radio>
+                                        </div>
+                                    </el-radio-group>
+                                </el-form-item>
+                                <el-form-item label="卡有效期" prop="usetime">
+                                    <el-date-picker
+                                            v-model="adminForm.usetime"
+                                            type="date"
+                                            placeholder="选择日期">
+                                    </el-date-picker>
+                                </el-form-item>
+                                <el-form-item label="收费次数" prop="account">
+                                    <el-input v-model="adminForm.account"></el-input>
+                                </el-form-item>
+                                <el-form-item label="收费金额" prop="moneyRadio">
+                                    <el-radio-group v-model="adminForm.moneyRadio">
+                                        <div  class="classchoose">
+                                            <el-radio label="1" v-model="adminForm.moneyRadio">用户自助填写</el-radio>
+                                        </div>
+                                        <div class="numchoose">
+                                            <el-radio label="2" v-model="adminForm.moneyRadio">定额</el-radio>
+                                            <el-input-number v-model="adminForm.num1" controls-position="right" @change="handleChange" :min="1" :max="10"></el-input-number>
+                                        </div>
+                                    </el-radio-group>
+                                </el-form-item>
+                                <el-form-item label="所需信息" prop="type">
+                                    <el-checkbox-group v-model="adminForm.type">
+                                        <el-checkbox label="美食/餐厅线上活动" name="type"></el-checkbox>
+                                        <el-checkbox label="地推活动" name="type"></el-checkbox>
+                                        <el-checkbox label="线下主题活动" name="type"></el-checkbox>
+                                        <el-checkbox label="单纯品牌曝光" name="type"></el-checkbox>
+                                    </el-checkbox-group>
+                                </el-form-item>
+                                <el-form-item label="缴费日期" prop="value1" class="form-timerange">
+                                    <el-date-picker
+                                            v-model="adminForm.value1"
+                                            type="daterange"
+                                            range-separator="至"
+                                            start-placeholder="开始日期"
+                                            end-placeholder="结束日期">
+                                    </el-date-picker>
+                                </el-form-item>
+                            </div>
+
+                            <div class="high-set" :class="[{ active: isActive }]"  @click="toggleClass(isActive)">
+                                <span>
+                                    <span class="high-set-word">高级设置</span>
+                                    <!--//class="high-set-img" -->
+                                    <span class="high-set-img" ></span>
+                                </span>
+                            </div>
+                            <div class="gray-box-part" :style="{display:(isActive?'block':'none')}" >
+                                <el-form-item label="通知链接" prop="notice">
+                                    <el-input placeholder="请输入通知链接" v-model="adminForm.notice"></el-input>
+                                </el-form-item>
+                                <el-form-item label="通知秘钥" prop="secretkey">
+                                    <el-select  placeholder="请选择通知秘钥" v-model="adminForm.secretkey">
+                                        <el-option label="秘钥01" value="miyao1"></el-option>
+                                        <el-option label="秘钥02" value="miyao2"></el-option>
+                                    </el-select>
+                                </el-form-item>
+                                 <el-form-item label="通知附言">
+                                     <el-input type="textarea" placeholder="请输入通知附言"></el-input>
+                                 </el-form-item>
+                                 <el-form-item label="备注项">
+                                     <el-input type="textarea" placeholder="请输入备注项"></el-input>
+                                 </el-form-item>
+                            </div>
+                            <el-form-item>
+                                <el-button class="btn-bg" @click="onSubmit('ruleForm')">添加</el-button>
+                                <el-button class="btn-border" @click="cancel" >取消</el-button>
+                            </el-form-item>
+
+                        </el-form>
+
+                    </div>
+            </div>
+        </div>
+
+        <el-dialog title="图标修改" :visible.sync="dialogVisible" width="600px" top="20vh">
+
+                <div class="edit-choose-logo">
+                    <img :src='"../../../assets/images/payIcon/choose-icon"+imageUrl+".png"' class="edit-logo-img">
+                    <div class="edit-logo-word">选中图标</div>
+                </div>
+               <ul class="edit-logo-box clearfix">
+                   <li  v-for="(item,index) in iconArr" :class="radio==index?'active':''"><img :src='"../../../assets/images/payIcon/choose-icon"+item+".png"'  @click="changeIcon(item)" class="edit-logo"></li>
+               </ul>
+                <div slot="footer" class="dialog-footer diff-button-footer">
+                    <el-button @click="dialogVisible = false">取 消</el-button>
+                    <el-button type="primary" @click="dialogVisible = false;slectIcon=imageUrl;" class="sure-btn">确 定</el-button>
+                </div>
+
+        </el-dialog>
+    </div>
+</template>
+
+<script>
+    export default {
+        name: "Payment_add_kind",
+        data() {
+            return {
+                radioFlag:true,
+                radio:'0',
+                imageUrl:1,
+                slectIcon:1,
+                dialogVisible:false,
+                isActive:false,
+                iconArr:22,
+                adminForm: {
+                    account: '',
+                    kind:'',
+                    desc:'',
+                    usetime:'',
+                    resource: false,
+                    moneyRadio:'1',
+                    feeRadio:'1',
+                    allRadio:'1',
+                    campusRadio:'1',
+                    monk:'',
+                    num1:'1',
+                    type: [],
+                    value1:'',
+                    notice: '',
+                    secretkey:'',
+                },adminrules: {
+                    account: [
+                        {required: true, message: '请输入收款账号', trigger: 'blur'}
+                    ],kind: [
+                        {required: true, message: '请选择收款分类', trigger: 'change'}
+                    ],desc:[
+                        {required: true, message: '请输入收费介绍', trigger: 'blur'}
+                    ],usetime: [
+                        { type: 'date', required: true, message: '请选择卡有效期', trigger: 'change'}
+                    ],monk: [
+                        {required: true, message: '请选择收款分类', trigger: 'change'}
+                    ],type: [
+                        { type: 'array', required: false, message: '请至少选择一个活动性质', trigger: 'change' }
+                    ],value1:[
+                        { required: true, message: '请选择缴费日期', trigger: 'change'}
+                    ],notice:[
+                        { required: false, message: '请输入通知链接', trigger: 'blur'}
+                   ],secretkey:[
+                        { required: false, message: '请选择通知秘钥', trigger: 'blur'}
+                    ]
+                }
+            }
+        },
+        created() {
+            let schoolcode = localStorage.schoolcode,self=this;
+        },
+        methods: {
+            toggleClass(e){
+                console.log(8888)
+                console.log(window.location.href)
+                if(e){
+                   this.isActive = false;
+                }else{
+                    this.isActive = true;
+                }
+
+
+            },
+            onSubmit(ruleForm) {
+                this.$refs[ruleForm].validate((valid) => {
+                    if (valid) {
+                        alert('submit!');
+                    } else {
+                        console.log('error submit!!');
+                        return false;
+                    }
+                });
+            },
+            cancel(){
+                this.$router.push({path: '/RoutineAdmin'});
+            },handleChange(value) {
+                console.log(value);
+            },
+            changeIcon(icon){
+                console.log(icon)
+                this.radio = icon -1;
+                this.imageUrl=icon;
+            },
+            radioChange(){
+                console.log(1111);
+            }
+        }
+    }
+</script>
+
+<style scoped>
+
+</style>

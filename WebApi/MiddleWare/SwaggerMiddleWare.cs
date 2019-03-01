@@ -1,0 +1,200 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.Extensions.Configuration;
+using SchoolWebApi.HeadParams;
+using SchoolWebApi.SwaggerExtension;
+using Swashbuckle.AspNetCore.Swagger;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using Swashbuckle.AspNetCore.SwaggerUI;
+
+namespace SchoolWebApi.MiddleWare
+{
+    /// <summary>
+    /// 接口加入头部Jwt Authorize参数
+    /// </summary>
+    public class HttpHeaderOperation : IOperationFilter
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="operation"></param>
+        /// <param name="context"></param>
+        public void Apply(Operation operation, OperationFilterContext context)
+        {
+            if (operation.Parameters == null)
+            {
+                operation.Parameters = new List<IParameter>();
+            }
+
+            if (context.ApiDescription.ActionDescriptor is ControllerActionDescriptor descriptor)
+            {
+                var actionAttributes = descriptor.MethodInfo.GetCustomAttributes(inherit: true);
+
+                bool isAuthorize = actionAttributes.Any(a => a is AuthorizeAttribute);
+                //Authorize标签的链接中添加accesstoken值
+                if (isAuthorize)
+                {
+                    operation.Parameters.Add(new NonBodyParameter()
+                    {
+                        Name = "Authorization", //添加Authorization头部参数
+                        In = "header",
+                        Type = "string",
+                        Required = false
+                    });
+                }
+
+                bool isHeaderParams = actionAttributes.Any(a => a is HeaderParamsAttribute);
+                if (isHeaderParams)
+                {
+                    var headerParams = (HeaderParamsAttribute)actionAttributes.Single(t => t is HeaderParamsAttribute);
+                    var parameters = headerParams.ParametersName;
+                    foreach (string parameter in parameters)
+                    {
+                        switch (parameter)
+                        {
+                            case nameof(HeadParamsType.FileUpload):
+                                {
+                                    operation.Parameters.Add(new NonBodyParameter
+                                    {
+                                        Name = "File",
+                                        In = "formData",
+                                        Description = @"上传文件",
+                                        Required = true,
+                                        Type = "file"
+                                    });
+                                    operation.Consumes.Add("multipart/form-data");
+                                }
+                                break;
+                            default:
+                                operation.Parameters.Add(new NonBodyParameter()
+                                {
+                                    Name = parameter,
+                                    In = "header",
+                                    Type = "string",
+                                    Required = true
+                                });
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Swagger登录验证
+        /// </summary>
+        public class SwaggerMiddleWare
+        {
+            private static dynamic Authorization(IApplicationBuilder app, string SWAGGER_ATUH_COOKIE)
+            {
+                var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                var config = builder.Build();
+                var swaggerLoginSection = config.GetSection("SwaggerLogin");
+                var options = new
+                {
+                    RoutePrefix = "swagger",
+                    SwaggerAuthList = new List<CustomSwaggerAuth>()
+                    {
+                        new CustomSwaggerAuth(swaggerLoginSection.GetSection("UserName").Value,
+                            swaggerLoginSection.GetSection("Password").Value)
+                    },
+                };
+
+                var currentAssembly = typeof(CustomSwaggerAuth).GetTypeInfo().Assembly;
+                app.Use(async (context, next) =>
+                {
+                    var _method = context.Request.Method.ToLower();
+                    var _path = context.Request.Path.Value;
+
+                    // 非swagger相关请求直接跳过
+                    if (_path.IndexOf($"/{options.RoutePrefix}", StringComparison.Ordinal) != 0)
+                    {
+                        await next();
+                        return;
+                    }
+
+                    if (_path == $"/{options.RoutePrefix}/login.html")
+                    {
+                        switch (_method)
+                        {
+                            //登录
+                            case "get":
+                                var stream =
+                                    currentAssembly.GetManifestResourceStream(
+                                        $"{currentAssembly.GetName().Name}.wwwroot.Swagger.login.html");
+                                byte[] buffer = new byte[stream.Length];
+                                stream.Read(buffer, 0, buffer.Length);
+                                context.Response.ContentType = "text/html;charset=utf-8";
+                                context.Response.StatusCode = StatusCodes.Status200OK;
+                                context.Response.Body.Write(buffer, 0, buffer.Length);
+                                return;
+                            case "post":
+                                var userModel =
+                                    new CustomSwaggerAuth(context.Request.Form["userName"],
+                                        context.Request.Form["userPwd"]);
+                                if (!options.SwaggerAuthList.Any(
+                                    e => e.UserName == userModel.UserName && e.UserPwd == userModel.UserPwd))
+                                {
+                                    await context.Response.WriteAsync("login error!");
+                                    return;
+                                }
+
+                                context.Response.Cookies.Append(SWAGGER_ATUH_COOKIE, userModel.AuthStr);
+                                context.Response.Redirect($"/{options.RoutePrefix}");
+                                return;
+                        }
+                    }
+                    else if (_path == $"/{options.RoutePrefix}/logout")
+                    {
+                        //退出
+                        context.Response.Cookies.Delete(SWAGGER_ATUH_COOKIE);
+                        context.Response.Redirect($"/{options.RoutePrefix}/login.html");
+                        return;
+                    }
+                    else
+                    {
+                        //若未登录则跳转登录
+                        if (!options.SwaggerAuthList.Any(s =>
+                            !string.IsNullOrEmpty(s.AuthStr) &&
+                            s.AuthStr == context.Request.Cookies[SWAGGER_ATUH_COOKIE]))
+                        {
+                            context.Response.Redirect($"/{options.RoutePrefix}/login.html");
+                            return;
+                        }
+                    }
+
+                    await next();
+                });
+                return options;
+            }
+
+            /// <summary>
+            /// Swagger 登录验证
+            /// </summary>
+            /// <param name="app"></param>
+            /// <param name="c"></param>
+            /// <param name="SWAGGER_ATUH_COOKIE"></param>
+            public static void Authorization(IApplicationBuilder app, SwaggerUIOptions c, string SWAGGER_ATUH_COOKIE)
+            {
+                var options = Authorization(app, SWAGGER_ATUH_COOKIE);
+                if (options.SwaggerAuthList.Count > 0)
+                {
+                    //index.html中添加ConfigObject属性
+                    var configObj = new ConfigObject();
+                    configObj.AdditionalItems.Add("customAuth", true);
+                    configObj.AdditionalItems.Add("loginUrl", $"/{options.RoutePrefix}/login.html");
+                    configObj.AdditionalItems.Add("logoutUrl", $"/{options.RoutePrefix}/logout");
+                    c.ConfigObject = configObj;
+                }
+            }
+        }
+    }
+}

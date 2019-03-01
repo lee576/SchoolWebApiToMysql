@@ -1,0 +1,64 @@
+﻿using Infrastructure.Service;
+using System.Collections.Generic;
+using Models.ViewModels;
+using DbModel;
+
+namespace IService
+{
+    public interface Itb_school_user_gradeService : IServiceBase<tb_school_user_grade>
+    {
+        #region 成绩单管理列表页数据（分页查询）
+        /// <summary>
+        /// 成绩单管理列表页数据（分页查询）
+        /// </summary>
+        /// <param name="pageIndex"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="total"></param>
+        /// <param name="schoolCode"></param>
+        /// <param name="discipline"></param>
+        /// <param name="student_idOrName"></param>
+        /// <param name="startTime"></param>
+        /// <param name="endTime"></param>
+        /// <returns></returns>
+        IEnumerable<SchoolUserGradeModel> FindSchoolUserGradeList(int pageIndex, int pageSize, ref int total, string schoolCode,
+           string discipline = "", string student_idOrName = "", string startTime = "", string endTime = "");
+
+        #endregion
+
+        #region 根据学校编号获取学科列表
+        /// <summary>
+        /// 根据学校编号获取学科列表
+        /// </summary>
+        /// <param name="schoolCode"></param>
+        /// <returns></returns>
+        IEnumerable<SchoolDisciplineViewModel> FindDisciplineBySchoolCode(string schoolCode);
+
+        #endregion
+
+        #region 导出成绩单列表数据
+        /// <summary>
+        /// 导出成绩单列表数据
+        /// </summary>
+        /// <param name="schoolCode"></param>
+        /// <param name="discipline"></param>
+        /// <param name="student_idOrName"></param>
+        /// <param name="startTime"></param>
+        /// <param name="endTime"></param>
+        /// <returns></returns>
+        IEnumerable<SchoolUserGradeModel> InduceSchoolUserGradeLIst(string schoolCode,
+          string discipline = "", string student_idOrName = "", string startTime = "", string endTime = "");
+
+        #endregion
+
+        #region 根据ali_user_id或学期查询学生成绩单
+        /// <summary>
+        /// 根据ali_user_id或学期查询学生成绩单
+        /// </summary>
+        /// <param name="ali_user_id"></param>
+        /// <param name="term"></param>
+        /// <returns></returns>
+        IEnumerable<StudentGradeListModel> SelectSchoolUserGradeLIst(string student_id, string school_id, string term = "");
+        #endregion
+
+    }
+}

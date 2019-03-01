@@ -1,0 +1,288 @@
+import Vue from 'vue'
+import Router from 'vue-router'
+
+// 登录页
+import Login from './Login.vue'
+import Home from './Home.vue'
+
+// 电子校园卡
+import CardIndex from './views/campusCard/cardAdmin/CardIndex.vue'
+import CardAdmin from './views/campusCard/cardAdmin/CardAdmin.vue'
+import CardAdmin_set from './views/campusCard/cardAdmin/CardAdmin_set.vue'
+
+import CardPersonnel from './views/campusCard/cardPersonnel/CardPersonnel.vue'
+import PersonnelAdd from './views/campusCard/cardPersonnel/PersonnelAdd.vue'
+import CardSurvey from './views/campusCard/cardSurvey/CardSurvey.vue'
+
+// 缴费大厅
+import PaymentSurvey from './views/paymentLobby/paymentSurvey/PaymentSurvey.vue'
+import RoutineAdmin from './views/paymentLobby/paymentRoutineadmin/RoutineAdmin.vue'
+import RoutneAdmin_Add from './views/paymentLobby/paymentRoutineadmin/RoutineAdmin_Add.vue'
+import PaymentDetail from './views/paymentLobby/paymentRoutineadmin/PaymentDetail.vue'
+import RoutineAdmin_Check from './views/paymentLobby/paymentRoutineadmin/RoutineAdmin_Check.vue'
+import RoutineAdmin_Check_add from './views/paymentLobby/paymentRoutineadmin/RoutineAdmin_Check_add.vue'
+import CommonSearchList from './views/paymentLobby/CommonSearch/CommonSearchList.vue'
+import PayableManagement from './views/paymentLobby/PayableManagement/PayableManagement.vue'
+import ManagementDetail from './views/paymentLobby/PayableManagement/ManagementDetail.vue'
+import ReceivingManage_List from './views/paymentLobby/ReceivingManage/ReceivingManage_List.vue'
+import ReceivingManage_Add from './views/paymentLobby/ReceivingManage/ReceivingManage_Add.vue'
+import Electricitycharge_List from './views/paymentLobby/ElectricitychargeManagement/Electricitycharge_List.vue'
+import Waterfee_List from './views/paymentLobby/WaterfeeManage/Waterfee_List.vue'
+
+
+Vue.use(Router)
+
+export default new Router({
+    mode: 'history',
+    base: process.env.BASE_URL,
+
+    routes: [
+        {
+            path: '/',
+            name: 'Login',
+            component: Login,
+        },
+
+        {
+            path: '/home',
+            name: 'Home',
+            component: Home,
+            meta: {
+                requiresAuth: true
+            },
+            redirect: {name: 'CardSurvey'},
+            children: [
+
+                // 电子校园卡
+                {
+                    path: '/cardsurvey',
+                    name: 'CardSurvey',
+                    component: CardSurvey,
+                    // meta: {
+                    //     requiresAuth: true
+                    // }
+                },
+                {
+                    path: '/cardindex',
+                    name: 'CardIndex',
+                    component: CardIndex,
+                    redirect: {name: 'CardAdmin'},
+                    children: [
+                        {
+                            path: '/cardadmin',
+                            name: 'CardAdmin',
+                            component: CardAdmin,
+                        },
+                        {
+                            path: '/cardadmin_set:id',
+                            name: 'CardAdmin_set',
+                            component: CardAdmin_set,
+                        },
+                    ]
+                },
+                {
+                    path: '/cardpersonnel',
+                    name: 'CardPersonnel',
+                    component: CardPersonnel
+                },
+
+                {
+                    path: '/personneladd',
+                    name: 'PersonnelAdd',
+                    component: PersonnelAdd
+                },
+                {
+                    path: '/paymentdetail',
+                    name: 'PaymentDetail',
+                    component: CardIndex,
+                    redirect: {name: 'PaymentSurvey'},
+                    children: [
+                        {
+                            path: '/paymentsurvey',
+                            name: 'PaymentSurvey',
+                            component: PaymentSurvey,
+                        },
+                        {
+                            path: '/routineadmin',
+                            name: 'RoutineAdmin',
+                            component: RoutineAdmin,
+                        },
+                        {
+                            path: '/RoutneAdmin_Add',
+                            name: 'RoutneAdmin_Add',
+                            component: RoutneAdmin_Add,
+                        },
+                        {
+                            path: '/PaymentDetail',
+                            name: 'PaymentDetail',
+                            component: PaymentDetail,
+                        },
+                        {
+                            path: '/RoutineAdmin_Check',
+                            name: 'RoutineAdmin_Check',
+                            component: RoutineAdmin_Check,
+                        },
+                        {
+                            path: '/RoutineAdmin_Check_add',
+                            name: 'RoutineAdmin_Check_add',
+                            component: RoutineAdmin_Check_add,
+                        },
+                        {
+                            path: '/commonsearchlist',
+                            name: 'CommonSearchList',
+                            component: CommonSearchList,
+                        },
+                        {
+                            path: '/PayableManagement',
+                            name: 'PayableManagement',
+                            component: PayableManagement,
+                        },
+                        {
+                            path: '/ManagementDetail',
+                            name: 'ManagementDetail',
+                            component: ManagementDetail,
+                        },
+                        {
+                            path: '/ReceivingManage_List',
+                            name: 'ReceivingManage_List',
+                            component: ReceivingManage_List,
+                        },
+                        {
+                            path: '/ReceivingManage_Add',
+                            name: 'ReceivingManage_Add',
+                            component: ReceivingManage_Add,
+                        },
+                        {
+                            path: '/Electricitycharge_List',
+                            name: 'Electricitycharge_List',
+                            component: Electricitycharge_List,
+                        },
+                        {
+                            path: '/Waterfee_List',
+                            name: 'Waterfee_List',
+                            component: Waterfee_List,
+                        }
+                    ]
+                },
+
+
+
+            ]
+        },
+
+
+        // // 电子校园卡
+        // {
+        //     path: '/cardsurvey',
+        //     name: 'CardSurvey',
+        //     component: CardSurvey,
+        //     // meta: {
+        //     //     requiresAuth: true
+        //     // }
+        // },
+        // {
+        //     path: '/cardindex',
+        //     name: 'CardIndex',
+        //     component: CardIndex,
+        //     redirect: {name: 'CardAdmin'},
+        //     children: [
+        //         {
+        //             path: '/cardadmin',
+        //             name: 'CardAdmin',
+        //             component: CardAdmin,
+        //         },
+        //         {
+        //             path: '/cardadmin_set:id',
+        //             name: 'CardAdmin_set',
+        //             component: CardAdmin_set,
+        //         },
+        //     ]
+        // },
+        // {
+        //     path: '/paymentdetail',
+        //     name: 'PaymentDetail',
+        //     component: CardIndex,
+        //     redirect: {name: 'RoutineAdmin'},
+        //     children: [
+        //         {
+        //             path: '/paymentsurvey',
+        //             name: 'PaymentSurvey',
+        //             component: PaymentSurvey,
+        //         },
+        //         {
+        //             path: '/routineadmin',
+        //             name: 'RoutineAdmin',
+        //             component: RoutineAdmin,
+        //         },
+        //         {
+        //             path: '/RoutneAdmin_Add',
+        //             name: 'RoutneAdmin_Add',
+        //             component: RoutneAdmin_Add,
+        //         },
+        //         {
+        //             path: '/PaymentDetail',
+        //             name: 'PaymentDetail',
+        //             component: PaymentDetail,
+        //         },
+        //         {
+        //             path: '/RoutineAdmin_Check',
+        //             name: 'RoutineAdmin_Check',
+        //             component: RoutineAdmin_Check,
+        //         },
+        //         {
+        //             path: '/RoutineAdmin_Check_add',
+        //             name: 'RoutineAdmin_Check_add',
+        //             component: RoutineAdmin_Check_add,
+        //         },
+        //         {
+        //             path: '/CommonSearchList',
+        //             name: 'CommonSearchList',
+        //             component: CommonSearchList,
+        //         },
+        //         {
+        //             path: '/PayableManagement',
+        //             name: 'PayableManagement',
+        //             component: PayableManagement,
+        //         },
+        //         {
+        //             path: '/ManagementDetail',
+        //             name: 'ManagementDetail',
+        //             component: ManagementDetail,
+        //         },
+        //         {
+        //             path: '/ReceivingManage_List',
+        //             name: 'ReceivingManage_List',
+        //             component: ReceivingManage_List,
+        //         },
+        //         {
+        //             path: '/ReceivingManage_Add',
+        //             name: 'ReceivingManage_Add',
+        //             component: ReceivingManage_Add,
+        //         },
+        //         {
+        //             path: '/Electricitycharge_List',
+        //             name: 'Electricitycharge_List',
+        //             component: Electricitycharge_List,
+        //         },
+        //         {
+        //             path: '/Waterfee_List',
+        //             name: 'Waterfee_List',
+        //             component: Waterfee_List,
+        //         }
+        //     ]
+        // },
+        // {
+        //     path: '/cardpersonnel',
+        //     name: 'CardPersonnel',
+        //     component: CardPersonnel
+        // },
+        //
+        // {
+        //     path: '/campus_user_add',
+        //     name: 'Campus_user_add',
+        //     component: Campus_user_add
+        // },
+
+
+    ]
+})

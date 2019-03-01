@@ -1,0 +1,20 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Models.ViewModels
+{
+    public class PaymentARAccount
+    {
+        public decimal SJJE { get; set; }
+        public decimal SJRS { get; set; }
+        public int YJRS { get; set; }
+        public decimal YJJE { get; set; }
+        public int YJXM { get; set; }
+    }
+    public class WeekPayment_item
+    {
+        public decimal pay_amount { get; set; }
+        public DateTime pay_time { get; set; }
+    }
+}

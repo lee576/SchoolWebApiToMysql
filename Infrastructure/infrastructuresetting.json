@@ -1,0 +1,4 @@
+{
+  "ConnetString": "server=rm-8vb8sbo4yx09nzzvn.mysql.zhangbei.rds.aliyuncs.com;uid=newxiaoyuan;pwd=RuoHuoBody1357!@;database=alischoolcard;",
+  "RedisConnection": "127.0.0.1:6379"
+}

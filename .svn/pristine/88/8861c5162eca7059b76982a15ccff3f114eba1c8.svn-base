@@ -1,0 +1,568 @@
+<template>
+    <div class="home">
+        <div class="nav-lead clearfix">
+            <div class="fl nav-lead-word"><a href="#">电子校园卡</a></div>
+        </div>
+        <div class="page-content">
+            <el-row :gutter="10">
+                <el-col :xs="24" :sm="24" :md="24" :lg="10" :xl="10">
+                    <div class="card-box">
+                        <div class="clearfix">
+                            <a href="#" class="edit_school-name fr" @click="isReadOnly=false;">修改</a>
+                        </div>
+                        <div class="clearfix">
+                            <img :src="imgTour" class="fl school-logo">
+                            <div class="fl school-name"><input type="type" :readonly="isReadOnly" v-model="campusName">
+                            </div>
+                            <div class="fl" v-if="!isReadOnly">
+                                <button class="btn school-sure-button" @click="sure">确认</button>
+                            </div>
+                        </div>
+                        <div class="bang-box clearfix">
+                            <div class="fl">绑定{{campusName}}电子校园卡</div>
+                            <div class="fr">
+                                <span style="display: none;">{{cardUrl}}</span>
+                                <el-button class="ml10 btn fl copy-btn" size="medium"
+                                           v-clipboard:copy="cardUrl"
+                                           v-clipboard:success="onCopy"
+                                           v-clipboard:error="onError" type="primary">复制领卡地址
+                                </el-button>
+
+                                <div class="fl batch-operation er-ma-btn">
+                                    <a href="#" class="operation-btn1">生成二维码</a>
+                                    <ul class="operation-ul">
+                                        <li><a @click="downloadImg($event)" href="javascript:void(0);">
+                                            <vue-qr :text="config.value" :size="258" :margin="20"
+                                                    style="display: none;"></vue-qr>
+                                            258*258</a></li>
+                                        <li><a @click="downloadImg($event)" href="javascript:void(0);">
+                                            <vue-qr :text="config.value" :size="344" :margin="20"
+                                                    style="display: none;"></vue-qr>
+                                            344*344</a></li>
+                                        <li><a @click="downloadImg($event)" href="javascript:void(0);">
+                                            <vue-qr :text="config.value" :size="430" :margin="20"
+                                                    style="display: none;"></vue-qr>
+                                            430*430</a></li>
+                                        <li><a @click="downloadImg($event)" href="javascript:void(0);">
+                                            <vue-qr :text="config.value" :size="860" :margin="20"
+                                                    style="display: none;"></vue-qr>
+                                            860*860</a></li>
+                                        <li><a @click="downloadImg($event)" href="javascript:void(0);">
+                                            <vue-qr :text="config.value" :size="1280" :margin="20"
+                                                    style="display: none;"></vue-qr>
+                                            1280*1280</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </el-col>
+                <el-col :xs="24" :sm="24" :md="24" :lg="14" :xl="14">
+
+                    <div class="card-box">
+                        <div class="card-pad clearfix">
+                            <div class="left-card-num fl">
+                                <div>发卡数量</div>
+                                <div class="fa-card">{{ cardAccount | currency('',false) }}</div>
+                            </div>
+                            <div class="right-card-num fl">
+                                <el-progress :text-inside="true" :stroke-width="30" :percentage=Number(parseRate.amountRate)></el-progress>
+                                <div class="card-num-totel clearfix">
+                                    <div class="fl">
+                                        已领卡数量  <span class="has-card-num">{{ leaderCard | currency('',false) }}</span>
+                                    </div>
+                                    <div class="fr">
+                                        未领卡数量 <span class="no-card-num">{{ unCard | currency('',false) }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </el-col>
+            </el-row>
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12">
+                    <div class="ym-body">
+                        <div class="ym-body-title">增长情况</div>
+                        <div class="right-picker-time">
+                            <el-date-picker
+                                    v-model="dateArr1"
+                                    value-format="yyyy-MM-dd"
+                                    type="daterange"
+                                    align="right"
+                                    unlink-panels
+                                    range-separator="至"
+                                    start-placeholder="开始日期"
+                                    end-placeholder="结束日期"
+                                    :picker-options="pickerOptions2">
+                            </el-date-picker>
+                            <button style="cursor: pointer;" class="search-in-time" @click="search()">搜索</button>
+                        </div>
+                        <div class="echart-box-on">
+                            <div id="myChart" :style="{width: '100%', height: '450px'}"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+    import VueQr from 'vue-qr';
+    import Vue from 'vue';
+    import VueClipboard from 'vue-clipboard2'
+    import { currency } from './../../../util/currency';
+    import { getDateType } from './../../../util/getDate';
+
+    Vue.use(VueClipboard)
+    // 引入基本模板
+    let echarts = require('echarts/lib/echarts');
+    // 引入柱状图组件
+    require('echarts/lib/chart/bar');
+    // 引入提示框和title组件
+    require('echarts/lib/component/tooltip');
+    require('echarts/lib/component/title');
+    export default {
+        name: 'hello',
+        components: {
+            VueQr
+        },
+        data() {
+            return {
+                msg: 'Welcome to Your Vue.js App',
+                imgTour: require('@/assets/picture/images/tou.png'),
+                pickerOptions2: {
+                    shortcuts: [{
+                        text: '今天',
+                        onClick(picker) {
+                            const end = new Date();
+                            const start = new Date();
+                            start.setTime(start.getTime());
+                            picker.$emit('pick', [start, end]);
+                        }
+                    }, {
+                        text: '昨天',
+                        onClick(picker) {
+                            const end = new Date();
+                            const start = new Date();
+                            start.setTime(start.getTime() - 3600 * 1000 * 24 * 1);
+                            picker.$emit('pick', [start, end]);
+                        }
+                    }, {
+                        text: '最近三天',
+                        onClick(picker) {
+                            const end = new Date();
+                            const start = new Date();
+                            start.setTime(start.getTime() - 3600 * 1000 * 24 * 3);
+                            picker.$emit('pick', [start, end]);
+                        }
+                    }, {
+                        text: '最近一周',
+                        onClick(picker) {
+                            const end = new Date();
+                            const start = new Date();
+                            start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
+                            picker.$emit('pick', [start, end]);
+                        }
+                    }]
+                },
+                value6: '',
+                value7: '',
+                config: {
+                    value: '',//显示的值、跳转的地址
+                },
+                cardUrl: '',
+                isReadOnly: true,
+                stuArr:[],
+                teachArr:[],
+                otherArr:[],
+                dateArr:[],
+                dateArr1:[],
+                cardAccount:"",
+                leaderCard:'',
+                unCard:'',
+                campusName:'',
+            }
+        },
+        mounted() {
+            this.drawLine();
+        },
+        filters:{
+            currency: currency,
+            getDateType:getDateType
+        },
+        created(){
+            this.dateArr1=[getDateType(1,-7),getDateType(1,0)];
+            this.cardData(0);
+            this.schoolQrcode();
+        },
+        methods: {
+            drawLine(stime,etime) {
+                let self = this;
+                // 基于准备好的dom，初始化echarts实例
+                let myChart = echarts.init(document.getElementById('myChart'));
+                // 绘制图表
+                if (!stime){
+                    stime=self.dateArr1[0]
+                }
+                if(!etime){
+                    etime=self.dateArr1[1]
+                }
+                self.axios.get('api/SchoolCodr/SchoolCardGrowth', {
+                    params: {
+                        school_id: localStorage.schoolcode,
+                        stime: stime,
+                        etime: etime,
+                    }
+                })
+                .then(function (response) {
+                    if(response.data.code=='000000'){
+                        let res = response.data;
+                        self.dateArr = res.rqs.reverse();
+                        self.teachArr= res.teacherlist.reverse();
+                        self.stuArr= res.stulist.reverse();
+                        self.otherArr = res.qilist.reverse();
+                        myChart.setOption({
+                            tooltip: {
+                                trigger: 'axis'
+                            },
+                            legend: {
+                                data: ['学生卡', '教师卡','其他卡'],
+                                formatter: function (name) {
+                                    return name;
+                                },
+                                orient: 'vertical',
+                                align: 'right',
+                                itemWidth: 20,
+                                itemHeight: 20,
+                                right: 0,
+                                top: 'middle',
+                                textStyle: {
+                                    // 图例的公用文本样式。
+                                    fontWight: 'bold',
+                                    fontSize: 20,
+                                    color: '#707070'
+                                },
+                                symbolKeepAspect: true,
+                                itemGap: 20,
+                                // padding: [
+                                //     20,  // 上
+                                //     20, // 右
+                                //     20,  // 下
+                                //     20, // 左
+                                // ]
+
+                            },
+
+                            toolbox: {
+                                show: false,
+                                top: '0',
+                                right: '120',
+                                bottom: 'auto',
+                                left: 'auto',
+                                feature: {
+                                    dataView: {show: true, readOnly: false},
+                                    magicType: {show: true, type: ['line', 'bar']},
+                                    restore: {show: true},
+                                    saveAsImage: {show: true}
+                                }
+                            },
+                            calculable: true,
+                            xAxis: [
+                                {
+                                    type: 'category',
+                                    //    boundaryGap : false,
+                                    data: self.dateArr,
+                                    splitLine: {
+                                        show: true,
+                                        lineStyle: {
+                                            color: ['#ccc'],
+                                            width: 1,
+                                            type: 'dashed'
+                                        }
+
+                                    }
+
+                                }
+                            ],
+                            yAxis: [
+                                {
+                                    type: 'value',
+                                    splitLine: {
+                                        show: true,
+                                        lineStyle: {
+                                            color: ['#ccc'],
+                                            width: 1,
+                                            type: 'dashed'
+                                        }
+
+                                    }
+                                }
+                            ],
+                            grid: {
+                                //show:true,
+                                //   backgroundColor: '#f9f9f9',
+                                borderWidth: 2,
+                                borderColor: '#ccc',
+                                top: '80',
+                                right: '120',
+                                bottom: '40',
+                                left: '30'
+
+                            },
+                            series: [
+                                {
+                                    itemStyle: {
+                                        normal: {
+                                            color: ['#6c7fff'],
+                                            barBorderRadius: [8, 8, 0, 0]
+                                        }
+                                    },
+                                    name: '教师卡',
+                                    type: 'bar',
+                                    data: self.stuArr,
+                                    markPoint: {
+                                        data: [
+                                            {type: 'max', name: '最大值'},
+                                            {type: 'min', name: '最小值'}
+                                        ]
+                                    },
+                                    markLine: {
+                                        data: [
+                                            {type: 'average', name: '平均值'}
+                                        ]
+                                    },
+                                    barWidth: 30
+                                },
+                                {
+                                    itemStyle: {
+                                        normal: {
+                                            color: ['#ff8462'],
+                                            barBorderRadius: [8, 8, 0, 0]
+                                        }
+                                    },
+                                    name: '学生卡',
+                                    type: 'bar',
+                                    data: self.teachArr,
+                                    /*markPoint : {
+                                        data : [
+                                            {name : '年最高', value : 182.2, xAxis: 7, yAxis: 183},
+                                            {name : '年最低', value : 2.3, xAxis: 11, yAxis: 3}
+                                        ]
+                                    },*/
+                                    markLine: {
+                                        data: [
+                                            {type: 'average', name: '平均值'}
+                                        ]
+                                    },
+                                    barWidth: 30
+                                },
+                                {
+                                    itemStyle: {
+                                        normal: {
+                                            color: ['#FF4848'],
+                                            barBorderRadius: [8, 8, 0, 0]
+                                        }
+                                    },
+                                    name: '其他卡',
+                                    type: 'bar',
+                                    data: self.otherArr,
+                                    /*markPoint : {
+                                        data : [
+                                            {name : '年最高', value : 182.2, xAxis: 7, yAxis: 183},
+                                            {name : '年最低', value : 2.3, xAxis: 11, yAxis: 3}
+                                        ]
+                                    },*/
+                                    markLine: {
+                                        data: [
+                                            {type: 'average', name: '平均值'}
+                                        ]
+                                    },
+                                    barWidth: 30
+                                },
+                            ],
+                            show: true,
+
+                        });
+                    }else{
+                        self.$message({
+                            showClose: true,
+                            message: '获取数据失败',
+                            type: 'warning'
+                        });
+                    }
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+
+            },
+            downloadImg(e) {
+                var oQrcode = e.currentTarget.querySelector('img');
+                var url = oQrcode.src;
+                var a = document.createElement('a');
+                var event = new MouseEvent('click');
+                // 下载图名字
+                a.download = this.campusName+'电子校园卡';
+                //url
+                a.href = url;
+                //合成函数，执行下载
+                a.dispatchEvent(event);
+            },
+            // 复制成功
+            onCopy(e) {
+                this.$message({
+                    showClose: true,
+                    message: '复制成功',
+                    type: 'success'
+                });
+            },
+            // 复制失败
+            onError(e) {
+                alert("失败");
+            },
+            //搜索
+            search(){
+                let schoolcode = localStorage.schoolcode;
+                if(!this.dateArr1){
+                    this.$message({
+                        showClose: true,
+                        message: '请填写完整',
+                        type: 'error'
+                    });
+                }else{
+                    let stime = this.dateArr1[0],etime = this.dateArr1[1];
+                    if(this.timeDif(stime,etime) > 30){
+                        this.$message({
+                            showClose: true,
+                            message: '时间差不能超过30天',
+                            type: 'error'
+                        });
+                    }else {
+                        this.drawLine(stime,etime);
+                    }
+                }
+
+            },
+            cardData(type){
+                let self = this;
+                self.axios.get('api/SchoolCodr/SchoolCardCount', {
+                    params: {
+                        school_id:localStorage.schoolcode,
+                        type:0
+                    }
+                })
+                    .then(function (response) {
+                        if(response.data.code=='000000') {
+                            let res = response.data;
+                            self.cardAccount = res.card_count;
+                            self.leaderCard = res.registered_count;
+                            self.unCard = res.unregistered_count;
+                        }else{
+                            self.$message({
+                                showClose: true,
+                                message: '获取数据失败',
+                                type: 'warning'
+                            });
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            },
+            schoolQrcode(){
+                let self = this;
+                self.axios.post('api/SchoolCodr/GetSchoolCardURL', {
+                    school_id: localStorage.schoolcode
+                },{
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(function (response) {
+                    console.log(response)
+                    if(response.data.code=='10000') {
+                        let res = response.data;
+                        self.campusName = res.data.name;
+                        self.cardUrl = res.xykurl;
+                        self.config.value = res.xykurl;
+                    }else{
+                        self.$message({
+                            showClose: true,
+                            message: '获取数据失败',
+                            type: 'warning'
+                        });
+                    }
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+            },
+            timeDif(sDate1,sDate2){
+                var dateSpan,
+                    tempDate,
+                    iDays;
+                sDate1 = Date.parse(sDate1);
+                sDate2 = Date.parse(sDate2);
+                dateSpan = sDate2 - sDate1;
+                dateSpan = Math.abs(dateSpan);
+                iDays = Math.floor(dateSpan / (24 * 3600 * 1000));
+                return iDays
+            },
+            sure(){
+                let self = this;
+                self.isReadOnly=true;
+                self.axios.get('api/SchoolCodr/UpdateDeptName', {
+                    params: {
+                        name: self.campusName,
+                        school_id: localStorage.schoolcode
+                    }
+                })
+                .then(function (response) {
+                    if(response.data.code=='000000'){
+                        self.$message({
+                            showClose: true,
+                            message: '修改成功',
+                            type: 'success'
+                        });
+                        self.schoolQrcode();
+                    }else{
+                        self.$message({
+                            showClose: true,
+                            message: '修改失败',
+                            type: 'warning'
+                        });
+                    }
+                    console.log(response);
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+            }
+        },
+
+        computed: {
+            parseRate:function () {
+                let self = this,leaderCard=0,cardAccount = 1,amountRate = 0;
+                if(self.leaderCard != 0){
+                    leaderCard = self.leaderCard;
+                }
+                if(self.cardAccount != 0){
+                    cardAccount = self.cardAccount;
+                }
+                //领卡比例
+                amountRate  = (leaderCard * 100/ cardAccount).toFixed(2);
+
+                return {amountRate: amountRate}
+
+            }
+        },
+    }
+</script>
+
+<style scoped>
+
+</style>

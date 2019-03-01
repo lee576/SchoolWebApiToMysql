@@ -1,0 +1,411 @@
+<template>
+    <div class="home">
+        <div class="nav">
+            <el-breadcrumb separator-class="el-icon-arrow-right">
+                <el-breadcrumb-item :to="{ path: '/' }" class="nav-top-word">校园卡管理</el-breadcrumb-item>
+            </el-breadcrumb>
+            <el-row>
+                <!--<el-button type="primary" round size="medium" class="al-btn">+新增校园卡</el-button>-->
+                <el-button type="primary" round size="medium" class="al-btn" @click="OpenCard">+新增校园卡
+                </el-button>
+
+                <el-dialog title="基础设置" :visible.sync="AddDispatch">
+                    <el-form :model="newCard" :rules="rules" ref="newCard">
+                        <el-form-item label="校园卡名称" prop="name" :label-width="formLabelWidth">
+                            <el-input v-model="newCard.name" autocomplete="off" style="width: 60%"></el-input>
+                        </el-form-item>
+                        <el-form-item label="校园卡介绍" prop="info" :label-width="formLabelWidth">
+                            <el-input v-model="newCard.info" autocomplete="off" style="width: 60%"></el-input>
+                        </el-form-item>
+                        <el-form-item label="卡包样式" prop="layout" :label-width="formLabelWidth">
+                            <el-radio-group v-model="newCard.layout" style="margin-left: 30px">
+                                <el-radio label="list">列表样式</el-radio>
+                                <el-radio label="grid">九宫格样式</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+
+                    </el-form>
+                    <div slot="footer" class="dialog-footer">
+                        <el-button @click="CloseCard('newCard')">取 消</el-button>
+                        <!--<el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>-->
+                        <el-button type="primary" @click="AddCard('newCard')">确 定</el-button>
+                    </div>
+                </el-dialog>
+            </el-row>
+        </div>
+
+        <div class="page-content">
+            <div class="input-group">
+                <el-input placeholder="请输入内容" size="small" v-model="detailsinput"></el-input>
+                <el-row>
+                    <el-button plain size="small" class="details" @click="Details" style="margin-right: 5px">
+                        <div class="det_btn">搜索</div>
+                    </el-button>
+                    <el-button plain size="small" class="details" @click="reset">
+                        <div class="det_btn">重置</div>
+                    </el-button>
+                </el-row>
+            </div>
+
+            <div class="top-mg">
+                <el-row :gutter="10">
+                    <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12" v-for="card in cards">
+                        <div class="card-on-box clearfix">
+                            <div class="fl on-box-word">
+                                <div class="st-on1">{{card.card_show_name}}</div>
+                                <div class="st-on2">发卡数量：{{card.card_count}}张</div>
+                                <div class="two-btn-box">
+                                    <button class="btn" @click="Administration(card.card_add_id)">管理</button>
+                                    <button class="btn" @click="EditCard(card.card_add_id)">修改基本信息</button>
+                                    <el-dialog title="修改基本信息" :visible.sync="EditDispatch">
+                                        <el-form :model="editCard" :rules="rules" ref="editCard">
+                                            <el-form-item label="校园卡名称" prop="name" :label-width="formLabelWidth"
+                                                          style="padding-bottom: 20px">
+                                                <el-input v-model="editCard.name" autocomplete="off"
+                                                          style="width: 60%;padding: 0"></el-input>
+                                            </el-form-item>
+                                            <el-form-item label="校园卡介绍" prop="info" :label-width="formLabelWidth"
+                                                          style="padding-bottom: 20px">
+                                                <el-input v-model="editCard.info" autocomplete="off"
+                                                          style="width: 60%;padding: 0"></el-input>
+                                            </el-form-item>
+                                            <el-form-item label="卡包样式" prop="layout" :label-width="formLabelWidth">
+                                                <el-radio-group v-model="editCard.layout" style="margin-left: 30px">
+                                                    <el-radio label="list">列表样式</el-radio>
+                                                    <el-radio label="grid">九宫格样式</el-radio>
+                                                </el-radio-group>
+                                            </el-form-item>
+                                        </el-form>
+                                        <div slot="footer" class="dialog-footer">
+                                            <el-button @click="EditDispatch = false">取 消</el-button>
+                                            <!--<el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>-->
+                                            <el-button type="primary" @click="AddeditCard('editCard')">确 定</el-button>
+                                        </div>
+                                    </el-dialog>
+                                </div>
+                            </div>
+                            <div class="fr on-box-img">
+                                <img :src="card.background_url">
+                            </div>
+                        </div>
+                    </el-col>
+                </el-row>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+    export default {
+        name: 'CardAdmin',
+        data() {
+            return {
+                detailsinput: "",
+                cards: [],
+                EditDispatch: false,
+                AddDispatch: false,
+                newCard: {
+                    name: '',
+                    info: '',
+                    layout: '',
+                },
+                editCard: {
+                    name: '',
+                    info: '',
+                    layout: '',
+                },
+                formLabelWidth: '120px',
+                rules: {
+                    name: [
+                        {required: true, message: '校园卡名称', trigger: 'blur'},
+                        {min: 3, max: 10, message: '长度在 3 到 10个字符', trigger: 'blur'}
+                    ],
+                    info: [
+                        {required: true, message: '校园卡介绍', trigger: 'blur'},
+                        {min: 1, max: 100, message: '长度在 1 到 100 个字符', trigger: 'blur'}
+                    ],
+                    layout: [
+                        {required: true, message: '请选择活动资源', trigger: 'change'}
+                    ],
+                },
+            }
+        },
+        created() {
+            this.init()
+        }
+        ,
+        methods: {
+            init() {
+                const data = {
+                    "school_id": localStorage.schoolcode,
+                    "name": this.detailsinput
+                }
+                this.axios.post(`api/SchoolCodr/GetSchoolCardQuery`, data, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then(response => {
+                    this.cards = response.data
+                    console.log(response.data)
+                })
+            },
+            //搜索
+            Details() {
+                this.init()
+            },
+            reset() {
+                this.detailsinput = ""
+                this.init()
+            },
+            // 新增校园卡
+            OpenCard() {
+                this.AddDispatch = true
+            },
+            CloseCard(newCard) {
+                this.$refs[newCard].resetFields();
+                this.AddDispatch = false;
+            },
+
+            AddCard(newCard) {
+                this.$refs[newCard].validate((valid) => {
+                    if (valid) {
+                        const data = {
+                            "school_id": localStorage.schoolcode,
+                            "name": this.newCard.name,
+                            "info": this.newCard.info,
+                            "layout": this.newCard.layout,
+                        }
+                        console.log(data)
+                        this.axios.post(`/api/SchoolCodr/CreateSchoolCard`, data, {
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        }).then(res => {
+                            console.log(res)
+
+
+                            if (res.data.code == "10001") {
+                                this.$refs[newCard].resetFields();
+                                this.$message.error(res.data.msg);
+                                this.AddDispatch = false;
+                            } else {
+                                let vue = JSON.parse(res.data)
+                                if (vue.alipay_marketing_card_template_create_response.code == "10000") {
+                                    this.$message({
+                                        showClose: true,
+                                        message: '创建成功',
+                                        type: 'success'
+                                    });
+                                    this.$refs[newCard].resetFields();
+                                    this.init();
+                                    this.AddDispatch = false;
+                                }
+                            }
+
+                        })
+                    } else {
+                        console.log('error submit!!');
+                        return false;
+                    }
+                });
+
+            },
+            // 管理
+            Administration(card_add_id) {
+                console.log(card_add_id)
+                this.$router.push({name: 'CardAdmin_set', params: {id: card_add_id}})
+            },
+            // 修改基本信息
+            EditCard(id) {
+                if (id) {
+                    this.EditDispatch = true;
+                    const data = {
+                        "school_id": localStorage.schoolcode,
+                        "card_add_id": id,
+                    }
+                    console.log(data)
+                    this.axios.post(`/api/SchoolCodr/GetSchoolCarBaseInfo`, data, {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }).then(res => {
+                        this.editCard = res.data
+                        console.log(this.editCard)
+                    })
+
+                }
+            },
+            AddeditCard(editCard) {
+                const data = {
+                    "school_id": localStorage.schoolcode,
+                    "card_add_id": this.editCard.card_add_id,
+                    "name": this.editCard.name,
+                    "info": this.editCard.info,
+                    "layout": this.editCard.layout,
+                }
+                console.log(data)
+                this.axios.post(`/api/SchoolCodr/UpdateSchoolCarBaseInfo`, data, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then(res => {
+                    console.log(res)
+                    let vue = res.data
+                    if (vue.code === "10000") {
+                        this.$message({
+                            showClose: true,
+                            message: '修改成功',
+                            type: 'success'
+                        });
+                        this.init();
+                        this.EditDispatch = false;
+
+                    } else {
+                        this.$message({
+                            showClose: true,
+                            message: '创建失败',
+                            type: 'warning'
+                        });
+                    }
+
+                })
+
+            }
+
+        }
+    }
+</script>
+<style lang="scss" scoped>
+    .home {
+        height: 100%;
+    }
+
+    /*顶部导航*/
+    .nav {
+        height: 60px;
+        text-align: left;
+        background-color: #fff;
+        padding: 0 30px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .el-breadcrumb {
+        line-height: 39px;
+        color: #707070;
+        padding-top: 10px;
+    }
+
+    .al-btn {
+        margin-top: 12px;
+    }
+
+    /*内容*/
+    .container {
+        height: 100%;
+        padding: 20px 15px;
+    }
+
+    /*搜索框*/
+    .input-group {
+        display: flex;
+        background-color: #fff;
+        border: 1px solid rgba(112, 112, 112, 0.2);
+        border-radius: 5px;
+        justify-content: flex-start
+    }
+
+    .det_btn {
+        color: #409EFF;
+    }
+
+    .el-input {
+        padding: 15px 25px;
+        width: 500px;
+    }
+
+    .details {
+        margin-top: 15px;
+        margin-right: 25px;
+        border: 1px solid #2387fb;
+        color: #2387fb;
+        height: 32px;
+    }
+
+    .det_btn span {
+        color: #3F4356 !important;
+    }
+
+    .top-mg {
+        margin-top: 15px;
+    }
+
+    .card-on-box {
+        background: #fff;
+        padding: 20px;
+        border-radius: 5px;
+        border: 1px solid rgba(112, 112, 112, 0.2);
+        margin-bottom: 10px
+    }
+
+    .st-on1 {
+        font-size: 22px;
+        color: #707070;
+        margin-bottom: 10px
+    }
+
+    .st-on2 {
+        font-size: 14px;
+        color: #707070;
+        opacity: 0.8;
+        margin-bottom: 20px
+    }
+
+    .on-box-img img {
+        width: 100%
+    }
+
+    .two-btn-box .btn {
+        margin-right: 10px
+    }
+
+    @media (min-width: 1400px) {
+        .on-box-img img {
+            width: 300px;
+            height: 135px;
+        }
+        .two-btn-box {
+            margin-top: 50px;
+        }
+    }
+
+    @media (max-width: 1400px) {
+        .on-box-img img {
+            width: 225px;
+            height: 102px;
+        }
+        .two-btn-box {
+            margin-top: 0px;
+        }
+    }
+
+    @media (max-width: 1300px) {
+        .on-box-img img {
+            width: 200px;
+            height: 105px;
+        }
+        .two-btn-box {
+            margin-top: 0px;
+        }
+    }
+
+    @media (max-width: 1200px) {
+        .on-box-img img {
+            width: 300px;
+            height: 135px;
+        }
+        .two-btn-box {
+            margin-top: 50px;
+        }
+    }
+</style>

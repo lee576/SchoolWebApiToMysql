@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>   
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="all,follow">
+    <title>领卡失败</title>
+	<link rel="stylesheet" href="/css/collarcard.css">
+</head>
+<body>
+	<div class="error-card">
+		<img src="/images/card/fail.png" class="suss-card-on1">
+		<div class="suss-card-on2">领卡失败</div>
+		<div class="suss-card-on3 cx-error">校园卡领卡失败</div>
+	</div>
+    <script type="text/javascript" src="/lib/jquery/1.9.1/jquery.min.js"></script>
+    <script type="text/javascript">
+        var msg ;
+        $(function () {
+            init();
+        });
+        function init() {
+            msg = GetQueryString("msg");
+            $(".cx-error").text(msg);
+        }
+        function GetQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return unescape(r[2]); return null;
+        }
+    </script>
+</body>
+</html>

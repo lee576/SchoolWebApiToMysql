@@ -1,0 +1,38 @@
+﻿using System.Collections.Generic;
+using DbModel;
+using Infrastructure.Service;
+using Models.ViewModels;
+
+namespace IService
+{
+    public interface Itb_attendanceService : IServiceBase<tb_attendance>
+    {
+        /// <summary>
+        /// 未签到人员
+        /// </summary>
+        /// <param name="teamId"></param>
+        /// <returns></returns>
+        IEnumerable<veiw_attendance> UnSignIned(long teamId);
+
+        /// <summary>
+        /// 已签到人员
+        /// </summary>
+        /// <param name="teamId"></param>
+        /// <returns></returns>
+        IEnumerable<veiw_attendance> SignIned(long teamId);
+        /// <summary>
+        /// 根据code获得学校签到信息
+        /// </summary>
+        /// <param name="teamId"></param>
+        /// <returns></returns>
+        IEnumerable<Attendance> GetAttendanceInfoToSchoolCode(int pageIndex, int pageSize, ref int total, string schoolcode,
+            string nameorid = "", string teamNameorTeamiD = "", string stime = "", string etime = "");
+        /// <summary>
+        /// 获取学校签到信息
+        /// </summary>
+        /// <param name="schoolcode"></param>
+        /// <returns></returns>
+        IEnumerable<Attendance> GetAttendanceInfo(string schoolcode);
+        IEnumerable<Attendance> GetAttendanceInfo2(string schoolcode);
+    }
+}

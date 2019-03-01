@@ -1,0 +1,804 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using DbModel;
+using IService;
+using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Models.ViewModels;
+using NPOI.SS.UserModel;
+using SchoolWebApi.Utility;
+using System.IO;
+using System.Net.Http;
+using System.Drawing;
+using System.Net;
+using System.Net.Http.Headers;
+
+namespace SchoolWebApi.Controllers
+{
+    /// <summary>
+    /// 学校人员管理
+    /// </summary>
+    [Route("api/[controller]/[action]")]
+    [ApiController]
+    [Produces("application/json")]
+    [EnableCors("any")]
+    public class SchoolUserController : Controller
+    {
+        /// <summary>
+        /// 初始化日志对象
+        /// </summary>
+        private static NLog.Logger Log = NLog.LogManager.GetCurrentClassLogger();
+        private Itb_school_InfoService _tb_school_InfoService;
+        private ISchoolCodrService _schoolcodrservice;
+        private Itb_school_userService _tb_school_userService;
+        private Itb_school_card_templateService _tb_school_card_templateService;
+        private Itb_school_classinfoService _itb_School_ClassinfoService;
+        private Itb_school_departmentService _itb_School_DepartmentService;
+        private Itb_userinfoService _Itb_userinfoService;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tb_school_InfoService"></param>
+        /// <param name="schoolcodrservice"></param>
+        /// <param name="tb_school_userService"></param>
+        /// <param name="tb_school_card_templateService"></param>
+        /// <param name="tb_School_ClassinfoService"></param>
+        /// <param name="tb_School_DepartmentinfoService"></param>
+        /// <param name="tb_userinfoService"></param>
+        public SchoolUserController(Itb_school_InfoService tb_school_InfoService,
+            ISchoolCodrService schoolcodrservice,
+            Itb_school_userService tb_school_userService,
+            Itb_school_card_templateService tb_school_card_templateService,
+            Itb_school_classinfoService tb_School_ClassinfoService,
+            Itb_school_departmentService tb_School_DepartmentinfoService,
+            Itb_userinfoService tb_userinfoService)
+        {
+            _tb_school_InfoService = tb_school_InfoService;
+            _schoolcodrservice = schoolcodrservice;
+            _tb_school_userService = tb_school_userService;
+            _tb_school_card_templateService = tb_school_card_templateService;
+            _itb_School_ClassinfoService = tb_School_ClassinfoService;
+            _itb_School_DepartmentService = tb_School_DepartmentinfoService;
+            _Itb_userinfoService = tb_userinfoService;
+        }
+
+        #region 电子校园卡概论——获取学校名称
+        /// <summary>
+        /// 电子校园卡概论——获取学校名称
+        /// </summary>
+        /// <param name="schoolcode"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult GetSchoolNameByschoolcode(string schoolcode)
+        {
+            try
+            {
+                var schoolInfo = _tb_school_InfoService.FindByClause(a => a.School_Code == schoolcode);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                    aaData = new { schoolCode = schoolInfo.School_Code, schoolName = schoolInfo.School_name }
+                });
+            }
+            catch (Exception e)
+            {
+                Log.Error(e);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+
+        }
+        #endregion
+
+        #region 电子校园卡概论——修改学校名称
+        /// <summary>
+        /// 电子校园卡概论——修改学校名称
+        /// </summary>
+        /// <param name="schoolcode"></param>
+        /// <param name="schoolName"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult UpdateSchoolNameByschoolcode(string schoolcode, string schoolName)
+        {
+            try
+            {
+                var boolres = _tb_school_InfoService.UpdateColumnsByConditon(a => new tb_school_info
+                { School_name = schoolName }, a => a.School_Code == schoolcode);
+                if (boolres)
+                {
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.SuccessCode,
+                        msg = JsonReturnMsg.UpdateSuccess,
+                    });
+                }
+                else
+                {
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.FailCode,
+                        msg = JsonReturnMsg.UpdateFail,
+                    });
+                }
+
+            }
+            catch (Exception e)
+            {
+                Log.Error(e);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+
+        }
+        #endregion
+
+        #region 电子校园卡概论——获取学校领卡信息
+        /// <summary>
+        /// 电子校园卡概论——获取学校领卡信息
+        /// </summary>
+        /// <param name="schoolcode"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public JsonResult FindSchoolCardInfo(string schoolcode)
+        {
+            try
+            {
+                var resCardInfo = _tb_school_InfoService.FindSchoolCardInfoBySchoolCode(schoolcode);
+                var resgrowthInfo = _tb_school_InfoService.FindSchoolCardGrowth(schoolcode);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                    aaData = new { CardInfo = resCardInfo, GrowthInfo = resgrowthInfo }
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        #endregion
+
+        #region 获取校园卡人员管理信息
+        /// <summary>
+        /// 获取校园卡人员管理信息
+        /// </summary>
+        /// <param name="school_Code"></param>
+        /// <param name="userNameOrId"></param>
+        /// <param name="branchId"></param>
+        /// <param name="departmentId"></param>
+        /// <param name="department_classId"></param>
+        /// <param name="classId"></param>
+        /// <param name="card_state"></param>
+        /// <param name="iDisplayLength"></param>
+        /// <param name="iDisplayStart"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public JsonResult FindSchoolUserInfo(string school_Code, string userNameOrId, string branchId, string departmentId, string department_classId,
+           string classId, string card_state, int iDisplayLength, int iDisplayStart)
+        {
+            try
+            {
+                //SchoolUserInfoRequest schoolStudent
+                int pageStart = iDisplayStart;
+                int pageSize = iDisplayLength;
+                Log.Info(pageStart+"/"+ pageSize);
+                int pageIndex = (pageStart / pageSize) + 1;
+                int totalRecordNum = default(int);
+                var resList = _tb_school_userService.FindSchoolStudentInfo(school_Code, pageIndex, pageIndex, ref totalRecordNum, userNameOrId, branchId,
+                   departmentId, department_classId, classId, card_state);
+                //var resList = _tb_school_userService.FindSchoolStudentInfo(schoolStudent.school_Code, schoolStudent.userNameOrId, schoolStudent.branchId,
+                //    schoolStudent.departmentId, schoolStudent.department_classId, schoolStudent.classId, schoolStudent.card_state, pageIndex, pageIndex, ref totalRecordNum);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                    iTotalRecords = totalRecordNum,
+                    iTotalDisplayRecords = totalRecordNum,
+                    aaData = resList
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        #endregion
+
+        #region 根据学校编号获取班级总数及人总数
+        /// <summary>
+        /// 根据学校编号获取所有的分院信息
+        /// </summary>
+        /// <param name="schoolcode"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult GetSchoolPeopleClassCount(string schoolcode)
+        {
+            try
+            {
+                //学校总人数
+                var peopleCount = _tb_school_userService.Count(a => a.school_id == schoolcode);
+                //班级总数
+                var classCount = _itb_School_ClassinfoService.Count(a => a.schoolcode == schoolcode);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.UpdateSuccess,
+                    aaData = new { PeopleCount = peopleCount, ClassCount = classCount }
+                });
+            }
+            catch (Exception e)
+            {
+                Log.Error(e);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+
+        }
+        #endregion
+
+        #region 根据学校编号获取所有的分院信息
+        /// <summary>
+        /// 根据学校编号获取所有的分院信息
+        /// </summary>
+        /// <param name="schoolcode"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult GetSchoolBranchInfo(string schoolcode)
+        {
+            try
+            {
+                //根据校园编号获取所有的院系信息
+                var resList = _itb_School_DepartmentService.FindListByClause(a => a.schoolcode == schoolcode, a => a.id);
+                //获取所有的分院信息
+                var branchInfo = resList.Select(a => a.treeLevel == 1).ToList();
+                //学校总人数
+                var peopleCount = _tb_school_userService.Count(a => a.school_id == schoolcode);
+                //班级总数
+                var classCount = _itb_School_ClassinfoService.Count(a => a.schoolcode == schoolcode);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.UpdateSuccess,
+                    aaData = new { BranchInfo = branchInfo, PeopleCount = peopleCount, ClassCount = classCount }
+                });
+            }
+            catch (Exception e)
+            {
+                Log.Error(e);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+
+        }
+        #endregion
+
+        #region 获取分院的系信息
+        /// <summary>
+        /// 获取分院的系信息
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult GetSchoolDmpInfo(int id)
+        {
+            try
+            {
+                //获取所有的系
+                var dmpInfo = _itb_School_DepartmentService.FindListByClause(a => a.treeLevel == 2 && a.id == id, a
+
+=> a.id).ToList();
+                //获取所有的班级信息
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.UpdateSuccess,
+                    aaData = dmpInfo
+                });
+            }
+            catch (Exception e)
+            {
+                Log.Error(e);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+
+        }
+        #endregion
+
+        #region 获取系的班级信息
+        /// <summary>
+        /// 获取系的班级信息
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult GetSchoolDmpClassInfo(int id)
+        {
+            try
+            {
+                //获取所有的班级信息
+                var dmpClassInfo = _itb_School_DepartmentService.FindListByClause(a => a.treeLevel == 3 && a.id ==
+
+id, a => a.id).ToList();
+
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.UpdateSuccess,
+                    aaData = dmpClassInfo
+                });
+            }
+            catch (Exception e)
+            {
+                Log.Error(e);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+
+        }
+        #endregion
+
+        #region 根据学校编号获取校园卡列表
+        /// <summary>
+        /// 根据学校编号获取校园卡列表
+        /// </summary>
+        /// <param name="School_ID"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult GetSchoolCardList(string School_ID)
+        {
+            try
+            {
+                //获取所有的班级信息
+                var cardInfo = _tb_school_card_templateService.FindListByClause(a => a.School_ID == School_ID, a => a.ID).ToList();
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.UpdateSuccess,
+                    aaData = cardInfo
+                });
+            }
+            catch (Exception e)
+            {
+                Log.Error(e);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+
+        }
+        #endregion
+
+        #region 添加或编辑学校人员信息
+        /// <summary>
+        /// 添加或编辑学校人员信息
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="schoolcode"></param>
+        /// <param name="class_id"></param>
+        /// <param name="card_add_id"></param>
+        /// <param name="student_id"></param>
+        /// <param name="user_name"></param>
+        /// <param name="passport"></param>
+        /// <param name="department_id"></param>
+        /// <param name="card_validity"></param>
+        /// <param name="welcome_flg"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult AddOrUpdateSchoolUserInfo(int? userId, string schoolcode, int? class_id, int? card_add_id, string student_id,
+            string user_name, string passport, int department_id, DateTime? card_validity, byte? welcome_flg)
+        {
+            try
+            {
+                //AddOrUpdateSchoolUserRequest schoolUserRequest
+                var isExistSid = _tb_school_userService.Any(t => t.student_id == student_id);
+                if (isExistSid)
+                {
+                    if (userId != null)
+                    {
+                        string sValue = _tb_school_userService.FindByClause(t => t.user_id == userId).student_id;
+                        if (sValue != student_id)
+                        {
+                            return Json(new
+                            {
+                                code = "111111",
+                                msg = "学工号已存在，请重新输入！"
+                            });
+                        }
+                    }
+                    else
+                    {
+                        return Json(new
+                        {
+                            code = "111111",
+                            msg = " 学工号已存在，请重新输入！"
+                        });
+                    }
+                }
+                var isExist = _tb_school_userService.Any(t => t.passport == passport);
+                if (isExist)
+                {
+                    if (userId != null)
+                    {
+                        string pValue = _tb_school_userService.FindByClause(t => t.user_id ==  userId).passport;
+                        if (pValue != passport)
+                        {
+                            return Json(new
+                            {
+                                code = "111111",
+                                msg = "身份证号已存在，请重新输入！"
+                            });
+                        }
+                    }
+                    else
+                    {
+                        return Json(new
+                        {
+                            code = "111111",
+                            msg = " 身份证号已存在，请重新输入！"
+                        });
+                    }
+                }
+                tb_school_user _School_User = new tb_school_user();
+                _School_User.school_id = schoolcode;
+                _School_User.class_id = class_id;
+                _School_User.student_id = student_id;
+                _School_User.user_name = user_name;
+                _School_User.passport = passport;
+                _School_User.department_id = department_id;
+                _School_User.card_validity = card_validity;
+                _School_User.welcome_flg = welcome_flg;
+                _School_User.card_add_id = card_add_id;
+                if (_School_User.department_id != null)
+                {
+                    var classInfo = _itb_School_ClassinfoService.FindByClause(a => a.ID == _School_User.department_id);
+                    var branchValue = _itb_School_DepartmentService.FindByClause(a => a.id == classInfo.BranchID)?.name;
+                    var departmentValue = _itb_School_DepartmentService.FindByClause(a => a.id == classInfo.DepartmentID)?.name;
+                    var demClassValue = _itb_School_DepartmentService.FindByClause(a => a.id == classInfo.department_classID)?.name;
+                    _School_User.department = branchValue + "/" + departmentValue + "/" + demClassValue;
+                }
+                if (userId != null)
+                {
+
+                    bool boolres = _tb_school_userService.UpdateColumnsByConditon(a => new tb_school_user
+                    {
+                        class_id = _School_User.class_id,
+                        student_id = _School_User.student_id,
+                        user_name = _School_User.user_name,
+                        passport = _School_User.passport,
+                        department_id = _School_User.department_id,
+                        card_validity = _School_User.card_validity,
+                        welcome_flg = _School_User.welcome_flg,
+                        department = _School_User.department,
+                    }, a => a.user_id == userId);
+                    if (boolres)
+                    {
+                        return Json(new
+                        {
+                            code = JsonReturnMsg.SuccessCode,
+                            msg = JsonReturnMsg.UpdateSuccess
+                        });
+                    }
+                    else
+                    {
+                        return Json(new
+                        {
+                            code = JsonReturnMsg.GetFail,
+                            msg = JsonReturnMsg.UpdateFail
+                        });
+                    }
+                }
+                else
+                {
+                    _School_User.create_time = DateTime.Now; ;
+                    _School_User.nationality = "1";
+                    _School_User.class_code = "0";
+                    var addres = _tb_school_userService.Insert(_School_User);
+                    if (addres == 1)
+                    {
+                        return Json(new
+                        {
+                            code = JsonReturnMsg.SuccessCode,
+                            msg = JsonReturnMsg.AddSuccess
+                        });
+                    }
+                    else
+                    {
+                        return Json(new
+                        {
+                            code = JsonReturnMsg.GetFail,
+                            msg = JsonReturnMsg.AddFail
+                        });
+                    }
+                }
+
+            }
+            catch (Exception e)
+            {
+                Log.Error(e);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+
+        }
+        #endregion
+
+        #region 删除人员信息
+        /// <summary>
+        /// 删除人员信息
+        /// </summary>
+        /// <param name="user_id"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult DeleteSchoolUserBy(int user_id)
+        {
+            try
+            {
+                var boolres = _tb_school_userService.Delete(a => a.user_id == user_id);
+                if (boolres)
+                {
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.SuccessCode,
+                        msg = JsonReturnMsg.DeleteSuccess,
+                    });
+                }
+                else
+                {
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.FailCode,
+                        msg = JsonReturnMsg.DeleteFail,
+                    });
+                }
+            }
+            catch (Exception e)
+            {
+                Log.Error(e);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.DeleteFail,
+                });
+            }
+
+        }
+        #endregion
+
+        #region 导出校园卡人员管理信息
+        /// <summary>
+        /// 导出校园卡人员管理信息
+        /// </summary>
+        /// <param name="school_Code"></param>
+        /// <param name="userNameOrId"></param>
+        /// <param name="branchId"></param>
+        /// <param name="departmentId"></param>
+        /// <param name="department_classId"></param>
+        /// <param name="classId"></param>
+        /// <param name="card_state"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult InduceSchoolUserInfo(string school_Code, string userNameOrId, string branchId, string departmentId, string department_classId,
+           string classId, string card_state)
+        {
+            try
+            {
+                var data = _tb_school_userService.InduceSchoolUserInfo(school_Code, userNameOrId, branchId,
+                    departmentId, department_classId, classId, card_state);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                    aaData = data
+                });
+                //  ExcelHelper.ExportAction(@"人员管理数据.xls",
+                //new List<string> { "姓名", "身份证", "学号", "创建时间", "卡类型", "领卡状态", "部门" }, data.ToArray(),
+                //FillCell);
+            }
+            catch (Exception ex)
+            {
+                Log.Error("错误:" + ex);
+                return null;
+            }
+        }
+        //private void FillCell(IRow row, InduceSchoolUserViewModel[] list, int i)
+        //{
+        //    row.CreateCell(0).SetCellValue(list[i].user_name);
+        //    row.CreateCell(1).SetCellValue(list[i].passport);
+        //    row.CreateCell(2).SetCellValue(list[i].student_id);
+        //    try
+        //    {
+        //        row.CreateCell(3).SetCellValue(DateTime.Parse(list[i].create_time + "").ToString("yyyy-MM-dd HH:mm:ss"));
+        //    }
+        //    catch (Exception)
+        //    {
+        //        row.CreateCell(3).SetCellValue("");
+        //    }
+        //    row.CreateCell(4).SetCellValue(list[i].class_id);
+        //    row.CreateCell(5).SetCellValue(list[i].card_state);
+        //    row.CreateCell(6).SetCellValue(list[i].department);
+
+
+        //}
+        #endregion
+
+
+
+        /// <summary>
+        /// 用户登陆
+        /// </summary>
+        /// <param name="school_id"></param>
+        /// <param name="username"></param>
+        /// <param name="password"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult UserLogin(string school_id, string username, string password)
+        {
+            string schoolcode = school_id;
+            string Username = username;
+
+            string Password = MD5Helper.MD5Encrypt16(password);
+            var userinfo = _Itb_userinfoService.FindByClause(p => p.loginuser == Username && p.password == Password && p.schoolcode == schoolcode);
+
+
+            if (userinfo == null)
+            {
+                return Json(new
+                {
+                    return_code = 1,
+                    return_msg = "用户名或密码不正确"
+                });
+
+            }
+            else
+            {
+                return Json(new
+                {
+                    schoolcode = schoolcode,
+                    loginuser = userinfo.loginuser,
+                    menus = userinfo.menus,
+                    return_code = 1,
+                    return_msg = "登录成功"
+
+                });
+            }
+        }
+
+
+        private Color GetRandomColor()
+        {
+            Random RandomNum_First = new Random((int)DateTime.Now.Ticks);
+            System.Threading.Thread.Sleep(RandomNum_First.Next(50));
+            Random RandomNum_Sencond = new Random((int)DateTime.Now.Ticks);
+            int int_Red = RandomNum_First.Next(210);
+            int int_Green = RandomNum_Sencond.Next(180);
+            int int_Blue = (int_Red + int_Green > 300) ? 0 : 400 - int_Red - int_Green;
+            int_Blue = (int_Blue > 255) ? 255 : int_Blue;
+            return Color.FromArgb(int_Red, int_Green, int_Blue);// 5+1+a+s+p+x 
+        }
+
+        private IActionResult CreateImage2(string validateNum)
+        {
+            if (validateNum == null || validateNum.Trim() == String.Empty)
+                return null;
+            string[] fonts = { "Arial", "Georgia" };
+            int letterWidth = 16;//单个字体的宽度范围 
+            int letterHeight = 22;//单个字体的高度范围
+            int int_ImageWidth = validateNum.Length * letterWidth;
+            Random newRandom = new Random();
+            Bitmap image = new Bitmap(int_ImageWidth, letterHeight);
+            Graphics g = Graphics.FromImage(image);
+            //生成随机生成器  
+            Random random = new Random();  //白色背景  
+            g.Clear(Color.White);  //画图片的背景噪音线  
+            for (int i = 0; i < 10; i++)
+            {
+                int x1 = random.Next(image.Width);
+                int x2 = random.Next(image.Width);
+                int y1 = random.Next(image.Height);
+                int y2 = random.Next(image.Height);
+                g.DrawLine(new Pen(Color.Silver), x1, y1, x2, y2);
+            }
+            //画图片的前景噪音点  
+            for (int i = 0; i < 10; i++)
+            {
+                int x = random.Next(image.Width);
+                int y = random.Next(image.Height);
+                image.SetPixel(x, y, Color.FromArgb(random.Next()));
+            }
+            //随机字体和颜色的验证码字符  
+            int findex;
+            for (int int_index = 0; int_index < validateNum.Length; int_index++)
+            {
+                findex = newRandom.Next(fonts.Length - 1);
+                string str_char = validateNum.Substring(int_index, 1);
+                Brush newBrush = new SolidBrush(GetRandomColor());
+                Point thePos = new Point(int_index * letterWidth + 1 + newRandom.Next(3), 1 + newRandom.Next(3));
+                //5+1+a+s+p+x   
+                g.DrawString(str_char, new Font(fonts[findex], 12, FontStyle.Bold), newBrush, thePos);
+            }
+            //灰色边框  
+            g.DrawRectangle(new Pen(Color.LightGray, 1), 0, 0, int_ImageWidth - 1, (letterHeight - 1));
+            //图片扭曲  
+            //image = TwistImage(image, true, 3, 4);  
+            //将生成的图片发回客户端  
+
+            System.IO.MemoryStream ms = new System.IO.MemoryStream();
+            //将图像保存到指定的流
+            image.Save(ms, System.Drawing.Imaging.ImageFormat.Gif);
+
+
+
+
+            var response = File(ms.ToArray(), "image/jpeg");
+
+            return response;
+
+
+
+
+        }
+
+        /// <summary>
+        /// 图片验证码
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult ValidImg(string validateNum)
+        {
+            Random r = new Random();
+            //  string validateNum = r.Next(9999).ToString();//生成4位验证码随机字符串
+            return CreateImage2(validateNum);//将生成的随机字符串绘成图片
+        }
+
+
+
+
+
+
+
+
+
+
+
+    }
+}

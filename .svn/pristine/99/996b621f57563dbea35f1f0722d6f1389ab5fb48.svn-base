@@ -1,0 +1,10 @@
+﻿using DbModel;
+using IService;
+using Infrastructure.Service;
+namespace Service
+{
+    public class tb_menuinfoService : GenericService<tb_menuinfo>,Itb_menuinfoService
+    {
+
+    }
+}

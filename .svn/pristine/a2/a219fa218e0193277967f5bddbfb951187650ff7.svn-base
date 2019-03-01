@@ -1,0 +1,36 @@
+﻿using DbModel;
+using IService;
+using Infrastructure.Service;
+using Infrastructure;
+using SqlSugar;
+
+namespace Service
+{
+    public class tb_school_card_template_formerService : GenericService<tb_school_card_template_former>,Itb_school_card_template_formerService
+    {
+        public object GetSchoolCardTempFormer(string schoolcode)
+        {
+            using (var db = DbFactory.GetSqlSugarClient())
+            {
+                return db.Queryable<tb_school_card_template_former, tb_alipay_image>(
+                    (pi, pr) =>
+                    new object[] {
+                        JoinType.Inner,pi.Logo_id == pr.alipay_id
+                    }
+                )
+                .Where((pi, pr) => pi.schoolid==schoolcode)
+                .Select((pi, pr) => new
+                {
+                    id = pi.id,
+                    Logo_id = pi.Logo_id,
+                    schoolid = pi.schoolid,
+                    T_card_action_list = pi.T_card_action_list,
+                    T_column_info_list = pi.T_column_info_list,
+                    imgurl = pr.alipay_url
+                })
+               .ToList();
+
+            }
+        }
+    }
+}

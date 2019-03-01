@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>   
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="all,follow">
+    <title>领卡成功</title>
+	<link rel="stylesheet" href="/css/collarcard.css">
+</head>
+<body>
+	<div class="suss-card">
+		<img src="/images/card/success.png" class="suss-card-on1">
+		<div class="suss-card-on2">恭喜您，领卡成功</div>
+		<div class="suss-card-on3">校园卡领卡成功，快去看看吧</div>
+		<div class="suss-list">
+			<ul>
+				<li>
+					<span class="left-mess1">姓名</span>
+					<span class="left-mess2 cx-name"></span>
+				</li>
+				<li>
+					<span class="left-mess1">学号</span>
+					<span class="left-mess2 cx-student"></span>
+				</li>
+				<li>
+					<span class="left-mess1">类型</span>
+					<span class="left-mess2 cx-type"></span>
+				</li>
+			</ul>
+		</div>
+	</div>	
+	<div class="bottom-fixed-box">
+		<div class="btn-box"><button class="card-btn" onclick="campusCard()">查看校园卡</button></div>
+	</div>
+	<script src="/lib/jquery/1.9.1/jquery.min.js"></script>
+	<script type="text/javascript">
+        var user_name,student_id, card_show_nam,schema_url;
+        $(function () {
+            init();
+        });
+        function init() {
+            user_name = GetQueryString("user_name");
+            student_id = GetQueryString("student_id");
+            card_show_nam = GetQueryString("card_show_nam");
+            schema_url = GetQueryString("schema_url");
+            $(".cx-name").text(msg);
+            $(".cx-student").text(msg);
+            $(".cx-type").text(msg);
+        }
+        function GetQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return unescape(r[2]); return null;
+        }
+        function campusCard() {
+			location.href = schema_url;
+        }
+	</script>
+</body>
+</html>
