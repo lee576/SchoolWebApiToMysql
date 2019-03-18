@@ -1,0 +1,259 @@
+
+<template>
+    <div class="home">
+        <div class="nav-lead clearfix">
+            <div class="fl nav-lead-word"><a href="#">用户指引</a></div>
+        </div>
+        <div class="page-content">
+           <div class="guide-box">
+               <div class="guide-el-box">
+                   <el-row :gutter="10">
+                       <el-col :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+                           <div class="is-exd" @click="isCard=true">
+                                 <img src="../../assets/images/card.png"  width="100%" />
+                           </div>
+                       </el-col>
+                       <el-col :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+                           <div class="is-exd" @click="isPay=true">
+                                <img src="../../assets/images/pay.png"  width="100%" />
+                           </div>
+                       </el-col>
+                       <el-col :xs="24" :sm="24" :md="12" :lg="8" :xl="8">
+                           <div class="is-exd" @click="isCashier=true">
+                               <img src="../../assets/images/cashier-desk.png"  width="100%" />
+                           </div>
+                       </el-col>
+                   </el-row>
+               </div>
+           </div>
+        </div>
+
+        <!-- 校园卡 -->
+        <div class="mo-guide" :style="{display:isCard ? 'block':'none'}"></div>
+        <div class="mocon-box" :style="{zIndex:isCard ? '99':'-1',opacity:isCard ? '1':'0'}">
+            <div class="swiper-container" style="width:1024px;">
+                <div class="swiper-wrapper">
+                    <!--<div class="swiper-slide"><img src="../../assets/images/cardIcon/card-choose1.png" height="600" width="1024"/></div>-->
+                    <div class="swiper-slide" v-for="(item,index) in iconArr">
+                        <img :src='"../../assets/images/cardlead/card-choose"+item+".png"' height="600" width="1024"/>
+                    </div>
+                </div>
+                <div class="swiper-pagination"></div>
+                <div class="swiper-btn clearfix">
+                    <span class="first-be" id="firstbe" :style="{display:isFirst?'inline-block':'none'}" style="margin-right: 20px" @click="isCard=false">跳过指引</span>
+                    <span class="swiper-before" style="margin-right: 20px;display: none;">上一步</span>
+                    <span class="swiper-next">继续</span>
+                    <span class="end-be" id="endbe" :style="{display:isEnd?'inline-block':'none'}" @click="cardClose">完成</span>
+                </div>
+               <img src="../../assets/images/close.png" class="close-all" @click="cardClose"/>
+            </div>
+        </div>
+
+        <!-- 缴费大厅 -->
+        <div class="mo-guide" :style="{display:isPay ? 'block':'none'}"></div>
+        <div class="mocon-box" :style="{zIndex:isPay ? '99':'-1',opacity:isPay ? '1':'0'}">
+            <div class="swiper-container1" style="width:1024px;">
+                <div class="swiper-wrapper">
+                    <div class="swiper-slide" v-for="(item,index) in iconArr1">
+                        <img :src='"../../assets/images/paylead/pay"+item+".png"' height="600" width="1024"/>
+                    </div>
+                </div>
+                <div class="swiper-pagination"></div>
+                <div class="swiper-btn clearfix">
+                    <span class="first-be" id="firstbe1" :style="{display:isFirst1?'inline-block':'none'}" style="margin-right: 20px" @click="isPay=false">跳过指引</span>
+                    <span class="swiper-before" style="margin-right: 20px;display: none;">上一步</span>
+                    <span class="swiper-next">继续</span>
+                    <span class="end-be" id="endbe1" :style="{display:isEnd1?'inline-block':'none'}" @click="payClose">完成</span>
+                </div>
+                <img src="../../assets/images/close.png" class="close-all" @click="payClose"/>
+            </div>
+        </div>
+
+        <!-- 收银台 -->
+        <div class="mo-guide" :style="{display:isCashier ? 'block':'none'}"></div>
+        <div class="mocon-box" :style="{zIndex:isCashier ? '99':'-1',opacity:isCashier ? '1':'0'}">
+            <div class="swiper-container2" style="width:1024px;">
+                <div class="swiper-wrapper">
+                    <!--<div class="swiper-slide"><img src="../../assets/images/cardIcon/card-choose1.png" height="600" width="1024"/></div>-->
+                    <div class="swiper-slide" v-for="(item,index) in iconArr2">
+                        <img :src='"../../assets/images/cashierlead/cashier-desk"+item+".png"' height="600" width="1024"/>
+                    </div>
+                </div>
+                <div class="swiper-pagination"></div>
+                <div class="swiper-btn clearfix">
+                    <span class="first-be" id="firstbe2" :style="{display:isFirst2?'inline-block':'none'}" style="margin-right: 20px" @click="isCashier=false">跳过指引</span>
+                    <span class="swiper-before" style="margin-right: 20px;display: none;">上一步</span>
+                    <span class="swiper-next">继续</span>
+                    <span class="end-be" id="endbe2" :style="{display:isEnd2?'inline-block':'none'}" @click="cashierClose">完成</span>
+                </div>
+                <img src="../../assets/images/close.png" class="close-all" @click="cashierClose"/>
+            </div>
+        </div>
+
+    </div>
+</template>
+
+
+<script>
+    import Swiper from 'swiper';
+    let swiper,swiper1,swiper2;
+    export default {
+        name: "UserGuide",
+        data() {
+            return {
+                AllocationVisible:true,
+                isCard:false,
+                isFirst:true,
+                isEnd:false,
+                iconArr:9,
+                isPay:false,
+                isFirst1:true,
+                isEnd1:false,
+                iconArr1:11,
+                isCashier:false,
+                isFirst2:true,
+                isEnd2:false,
+                iconArr2:7
+            }},
+        mounted(){
+
+       swiper=   new Swiper ('.swiper-container', {
+                loop: false,
+                allowTouchMove: false,
+                navigation: {
+                    nextEl: '.swiper-next',
+                    prevEl: '.swiper-before',
+                    //     nextEl: '.swiper-button-next',
+                    //     prevEl: '.swiper-button-prev',
+                },
+                on: {
+                    slideChange: function(){
+                        if(this.isBeginning){
+                            this.navigation.$prevEl.css('display','none');
+                            this.navigation.$nextEl.text('继续');
+                            document.getElementById("firstbe").style.display='inline-block';
+                        }else if(this.isEnd){
+                            this.navigation.$nextEl.css('display','none');
+                            document.getElementById("endbe").style.display='inline-block';
+                        }else{
+                            this.navigation.$prevEl.css('display','inline-block');
+                            this.navigation.$nextEl.css('display','inline-block');
+                            this.navigation.$nextEl.text("下一步");
+                            this.navigation.$prevEl.text('上一步');
+                            document.getElementById("firstbe").style.display='none';
+                            document.getElementById("endbe").style.display='none';
+                        }
+                    },
+                },
+            });
+
+            swiper1=   new Swiper ('.swiper-container1', {
+                loop: false,
+                allowTouchMove: false,
+                navigation: {
+                    nextEl: '.swiper-next',
+                    prevEl: '.swiper-before',
+                    //     nextEl: '.swiper-button-next',
+                    //     prevEl: '.swiper-button-prev',
+                },
+                on: {
+                    slideChange: function(){
+                        if(this.isBeginning){
+                            this.navigation.$prevEl.css('display','none');
+                            this.navigation.$nextEl.text('继续');
+                            document.getElementById("firstbe1").style.display='inline-block';
+                        }else if(this.isEnd){
+                            this.navigation.$nextEl.css('display','none');
+                            document.getElementById("endbe1").style.display='inline-block';
+                        }else{
+                            this.navigation.$prevEl.css('display','inline-block');
+                            this.navigation.$nextEl.css('display','inline-block');
+                            this.navigation.$nextEl.text("下一步");
+                            this.navigation.$prevEl.text('上一步');
+                            document.getElementById("firstbe1").style.display='none';
+                            document.getElementById("endbe1").style.display='none';
+                        }
+                    },
+                },
+            });
+
+            swiper2=   new Swiper ('.swiper-container2', {
+                loop: false,
+                allowTouchMove: false,
+                navigation: {
+                    nextEl: '.swiper-next',
+                    prevEl: '.swiper-before',
+                    //     nextEl: '.swiper-button-next',
+                    //     prevEl: '.swiper-button-prev',
+                },
+                on: {
+                    slideChange: function(){
+                        if(this.isBeginning){
+                            this.navigation.$prevEl.css('display','none');
+                            this.navigation.$nextEl.text('继续');
+                            document.getElementById("firstbe2").style.display='inline-block';
+                        }else if(this.isEnd){
+                            this.navigation.$nextEl.css('display','none');
+                            document.getElementById("endbe2").style.display='inline-block';
+                        }else{
+                            this.navigation.$prevEl.css('display','inline-block');
+                            this.navigation.$nextEl.css('display','inline-block');
+                            this.navigation.$nextEl.text("下一步");
+                            this.navigation.$prevEl.text('上一步');
+                            document.getElementById("firstbe2").style.display='none';
+                            document.getElementById("endbe2").style.display='none';
+                        }
+                    },
+                },
+            });
+
+        },
+        methods:{
+            cardClose(){
+                this.isCard=false;
+                swiper.slideTo(0, 50, false);
+                document.getElementById("firstbe").style.display='inline-block';
+                document.getElementById("endbe").style.display='none';
+                swiper.navigation.$prevEl.css('display','none');
+                swiper.navigation.$nextEl.css('display','inline-block');
+            },
+            payClose(){
+                this.isPay=false;
+                swiper1.slideTo(0, 50, false);
+                document.getElementById("firstbe1").style.display='inline-block';
+                document.getElementById("endbe1").style.display='none';
+                swiper1.navigation.$prevEl.css('display','none');
+                swiper1.navigation.$nextEl.css('display','inline-block');
+            },
+            cashierClose(){
+                this.isCashier=false;
+                swiper2.slideTo(0, 50, false);
+                document.getElementById("firstbe2").style.display='inline-block';
+                document.getElementById("endbe2").style.display='none';
+                swiper2.navigation.$prevEl.css('display','none');
+                swiper2.navigation.$nextEl.css('display','inline-block');
+            }
+        }
+
+    }
+</script>
+
+<style scoped>
+    @import '../../../node_modules/_swiper@4.5.0@swiper/dist/css/swiper.css';
+    .page-content{position: relative;}
+    .guide-box{position: absolute;left:0px;top:0px;width:100%;}
+    .guide-el-box{padding: 20px 30px;}
+    .guide-el-box .is-exd{cursor: pointer;padding-right: 10px;padding-bottom: 10px}
+    .swiper-container,.swiper-container1,.swiper-container2{overflow: hidden;border-radius:8px;}
+    .mo-guide{position: fixed;top:0;left:0;width:100%;height:100%;background: rgba(0,0,0,0.6);z-index: 2}
+    .mocon-box{position: fixed;left:50%;top:50%;width:1024px;margin-left: -512px;margin-top: -350px;}
+    .swiper-btn{text-align: center;background: #fff;padding: 15px 0;border-radius: 0 0 8px 8px}
+    .swiper-btn>span{display: inline-block;cursor: pointer;width:100px;text-align: center;height: 30px;line-height: 30px;border-radius: 5px;}
+    .first-be,.swiper-before{color:#2387fb;border: solid 1px #2387fb;}
+    .swiper-before:hover, .first-be:hover{color:#0d72e8;border: solid 1px #0d72e8;}
+    .swiper-next,.end-be{color:#fff;background: #2387fb;}
+    .swiper-next:hover,.end-be:hover{color:#fff;background: #0d72e8;}
+    .swiper-wrapper img{display: block;}
+    .close-all{height:36px;width:36px;position:absolute; right:0px;top:0px;z-index: 999;cursor: pointer;}
+    .home{-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;}
+</style>
