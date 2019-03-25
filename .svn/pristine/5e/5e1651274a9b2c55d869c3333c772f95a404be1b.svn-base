@@ -1,0 +1,1272 @@
+﻿using Alipay.AopSdk.AspnetCore;
+using Alipay.AopSdk.Core;
+using Alipay.AopSdk.Core.Request;
+using Alipay.AopSdk.Core.Response;
+using DbModel;
+using IService;
+using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Models.ViewModels;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using SchoolWebApi.Utility;
+using SqlSugar;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace SchoolWebApi.Controllers
+{
+    /// <summary>
+    /// 支付宝接口API
+    /// </summary>
+    [Route("api/[controller]/[action]")]
+    [ApiController]
+    [Produces("application/json")]
+    [EnableCors("any")]
+    public class AliPayController : Controller
+    {
+        private static NLog.Logger log = NLog.LogManager.GetCurrentClassLogger();
+        private readonly Itb_school_userService _tb_school_userService;
+        private readonly Itb_payment_ar_recordService _tb_payment_ar_recordService;
+        private readonly Itb_payment_recordService _tb_payment_recordService;
+        private readonly Itb_payment_accountsService _tb_payment_accountsService;
+        private readonly Itb_payment_itemService _tb_payment_itemService;
+        private readonly Itb_payment_ARService _tb_payment_ARService;
+        private readonly Itb_payment_typeService _tb_payment_TypeService;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tb_school_userService"></param>
+        /// <param name="tb_payment_ar_recordService"></param>
+        /// <param name="tb_payment_recordService"></param>
+        /// <param name="tb_payment_accounts"></param>
+        /// <param name="tb_payment_itemService"></param>
+        /// <param name="tb_payment_ARService"></param>
+        /// <param name="tb_payment_TypeService"></param>
+        public AliPayController(
+            Itb_school_userService tb_school_userService,
+            Itb_payment_ar_recordService tb_payment_ar_recordService,
+            Itb_payment_recordService tb_payment_recordService,
+            Itb_payment_accountsService tb_payment_accounts,
+            Itb_payment_itemService tb_payment_itemService,
+            Itb_payment_ARService tb_payment_ARService,
+            Itb_payment_typeService tb_payment_TypeService)
+        {
+            _tb_school_userService = tb_school_userService;
+            _tb_payment_ar_recordService = tb_payment_ar_recordService;
+            _tb_payment_recordService = tb_payment_recordService;
+            _tb_payment_accountsService = tb_payment_accounts;
+            _tb_payment_itemService = tb_payment_itemService;
+            _tb_payment_ARService = tb_payment_ARService;
+            _tb_payment_TypeService = tb_payment_TypeService;
+        }
+        /// <summary>
+        /// 通过学生ID获取需要的缴费信息（若火缴费小程序使用（非缴费大厅））
+        /// </summary>
+        /// <param name="schoolcode"></param>
+        /// <param name="student_id"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult GetCampusPay(string schoolcode, string student_id)
+        {
+            List<CampusPay> lst = _tb_payment_ARService.FindCampusPayListByStudentId(schoolcode, student_id);
+            return new JsonResult(new
+            {
+                Result = lst
+            });
+        }
+        /// <summary>
+        /// 通过学生ID获取应缴费用信息
+        /// </summary>
+        /// <param name="student_id">学生ID</param>
+        /// <param name="userId">支付宝ID</param>
+        /// <param name="formId">表单ID</param>
+        /// <param name="page">跳转页面</param>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult GetPayInfo(string student_id,string userId,string formId,string page)
+        {
+            List<tb_payment_ar> lst = _tb_payment_ARService.FindListByStudentId(student_id);
+            //string SendUserId = "2088102918752100",
+            //        FormId = "20181018144005965022",
+            //        userTemplateId = "NDc2YzFkNDQ2ZDY5MDI5NzY5ZjViNmM4OWYzZTllMTA=",
+            //        Page = "page/index/index",
+            //        data = "\"{\\\"keyword1\\\":{\\\"value\\\":\\\"12:00\\\"}}\"";
+            //SendModel model = new SendModel();
+            //model.to_user_id = "2088102918752100";
+            //model.form_id = "";
+            //model.user_template_id = "479e07815f5d473aa36f03596dd33fbe";
+            //model.page = "page/index/index";
+            //DataResult dataModel = new DataResult();
+            //DataResultValue
+            //dataModel.first = "你好";
+            //dataModel.keyword1 = "keyword1.value";
+            //dataModel.keyword2 = "keyword2.value";
+            //dataModel.keyword3 = "keyword3.value";
+            //dataModel.keyword4 = "keyword4.value";
+            //dataModel.keyword5 = "keyword5.value";
+            //dataModel.remark = "remark.value";
+            //model.data = dataModel;
+            //string msg = SendMsg(SendUserId, FormId, userTemplateId, Page, data);
+            var userinfo = _tb_school_userService.FindByClause(x => x.ali_user_id == userId);
+            decimal amount = Convert.ToDecimal(lst.Sum(x => x.amount));
+            if (lst!=null && lst.Count > 0 && !string.IsNullOrWhiteSpace(formId))
+            {
+                UserTemplate.setPayment_ReminderData(
+                     amount.ToString(),
+                     lst.Count.ToString()
+                    );
+                MsgPushHelper mph = new MsgPushHelper();
+                var msg = mph.SendMsg("PaymentMall2", userId, formId, UserTemplate.Payment_Reminder, page, UserTemplate.Payment_ReminderData);
+                log.Info(msg);
+                //SendMsg(userId, formId, this.XXMB, page, "您有" + lst.Count + "条学校缴费内容未完成，请前往校园卡缴费大厅进行缴纳");
+            }
+            return new JsonResult(new
+            {
+                Result = lst,
+                //msg=msg
+            });
+        }
+        /// <summary>
+        /// 获取收费项目
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult GetPayItems(string school_code, string passport)
+        {
+            try
+            {
+                //List<view_payment_item> lst = _tb_payment_itemService.FindListBySchoolCode(school_code);
+                List<view_payment_itemType> lstType = _tb_payment_TypeService.GetTypeChildList(school_code, passport);
+                if (lstType == null) 
+                {
+                    return new JsonResult(new
+                    {
+                        Count = 0,
+                        Result = lstType
+                    });
+                }
+                return new JsonResult(new
+                {
+                    Count = lstType.Count,
+                    Result = lstType
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+           
+        }
+        /// <summary>
+        /// 获取收费项目通过id
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult GetPayItemsToid(string school_code,int id)
+        {
+            //List<view_payment_item> lst = _tb_payment_itemService.FindListBySchoolCode(school_code);
+            List<view_payment_item> lstType = _tb_payment_TypeService.GetPayItemsToid(school_code,id);
+            return new JsonResult(new
+            {
+                Count = lstType.Count,
+                Result = lstType
+            });
+        }
+        /// <summary>
+        /// 应缴费用缴费
+        /// </summary>
+        /// <param name="payment_id"></param>
+        /// <param name="ar_id"></param>
+        /// <param name="payer_id"></param>
+        /// <param name="student_id"></param>
+        /// <param name="payer_name"></param>
+        /// <param name="schoolCode"></param>
+        /// <param name="account"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult PayAssessment(string payment_id, string ar_id, string payer_id, string student_id, string payer_name, string schoolCode, string account)
+        {
+            try
+            {
+
+                #region 通过缴费ID获取缴费金额
+                tb_payment_ar model = _tb_payment_ARService.FindById(payment_id);
+                #endregion
+                #region 生成缴费信息入库
+                string alipayOrderNo = DateTime.Now.ToString("yyyyMMddHHmmssffff") +
+                                       new Random().Next(1000).ToString().PadLeft(4, '0');
+                string passport = model.passport;
+                string money = model.amount.ToString();
+                string phone = "";
+                string OrderName = model.name;
+                if ((string.IsNullOrWhiteSpace(payment_id) && string.IsNullOrWhiteSpace(ar_id)) ||
+                        string.IsNullOrWhiteSpace(payer_id))
+                    return new JsonResult(new
+                    {
+                        return_code = -1,
+                        return_msg = "缺少参数或参数非法"
+                    });
+
+                int intC = 0;
+
+                if (!string.IsNullOrWhiteSpace(ar_id))
+                    intC = (_tb_payment_ar_recordService.FindListByClause(x => x.ar_id.ToString().Equals(ar_id)
+                                                                               && x.status == 1 &&
+                                                                               x.payer_passport.Equals(passport),
+                        t => t.id) as List<tb_payment_ar_record>).Count;
+                else
+                    intC = _tb_payment_recordService.FindRecordByPayId(payment_id, passport);
+                List<payment_Orders> lstOrder = null;
+                if ((intC == 0 && !string.IsNullOrWhiteSpace(ar_id)) ||
+                    (intC == 0 && !string.IsNullOrWhiteSpace(payment_id)))
+                {
+                    //money = "0.01";
+                    var out_trade_no_list = _tb_payment_recordService.createOrder(payment_id, ar_id, alipayOrderNo,
+                        money, payer_id, student_id, payer_name, passport, phone);
+                    lstOrder = out_trade_no_list.orderList;
+                    if (!out_trade_no_list.paymentList.Any() && !out_trade_no_list.arList.Any())
+                    {
+                        return new JsonResult(new
+                        {
+                            return_code = -3,
+                            return_msg = "订单生成失败"
+                        });
+                    }
+                }
+                else
+                {
+                    return new JsonResult(new
+                    {
+                        return_code = -3,
+                        return_msg = "订单已支付"
+                    });
+                }
+
+                #endregion
+                #region 生成支付宝缴费订单
+                if (lstOrder.Count > 0)
+                {
+                    for (int i = 0; i < lstOrder.Count(); i++)
+                    {
+                        string resp = AliPayHelper.AliCreateOrders(lstOrder[0].AppId, lstOrder[0].PrivateKey,
+                            lstOrder[0].AlipayPublicKey, account, lstOrder[i].OrderName, lstOrder[i].Price,
+                            lstOrder[i].OrderNo);
+
+                        JObject jo = ((JObject)JsonConvert.DeserializeObject(
+                            ((JObject)JsonConvert.DeserializeObject(resp))["alipay_trade_create_response"]
+                            .ToString()));
+                        if (jo["code"].ToString() != "10000")
+                        {
+                            return new JsonResult(resp);
+                        }
+                    }
+                }
+                #endregion
+            }
+            catch (ArgumentNullException ex)
+            {
+                log.Error("错误:" + ex.Message);
+                return new JsonResult(new { data = ex.ToString() });
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return new JsonResult(new { data = ex.ToString() });
+            }
+            return null;
+        }
+        /// <summary>
+        /// 通过应缴费用缴费ID获取支付宝的订单支付状态
+        /// </summary>
+        /// <param name="out_trade_no"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult GetOrdersStatus(string out_trade_no)
+        {
+            //通过应缴费用缴费ID获取订单号、appid、私钥、公钥、
+            string Url = "https://openapi.alipay.com/gateway.do";
+            var rt = _tb_payment_ARService.GetListByTradeNo(out_trade_no);
+            log.Info("查询GetOrdersStatus rt.modelAr = " + rt.modelAr + " rt.modelPar=" + rt.modelPar + " rt.modelTpa=" + rt.modelTpa);
+            //if (rt.modelAr != null && rt.modelPar != null && rt.modelTpa != null)
+            if (rt.modelTpa != null)
+            {
+                IAopClient client = new DefaultAopClient(Url, rt.modelTpa.appid, rt.modelTpa.private_key, "json", "1.0", "RSA2", rt.modelTpa.alipay_public_key);
+                AlipayTradeQueryRequest request = new AlipayTradeQueryRequest();
+                request.BizContent = "{" +
+                "\"out_trade_no\":\"" + out_trade_no + "\"" +
+                "  }";
+                AlipayTradeQueryResponse response = client.Execute(request);
+                log.Info("AlipayTradeQueryRequest = " + response.Body);
+                payOk model = _tb_payment_ar_recordService.GetPayOk(out_trade_no);// GetPayOk();
+                switch (((JObject)JsonConvert.DeserializeObject(response.Body))["alipay_trade_query_response"]["trade_status"].ToString().ToUpper())
+                {
+                    case "WAIT_BUYER_PAY"://交易创建，等待买家付款
+                        return new JsonResult(new { Return = "交易创建，等待买家付款", model = model });
+                    case "TRADE_CLOSED"://未付款交易超时关闭，或支付完成后全额退款
+                        return new JsonResult(new { Return = "未付款交易超时关闭，或支付完成后全额退款", model = model });
+                    case "TRADE_FINISHED"://交易结束，不可退款
+                        return new JsonResult(new { Return = "交易结束，不可退款", model = model });
+                    default://TRADE_SUCCESS（交易支付成功）
+                        //修改数据库支付状态
+                        log.Info("进入修改订单out_trade_no= " + out_trade_no);
+                        if (_tb_payment_ARService.PayOk2(out_trade_no, model.price) == true)
+                        {
+                            return new JsonResult(new { Return = "True",model= model });
+                        }
+                        break;
+                }
+                return new JsonResult(response.Body);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 创建应缴费用订单
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult CreateAROrder([FromBody]JObject obj)
+        {
+            try
+            {
+                var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                var config = builder.Build();
+                var PayItemPayCallBack = config.GetSection("PayItemPayCallBack");
+                string arId = obj["arId"].ToString();
+                string account = obj["account"].ToString();
+                string schoolCode = obj["schoolCode"].ToString();
+                #region 通过tb_payment_ar_record的ID获取缴费信息
+                tb_payment_ar model = _tb_payment_ARService.FindById(int.Parse(arId));
+                //model.amount = decimal.Parse("0.01");
+                if (model == null)
+                {
+                    return new JsonResult(new
+                    {
+                        return_code = -3,
+                        return_msg = "获取缴费信息失败"
+                    });
+                }
+                #endregion
+                //生成支付宝订单号
+                string alipayOrderNo = DateTime.Now.ToString("yyyyMMddHHmmssffff") +
+                                       new Random().Next(1000).ToString().PadLeft(4, '0');
+                int intC = 0;
+                intC = (_tb_payment_ar_recordService.FindListByClause(x => x.ar_id.ToString().Equals(arId)
+                                                                                   && x.status == 1,
+                            t => t.id) as List<tb_payment_ar_record>).Count;
+
+                List<payment_Orders> lstOrder = null;
+                if (intC == 0 && !string.IsNullOrWhiteSpace(arId))
+                {
+                    //创建订单
+                    var out_trade_no_list = _tb_payment_ARService.CreateOrder(model, alipayOrderNo, schoolCode);
+                    lstOrder = out_trade_no_list.orderList;
+                    if (!out_trade_no_list.paymentList.Any() && !out_trade_no_list.arList.Any())
+                    {
+                        return new JsonResult(new
+                        {
+                            return_code = -3,
+                            return_msg = "订单生成失败"
+                        });
+                    }
+                }
+                else
+                {
+                    return new JsonResult(new
+                    {
+                        return_code = -3,
+                        return_msg = "订单已支付"
+                    });
+                }
+
+                if (lstOrder.Count > 0)
+                {
+                    for (int i = 0; i < lstOrder.Count(); )
+                    {
+                        var payCallBackURL = PayItemPayCallBack.GetSection("payCallBackURL").Value + "AliPay/DirectlyAliJsPayCallBack";
+                        string resp = AliPayHelper.AliCreateOrders(lstOrder[0].AppId, lstOrder[0].PrivateKey,
+                            lstOrder[0].AlipayPublicKey, account, lstOrder[i].OrderName, lstOrder[i].Price,
+                            lstOrder[i].OrderNo, payCallBackURL);
+
+                        JObject jo = ((JObject)JsonConvert.DeserializeObject(
+                            ((JObject)JsonConvert.DeserializeObject(resp))["alipay_trade_create_response"]
+                            .ToString()));
+                        if (((JObject)JsonConvert.DeserializeObject(resp))["alipay_trade_create_response"]["code"].ToString() == "10000") {
+                            return new JsonResult(new {
+                                return_code = 10000,
+                                return_msg = "订单支付成功",
+                                data= (JObject)JsonConvert.DeserializeObject(resp)
+                            });
+                        }
+                        return new JsonResult(new
+                        {
+                            return_code = -3,
+                            return_msg = "订单已支付"
+                        });
+                    }
+                }
+                return new JsonResult(new { data = "操作有误，请重试！" });
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return new JsonResult(new { data = ex.ToString() });
+            }
+        }
+
+        /// <summary>
+        /// 创建订单
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult CreateOrder([FromBody]JObject obj)
+        {
+            try
+            {
+                var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                var config = builder.Build();
+                var PayItemPayCallBack = config.GetSection("PayItemPayCallBack");
+
+                string payment_id = obj["payment_id"].ToString(),
+                    ar_id = obj["ar_id"].ToString(),
+                    payer_id = obj["payer_id"].ToString(),
+                    passport = obj["passport"].ToString(),
+                    money = obj["money"].ToString(),
+                    student_id = obj["student_id"].ToString(),
+                    payer_name = obj["payer_name"].ToString(),
+                    phone = obj["phone"].ToString(),
+                    schoolCode = obj["schoolCode"].ToString(),
+                    account = obj["account"].ToString(),
+                    OrderName = obj["OrderName"].ToString(),
+                    body = obj["body"].ToString();
+                if ((string.IsNullOrWhiteSpace(payment_id) && string.IsNullOrWhiteSpace(ar_id)) ||
+                    string.IsNullOrWhiteSpace(payer_id))
+                    return new JsonResult(new
+                    {
+                        return_code = -1,
+                        return_msg = "缺少参数或参数非法"
+                    });
+                string alipayOrderNo = DateTime.Now.ToString("yyyyMMddHHmmssffff") +
+                                       new Random().Next(1000).ToString().PadLeft(4, '0');
+
+                //if (!string.IsNullOrWhiteSpace(ar_id))
+                //    intC = (_tb_payment_ar_recordService.FindListByClause(x => x.ar_id.ToString().Equals(ar_id)
+                //                                                               && x.status == 1 &&
+                //                                                               x.payer_passport.Equals(passport),
+                //        t => t.id) as List<tb_payment_ar_record>).Count;
+                //else
+                //    intC = _tb_payment_recordService.FindRecordByPayId(payment_id, passport);
+                List<payment_Orders> lstOrder = null;
+                if ((!string.IsNullOrWhiteSpace(ar_id)) ||
+                    (!string.IsNullOrWhiteSpace(payment_id)))
+                //if ((intC == 0 && !string.IsNullOrWhiteSpace(ar_id)) ||
+                //    (intC == 0 && !string.IsNullOrWhiteSpace(payment_id)))
+                    {
+                    var out_trade_no_list = _tb_payment_recordService.createOrder(payment_id, ar_id, alipayOrderNo,
+                        money, payer_id, student_id, payer_name, passport, phone);
+                    lstOrder = out_trade_no_list.orderList;
+                    if (!out_trade_no_list.paymentList.Any() && !out_trade_no_list.arList.Any())
+                    {
+                        return new JsonResult(new
+                        {
+                            return_code = -3,
+                            return_msg = "订单生成失败"
+                        });
+                    }
+                }
+                else
+                {
+                    return new JsonResult(new
+                    {
+                        return_code = -3,
+                        return_msg = "订单已支付"
+                    });
+                }
+
+                if (lstOrder.Count > 0)
+                {
+                    //for (int i = 0; i < lstOrder.Count(); i++)
+                    //{
+                    var payCallBackURL = PayItemPayCallBack.GetSection("payCallBackURL").Value + "AliPay/DirectlyAliJsPayCallBack";
+                    //string resp = AliPayHelper.AliCreateOrders(lstOrder[0].AppId, lstOrder[0].PrivateKey,
+                    //        lstOrder[0].AlipayPublicKey, account, lstOrder[0].OrderName, lstOrder[0].Price,
+                    //        lstOrder[0].OrderNo, payCallBackURL);
+                    string resp = AliPayHelper.AliCreateOrders(lstOrder[0].AppId, lstOrder[0].PrivateKey,
+                           lstOrder[0].AlipayPublicKey, account, lstOrder[0].OrderName, money,
+                           lstOrder[0].OrderNo, payCallBackURL);
+
+                    JObject jo = ((JObject)JsonConvert.DeserializeObject(
+                            ((JObject)JsonConvert.DeserializeObject(resp))["alipay_trade_create_response"]
+                            .ToString()));
+                        return new JsonResult(resp);
+                    //}
+                }
+
+                return null;
+            }
+            catch (ArgumentNullException ex)
+            {
+                log.Error("错误:" + ex.Message);
+                return new JsonResult(new { data = ex.ToString() });
+            }
+        }
+        /// <summary>
+        /// 支付宝直连回调
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public IActionResult DirectlyAliJsPayCallBack()
+        {
+            try
+            {
+                IFormCollection form = Request.Form;
+                if (form != null)
+                {
+                    //if (Request.Form["trade_status"] == null && Request.QueryString.GetValues("trade_status").Length <= 0)
+                    //    return Json(null);
+                    if (form["trade_status"].ToString().ToLower() == "TRADE_SUCCESS".ToLower() || HttpContext.Request.Query["trade_status"].FirstOrDefault() == "TRADE_SUCCESS".ToLower())
+                    {//支付成功
+                        if (_tb_payment_ARService.PayOk3(form["out_trade_no"].ToString(), form["total_amount"].ToString(),form["trade_no"]+"", form["notify_time"]+"") == true)
+                        {
+                            return Json(new
+                            {
+                                code = JsonReturnMsg.SuccessCode,
+                                msg = JsonReturnMsg.UpdateSuccess
+                            });
+                        }
+                    }
+                    return Json("Success");
+                }
+                return Json(null);
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.UpdateFail
+                });
+            }
+            
+        }
+        /// <summary>
+        /// 获取用户信息
+        /// </summary>
+        /// <param name="auth_code"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult GetUserInfo(string auth_code)
+        {
+            try
+            {
+                AlipayUserInfoShareResponse userinfoShareResponse = GetShareResponse(auth_code);
+                return new JsonResult(new { data = userinfoShareResponse });
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return new JsonResult(new { data = ex.ToString() });
+            }
+        }
+
+        /// <summary>
+        /// 获取学生信息
+        /// </summary>
+        /// <param name="auth_code"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult GetStudentInfo(string auth_code)
+        {
+            try
+            {
+                AlipayUserInfoShareResponse userinfoShareResponse = GetShareResponse(auth_code);
+                if (userinfoShareResponse.UserId != null)
+                {
+                    var user = _tb_school_userService.FindByClause(t => t.ali_user_id == userinfoShareResponse.UserId);
+                    if (user != null)
+                    {
+                        return new JsonResult(new { data = user });
+                    }
+                }
+                return new JsonResult(new { data = string.Empty });
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return new JsonResult(new { data = ex.ToString() });
+            }
+        }
+        /// <summary>
+        /// 单笔订单状态更新
+        /// </summary>
+        /// <param name="schoolcode"></param>
+        /// <param name="out_order_no"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetPaymentStatusPollingToOut_order_no(string schoolcode, string out_order_no)
+        {
+            try
+            {
+                var data = _tb_payment_recordService.FindByClause(x => x.out_order_no == out_order_no);
+                var payment_itemList = _tb_payment_itemService.FindListByClause(x => x.schoolcode == schoolcode, t => t.id, OrderByType.Asc);
+                var acc = _tb_payment_accountsService.FindAll();
+              
+                var accid = payment_itemList.Where(x => x.id == data.payment_id).ToList()[0].account;
+                var accmodel = acc.Where(x => x.id == Convert.ToInt32(accid)).ToList()[0];
+                var isOk = AliPayHelper.GetOrdersStatus3(data.out_order_no, accmodel.appid, accmodel.private_key, accmodel.alipay_public_key);
+                if (isOk.Item1)
+                {
+                    if (_tb_payment_ARService.PayOk3(data.out_order_no, data.pay_amount.ToString(), data.order_no, isOk.Item2) == true)
+                        log.Info("常规缴费订单编号为:" + data.out_order_no + "状态修改成功");
+                }
+                else
+                {
+                    _tb_payment_recordService.UpdateColumnsByConditon(a => new tb_payment_record { status = 0 }, x => x.out_order_no == data.out_order_no);
+                }
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = "订单修改成功",
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Info("错误" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = "修改订单失败"
+                });
+            }
+        }
+        /// <summary>
+        /// 查看订单状态
+        /// </summary>
+        /// <param name="TransId"></param>
+        /// <param name="payment_accountsID"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetAlipayState(string TransId, int payment_accountsID)
+        {
+            try
+            {
+                var payment_accounts = _tb_payment_accountsService.FindByClause(x => x.id == payment_accountsID);
+                var msg = AliPayHelper.GetOrdersStatus(TransId, payment_accounts.appid, payment_accounts.private_key, payment_accounts.alipay_public_key);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = msg
+                });
+
+            }
+            catch (Exception ex)
+            {
+                log.Info("订单号：" + TransId + "查询失败");
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        /// <summary>
+        /// 查看订单状态
+        /// </summary>
+        /// <param name="out_trade_no"></param>
+        /// <param name="trade_no"></param>
+        /// <param name="payment_accountsID"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetAlipayState2(string out_trade_no,string trade_no, int payment_accountsID)
+        {
+            try
+            {
+                var payment_accounts = _tb_payment_accountsService.FindByClause(x => x.id == payment_accountsID);
+                var msg = AliPayHelper.GetOrdersStatus2(out_trade_no, payment_accounts.pid, trade_no, payment_accounts.appid, payment_accounts.private_key, payment_accounts.alipay_public_key);
+                var data = JsonConvert.DeserializeObject<alipay_trade_query_response>(msg);
+                
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = msg,
+                    data = data
+                });
+
+            }
+            catch (Exception ex)
+            {
+                log.Info("订单号：" + out_trade_no + "查询失败");
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+
+        /// <summary>
+        /// 查看订单状态批量
+        /// </summary>
+        /// <param name="out_trade_no"></param>
+        /// <param name="trade_no"></param>
+        /// <param name="payment_accountsID"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetAlipayStateBatch(string out_trade_noArray, string trade_noArray, int payment_accountsID)
+        {
+            try
+            {
+                string[] outSP = null;
+                string[] tradeSP = null;
+                List<alipay_trade_query_response> list = new List<alipay_trade_query_response>();
+                var payment_accounts = _tb_payment_accountsService.FindByClause(x => x.id == payment_accountsID);
+                if (!string.IsNullOrWhiteSpace(out_trade_noArray))
+                {
+                    outSP = out_trade_noArray.Split(',');
+                }
+                if (!string.IsNullOrWhiteSpace(trade_noArray))
+                {
+                    tradeSP = trade_noArray.Split(',');
+                }
+                if (tradeSP.Length>0)
+                {
+
+                    foreach (var item in tradeSP)
+                    {
+                        var msg = AliPayHelper.GetOrdersStatus2("", payment_accounts.pid, item, payment_accounts.appid, payment_accounts.private_key, payment_accounts.alipay_public_key);
+                        var data = JsonConvert.DeserializeObject<alipay_trade_query_response>(msg);
+                        list.Add(data);
+                    }
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.SuccessCode,
+                        msg = JsonReturnMsg.GetSuccess,
+                        data = list
+                    });
+                }
+                if (outSP.Length>0)
+                {
+                    foreach (var item in tradeSP)
+                    {
+                        var msg = AliPayHelper.GetOrdersStatus2(item, payment_accounts.pid, "", payment_accounts.appid, payment_accounts.private_key, payment_accounts.alipay_public_key);
+                        var data = JsonConvert.DeserializeObject<alipay_trade_query_response>(msg);
+                        list.Add(data);
+                    }
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.SuccessCode,
+                        msg = JsonReturnMsg.GetSuccess,
+                        data = list
+                    });
+                }
+                
+                
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = "没有查询到任何订单"
+                });
+
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+
+       
+        /// <summary>
+        /// 轮询付款状态【常规缴费】
+        /// </summary>
+        /// <param name="schoolcode"></param>
+        /// <param name="stime"></param>
+        /// <param name="etime"></param>
+        /// <param name="timetype"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetPaymentStatusPolling(string schoolcode, string stime, string etime,string timetype)
+        {
+            try
+            {
+                log.Info("线程开始");
+                if (timetype=="0")
+                {
+                    stime += " 00:00:00";
+                    etime += " 23:59:59";
+                }
+                var data = _tb_payment_itemService.GetPaymentRecord(schoolcode, stime, etime);
+                var payment_itemList = _tb_payment_itemService.FindListByClause(x => x.schoolcode == schoolcode, t => t.id, OrderByType.Asc).ToList();
+                if (data.Count()==0)
+                {
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.SuccessCode,
+                        msg = "没有修改的订单",
+                    });
+                }
+                System.Threading.CancellationTokenSource cts = new System.Threading.CancellationTokenSource();
+                System.Threading.Tasks.TaskFactory taskFactory = new System.Threading.Tasks.TaskFactory();
+                int totle = data.Count() / 5;
+                List<List<tb_payment_record>> list = new List<List<tb_payment_record>>();
+                for (int j = 0; j <= totle; j++)
+                {
+                    list.Add(data.Skip(j*5).Take(5).ToList());
+                }
+                LimitedConcurrencyLevelTaskScheduler lcts = new LimitedConcurrencyLevelTaskScheduler(600);
+                TaskFactory factory = new TaskFactory(lcts);
+                List<Task> tasks = new List<Task>();
+                for (int z = 0; z < list.Count; z++)
+                {
+                    var index = z;
+                    tasks.Add(factory.StartNew(s =>
+                    {
+                        TaskPaymentStatusPolling(list[index], payment_itemList);
+                    },z));
+                }
+
+                Task.WaitAll(tasks.ToArray());
+                log.Info("线程跑完结束");
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Info("错误" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        /// <summary>
+        /// 轮询付款状态【应缴费用】
+        /// </summary>
+        /// <param name="schoolcode"></param>
+        /// <param name="ARID"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetPaymentARStatusPolling(string schoolcode, string ARID)
+        {
+            try
+            {
+                log.Info("线程开始");
+                var paymentar = _tb_payment_ARService.FindListByClause(x => x.schoolcode == schoolcode && x.ARID == ARID, t => t.id, OrderByType.Asc).ToList();
+                if (paymentar.Count()==0)
+                {
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.SuccessCode,
+                        msg = "没有修改的订单",
+                    });
+                }
+                var data = _tb_payment_ar_recordService.GetPaymentArRecordList(schoolcode, ARID);
+                if (data.Count() == 0)
+                {
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.SuccessCode,
+                        msg = "没有修改的订单",
+                    });
+                }
+                System.Threading.CancellationTokenSource cts = new System.Threading.CancellationTokenSource();
+                System.Threading.Tasks.TaskFactory taskFactory = new System.Threading.Tasks.TaskFactory();
+                int totle = data.Count() / 5;
+                List<List<tb_payment_ar_record>> list = new List<List<tb_payment_ar_record>>();
+                for (int j = 0; j <= totle; j++)
+                {
+                    list.Add(data.Skip(j * 5).Take(5).ToList());
+                }
+                LimitedConcurrencyLevelTaskScheduler lcts = new LimitedConcurrencyLevelTaskScheduler(600);
+                TaskFactory factory = new TaskFactory(lcts);
+                List<Task> tasks = new List<Task>();
+                for (int z = 0; z < list.Count; z++)
+                {
+                    var index = z;
+                    tasks.Add(factory.StartNew(s =>
+                    {
+                        TaskPaymentARStatusPolling(list[index], paymentar);
+                    }, z));
+                }
+
+                Task.WaitAll(tasks.ToArray());
+                log.Info("线程跑完结束");
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Info("错误" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        private void TaskPaymentARStatusPolling(List<tb_payment_ar_record> data, List<tb_payment_ar> tb_payment_ar)
+        {
+            log.Info("进入TaskPaymentARStatusPolling  " + data.Count);
+            var accpid = tb_payment_ar[0].AR_account;
+            var acc = _tb_payment_accountsService.FindAll();
+            var accmodel = acc.Where(x => x.pid == accpid).ToList()[0];
+            foreach (var item in data)
+            {
+                var isOk = AliPayHelper.GetOrdersStatus3(item.out_trade_no, accmodel.appid, accmodel.private_key, accmodel.alipay_public_key);
+                if (isOk.Item1)
+                {
+                    if (_tb_payment_ARService.PayOk3(item.out_trade_no, item.pay_amount.ToString(), item.trade_no, isOk.Item2) == true)
+                        log.Info("常规缴费订单编号为:" + item.out_trade_no + "状态修改成功");
+                }
+                else
+                {
+                    _tb_payment_ar_recordService.UpdateColumnsByConditon(a => new tb_payment_ar_record { status = 0 }, x => x.out_trade_no == item.out_trade_no);
+                    _tb_payment_ARService.UpdateColumnsByConditon(a => new DbModel.tb_payment_ar { JSstatus = 0 }, x => x.id == item.ar_id);
+                }
+            }
+        }
+        private void TaskPaymentStatusPolling(List<tb_payment_record> data, List<tb_payment_item> payment_itemList)
+        {
+            //log.Info(data.Count);
+            var acc = _tb_payment_accountsService.FindAll();
+            foreach (var item in data)
+            {
+                var accid = payment_itemList.Where(x => x.id == item.payment_id).ToList()[0].account;
+                var accmodel = acc.Where(x => x.id == Convert.ToInt32(accid)).ToList()[0];
+                var isOk = AliPayHelper.GetOrdersStatus3(item.out_order_no, accmodel.appid, accmodel.private_key, accmodel.alipay_public_key);
+                if (isOk.Item1)
+                {
+                    if (_tb_payment_ARService.PayOk3(item.out_order_no, item.pay_amount.ToString(), item.order_no, isOk.Item2) == true)
+                        log.Info("常规缴费订单编号为:" + item.out_order_no + "状态修改成功");
+                }
+                else
+                {
+                    _tb_payment_recordService.UpdateColumnsByConditon(a => new tb_payment_record { status = 0 }, x => x.out_order_no == item.out_order_no);
+                }
+            }
+        }
+        private void TaskEndPaymentStatusPolling(System.Threading.Tasks.Task[] tasks)
+        {
+            log.Info("线程跑完结束");
+        }
+        /// <summary>
+        /// 小程序模板消息（使用的模板是信息处理提醒）
+        /// </summary>
+        /// <param name="sendUserId">发送到的用户的支付宝ID</param>
+        /// <param name="formId">用户发生的交易行为的交易号，或者用户在小程序产生表单提交的表单号，用于信息发送的校验（小程序App上的订单号）</param>
+        /// <param name="userTemplateId">用户申请的模板id号，固定的模板id会发送固定的消息</param>
+        /// <param name="page">小程序的跳转页面，用于消息中心用户点击之后详细跳转的小程序页面</param>
+        /// <param name="data">提示内容</param>
+        /// <returns></returns>
+        private string SendMsg(string sendUserId, string formId,string userTemplateId, string page, string data)
+        {
+            AppHelper helper1 = new AppHelper("PaymentMall2");
+            string appId = helper1.AppId;
+            string private_key = helper1.PrivateKey;
+            string aliPublicKey = helper1.AlipayPublicKey;
+            try
+            {
+                Aop.Api.IAopClient client = new Aop.Api.DefaultAopClient("https://openapi.alipay.com/gateway.do", appId, private_key, "json", "1.0", "RSA2", aliPublicKey, "GBK", false);
+                Aop.Api.Request.AlipayOpenAppMiniTemplatemessageSendRequest request = new Aop.Api.Request.AlipayOpenAppMiniTemplatemessageSendRequest();
+                request.BizContent = "{" +
+                        "\"to_user_id\":\"" + sendUserId + "\"," +
+                        "\"form_id\":\"" + formId + "\"," +
+                        "\"user_template_id\":\""+ userTemplateId + "\"," +
+                        //"\"user_template_id\":\"NjZlNGNhZmU3YTM0MzA0MWFhOWUzNDhmMjYyN2FkYWE=\"," +
+                        "\"page\":\"" + page + "\"," +
+                        "\"data\":\"{\\\"keyword1\\\":{\\\"value\\\":\\\""+data.ToString()+"\\\"}}\"" +
+                "}";
+                Aop.Api.Response.AlipayOpenAppMiniTemplatemessageSendResponse response = client.Execute(request);
+                Console.WriteLine(response.Body);
+                return response.Body;
+            }
+            catch (Exception ex)
+            {
+                return ex.ToString();
+                throw;
+            }
+        }
+
+        private AlipayUserInfoShareResponse GetShareResponse(string auth_code)
+        {
+            var alipaySystemOauthTokenRequest = new AlipaySystemOauthTokenRequest
+            {
+                Code = auth_code,
+                GrantType = "authorization_code"
+            };
+
+            AppHelper helper = new AppHelper("Alipay");
+            string appId = helper.AppId;
+            string private_key = helper.PrivateKey;
+            string aliPublicKey = helper.AlipayPublicKey;
+            string GatewayUrl = helper.GatewayUrl;
+            string CharSet = helper.CharSet;
+            string SignType = helper.SignType;
+            var client = new DefaultAopClient(GatewayUrl, appId, private_key, "json", "1.0", SignType, aliPublicKey, CharSet, false);
+            var oauthTokenResponse = client.Execute(alipaySystemOauthTokenRequest);
+            AlipayUserInfoShareRequest requestUser = new AlipayUserInfoShareRequest();
+            AlipayUserInfoShareResponse userinfoShareResponse = client.Execute(requestUser, oauthTokenResponse.AccessToken);
+            return userinfoShareResponse;
+        }
+
+        #region 小程序支付接口的
+        /// <summary>
+        /// 在线创建订单
+        /// </summary>
+        /// <param name="AppId">小程序ID</param>
+        /// <param name="PrivateKey">私钥（商家的PrivateKey）</param>
+        /// <param name="AlipayPublicKey">公钥(商家的PublicKey)</param>
+        /// <param name="AliUserId">支付宝用户ID</param>
+        /// <param name="OrderName">订单名称</param>
+        /// <param name="Price">金额</param>
+        /// <param name="OrderNo">订单编号</param>
+        /// <returns></returns>
+        private string AliCreateOrders(string AppId, string PrivateKey, string AlipayPublicKey, string AliUserId, string OrderName, string Price, string OrderNo)
+        {
+            IAopClient client = new DefaultAopClient("https://openapi.alipay.com/gateway.do", AppId, PrivateKey, "json", "1.0", "RSA2", AlipayPublicKey, "utf-8", false);
+            AlipayTradeCreateRequest request = new AlipayTradeCreateRequest();
+            //request.BizContent = "{" +
+            //"\"out_trade_no\":\"" + OrderNo + "\"," +//商户订单号,64个字符以内、可包含字母、数字、下划线；需保证在商户端不重复
+            ////"\"seller_id\":\"2088102146225135\"," +//如果该值为空，则默认为商户签约账号对应的支付宝用户ID
+            //"\"total_amount\":" + Price + "," +
+            ////"\"total_amount\":1.00," +
+            ////"\"discountable_amount\":8.88," +
+            //"\"subject\":\"" + OrderName + "\"," +
+            ////"\"body\":\"订单描述（可选）\"," +
+            //"\"extend_params\":{" +
+            //    "\"sys_service_provider_id\":\"" + this.sys_service_provider_id + "\"" +//公司分成时的标记
+            //                                                                            //"\"sys_service_provider_id\":\"2088131404015935\"," +
+            //                                                                            //"\"industry_reflux_info\":\"{\\\\\\\"scene_code\\\\\\\":\\\\\\\"metro_tradeorder\\\\\\\",\\\\\\\"channel\\\\\\\":\\\\\\\"xxxx\\\\\\\",\\\\\\\"scene_data\\\\\\\":{\\\\\\\"asset_name\\\\\\\":\\\\\\\"ALIPAY\\\\\\\"}}\"," +
+            //                                                                            //"\"card_type\":\"S0JP0000\"" +
+            //"}," +
+            //"\"buyer_id\":\"" + AliUserId + "\"," +
+            //"\"timeout_express\":\"" + PayTimeOut + "\"," +//该笔订单允许的最晚付款时间逾期将关闭交易。取值范围：1m～15d。m-分钟，h-小时，d-天，1c-当天（1c-当天的情况下，无论交易何时创建，都在0点关闭）。 
+            //"\"logistics_detail\":{" +//	物流信息
+            //"\"logistics_type\":\"DIRECT\"" +//POST 平邮, EXPRESS 其他快递, VIRTUAL 虚拟物品,EMS EMS, DIRECT 无需物流。
+            //"    }" +
+            //"  }";
+            AlipayTradeCreate tc = new AlipayTradeCreate();
+            tc.out_trade_no = OrderNo;
+            tc.total_amount = Price;
+            tc.subject = OrderName;
+            tc.extend_params.sys_service_provider_id = this.sys_service_provider_id;
+            tc.buyer_id = AliUserId;
+            tc.timeout_express = PayTimeOut;
+            tc.logistics_detail.logistics_type = "DIRECT";
+            JsonSerializerSettings settings = new JsonSerializerSettings();
+            string strjson = JsonConvert.SerializeObject(tc, settings);
+            request.BizContent = strjson;
+            AlipayTradeCreateResponse response = client.Execute(request);
+            return response.Body;
+        }
+        /// <summary>
+        /// 该笔订单允许的最晚付款时间逾期将关闭交易。取值范围：1m～15d。m-分钟，h-小时，d-天，1c-当天（1c-当天的情况下，无论交易何时创建，都在0点关闭）。 
+        /// </summary>
+        public string PayTimeOut
+        {
+            get
+            {
+                return "90m";
+            }
+        }
+        /// <summary>
+        /// 公司分成时的标记
+        /// </summary>
+        public string sys_service_provider_id
+        {
+            get
+            {
+                return "2088131404015935";
+            }
+        }
+        #endregion
+        /// <summary>
+        /// 缴费大厅应缴费用推送的模板ID(信息处理提醒)
+        /// </summary>
+        public string XXMB {
+            get {
+                //return "NjZlNGNhZmU3YTM0MzA0MWFhOWUzNDhmMjYyN2FkYWE=";
+                return "479e07815f5d473aa36f03596dd33fbe";
+            }
+        }
+    }
+    /// <summary>
+    /// 
+    /// </summary>
+    public class SendModel
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        public string to_user_id { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string form_id { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string user_template_id { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string page { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public DataResult data { get; set; }
+    }
+    /// <summary>
+    /// 
+    /// </summary>
+    public class DataResult
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        public DataResultValue first { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public DataResultValue keyword1 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public DataResultValue keyword2 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public DataResultValue keyword3 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public DataResultValue keyword4 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public DataResultValue keyword5 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public DataResultValue remark { get; set; }
+    }
+    /// <summary>
+    /// 
+    /// </summary>
+    public class DataResultValue
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        public string value { get; set; }
+    }
+    /// <summary>
+    /// 
+    /// </summary>
+    public class AlipayTradeCreate
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        public AlipayTradeCreate()
+        {
+            extend_params = new extend_params();
+            logistics_detail = new logistics_detail();
+        }
+        /// <summary>
+        /// //商户订单号,64个字符以内、可包含字母、数字、下划线；需保证在商户端不重复
+        /// </summary>
+        public string out_trade_no { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string total_amount { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string subject { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public extend_params extend_params { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string buyer_id { get; set; }
+        /// <summary>
+        /// 该笔订单允许的最晚付款时间逾期将关闭交易。取值范围：1m～15d。m-分钟，h-小时，d-天，1c-当天（1c-当天的情况下，无论交易何时创建，都在0点关闭）。
+        /// </summary>
+        public string timeout_express { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public logistics_detail logistics_detail { get; set; }
+    }
+    /// <summary>
+    /// 物流信息
+    /// </summary>
+    public class logistics_detail
+    {
+        /// <summary>
+        /// POST 平邮, EXPRESS 其他快递, VIRTUAL 虚拟物品,EMS EMS, DIRECT 无需物流。
+        /// </summary>
+        public string logistics_type { get; set; }
+    }
+    /// <summary>
+    /// 
+    /// </summary>
+    public class extend_params
+    {
+        /// <summary>
+        /// 公司分成时的标记
+        /// </summary>
+        public string sys_service_provider_id { get; set; }
+    }
+    public class alipay_trade_query_response_2
+    {
+        public string code { get; set; }
+        public string msg { get; set; }
+        public string buyer_logon_id { get; set; }
+        public string buyer_pay_amount { get; set; }
+        public string buyer_user_id { get; set; }
+        public fund_bill_list fund_bill_list { get; set; }
+        public string invoice_amount { get; set; }
+        public string out_trade_no { get; set; }
+        public string point_amount { get; set; }
+        public string receipt_amount { get; set; }
+        public string send_pay_date { get; set; }
+        public string total_amount { get; set; }
+        public string trade_no { get; set; }
+        public string trade_status { get; set; }
+        public string sign { get; set; }
+    }
+    public class fund_bill_list
+    {
+        public string amount { get; set; }
+        public string fund_channel { get; set; }
+    }
+}

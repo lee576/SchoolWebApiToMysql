@@ -1,0 +1,539 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using DbModel;
+using Exceptionless.Json;
+using IService;
+using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Models.DbModels;
+using Models.ViewModels;
+using Newtonsoft.Json.Linq;
+using SchoolWebApi.Utility;
+
+namespace SchoolWebApi.Controllers
+{
+    /// <summary>
+    /// 第三方提供接口配置
+    /// </summary>
+    [Route("api/[controller]/[action]")]
+    [ApiController]
+    [Produces("application/json")]
+    [EnableCors("any")]
+    public class ThirdpartyAPIConfigController : Controller
+    {
+        private static NLog.Logger log = NLog.LogManager.GetCurrentClassLogger();
+        private Itb_thirdpartyAPI_ConfigService _tb_thirdpartyAPI_ConfigService;
+        private Itb_appaccounts_itemService _tb_appaccounts_itemService;
+        private Itb_school_InfoService _tb_school_InfoService;
+        private Itb_school_userService _tb_school_userService;
+        private Itb_payment_accountsService _tb_payment_accountsService;
+        public Itb_payment_thirdparty_recordService _tb_payment_thirdparty_recordService;
+        private Itb_app_maintainService _tb_app_maintainService;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tb_thirdpartyAPI_ConfigService"></param>
+        /// <param name="tb_appaccounts_itemService"></param>
+        public ThirdpartyAPIConfigController(
+            Itb_thirdpartyAPI_ConfigService tb_thirdpartyAPI_ConfigService,
+            Itb_appaccounts_itemService tb_appaccounts_itemService,
+            Itb_school_InfoService tb_school_InfoService,
+            Itb_school_userService tb_school_userService,
+            Itb_payment_accountsService tb_payment_accountsService,
+            Itb_payment_thirdparty_recordService tb_payment_thirdparty_recordService,
+            Itb_app_maintainService tb_app_maintainService)
+        {
+            _tb_thirdpartyAPI_ConfigService = tb_thirdpartyAPI_ConfigService;
+            _tb_appaccounts_itemService = tb_appaccounts_itemService;
+            _tb_school_InfoService = tb_school_InfoService;
+            _tb_school_userService = tb_school_userService;
+            _tb_payment_accountsService = tb_payment_accountsService;
+            _tb_payment_thirdparty_recordService = tb_payment_thirdparty_recordService;
+            _tb_app_maintainService = tb_app_maintainService;
+        }
+        /// <summary>
+        /// 通过schoolcode和api接口名获取第三方接口url和接口类型
+        /// </summary>
+        /// <param name="schoolCode"></param>
+        /// <param name="apiname"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetApiToAPINameAndCode(string schoolCode,string apiname)
+        {
+            try
+            {
+                //查询套餐
+                var records = _tb_thirdpartyAPI_ConfigService.FindByClause(x => x.schoolcode == schoolCode && x.APIName == apiname);
+                if (records == null)
+                {
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.FailCode,
+                        msg = JsonReturnMsg.GetFail
+                    });
+                }
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.GetSuccess,
+                    apiURL = records.APIURL,
+                    apiType = records.APIType
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        /// <summary>
+        /// 小程序支付配置接口（配置谁收款）
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public IActionResult AddAppAccountItem([FromBody] JObject obj)
+        {
+            try
+            {
+                string appId = obj["appId"].ToString();
+                string typename = obj["typename"].ToString();
+                string schoolcode = obj["schoolcode"].ToString();
+                int accounts_id = Convert.ToInt32(obj["accounts_id"].ToString());
+                var tb = _tb_appaccounts_itemService.FindByClause(x => x.appId == appId && x.typename == typename && x.schoolcode == schoolcode);
+                tb_appaccounts_item item = new tb_appaccounts_item();
+                item.appId = appId;
+                item.typename = typename;
+                item.schoolcode = schoolcode;
+                item.accounts_id = accounts_id;
+                if (tb==null)
+                {
+                    _tb_appaccounts_itemService.Insert(item);
+                }
+                else
+                {
+                    item.id = tb.id;
+                    _tb_appaccounts_itemService.Update(item);
+                }
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = JsonReturnMsg.UpdateSuccess
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.UpdateFail
+                });
+            }
+        }
+
+        #region 是否领取校园卡接口
+        /// <summary>
+        /// 是否领取校园卡接口
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public IActionResult IsGetSchoolCard([FromBody] JObject obj)
+        {
+            try
+            {
+                var schoolcode = obj["schoolcode"].ToString();
+                var studentid = obj["studentid"].ToString();
+                var sign = obj["sign"].ToString();
+                var schoolinfo = _tb_school_InfoService.FindByClause(x => x.School_Code == schoolcode);
+                if (schoolinfo == null)
+                {
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.FailCode,
+                        msg = JsonReturnMsg.GetFail
+                    });
+                }
+                string signs = MD5Helper.MD5Encrypt32(schoolinfo.School_Code + schoolinfo.publicKey);
+                if (sign != signs)
+                {
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.FailCode,
+                        msg = "md5验证失败！"
+                    });
+                }
+                var data = _tb_school_userService.FindByClause(x => x.school_id == schoolcode && x.student_id == studentid);
+                if (data==null)
+                {
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.FailCode,
+                        msg = "未找到学生信息，去平台添加学生信息！"
+                    });
+                }
+                IsGetSchoolCardReturn model = new IsGetSchoolCardReturn();
+                model.card_state = data.card_state;
+                model.card_url = "http://MobileApp.newxiaoyuan.com/web/card/card.html?schoolcode=" + schoolcode + "&type=0&schoolname="+ schoolinfo.School_name+ "";
+                if (data.card_state==0)
+                {
+                    return Json(new
+                    {
+                        code = "222222",
+                        msg = "该学生未领取电子校园卡",
+                        data = model
+                    });
+                }
+                else
+                {
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.SuccessCode,
+                        msg = "该学生已领取电子校园卡",
+                        data = model
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.GetFail
+                });
+            }
+        }
+        #endregion
+
+        #region 创建订单，返回订单信息
+        /// <summary>
+        /// 创建订单，返回订单信息
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public IActionResult GetGenerateOrder([FromBody] JObject obj)
+        {
+            try
+            {
+                var schoolcode = obj["schoolcode"].ToString();
+                var PID = obj["PID"].ToString();
+                var OrderName = obj["OrderName"].ToString();
+                var Price = obj["Price"].ToString();
+                var sign = obj["sign"].ToString();
+                var studentid = obj["studentid"].ToString();
+                var IsGetPayURL = obj["IsGetPayURL"].ToString();
+                var schoolinfo = _tb_school_InfoService.FindByClause(x => x.School_Code == schoolcode);
+                if (schoolinfo == null)
+                {
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.FailCode,
+                        msg = JsonReturnMsg.GetFail
+                    });
+                }
+                string signs = MD5Helper.MD5Encrypt32(schoolinfo.School_Code + schoolinfo.publicKey);
+                if (sign != signs)
+                {
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.FailCode,
+                        msg = "md5验证失败！"
+                    });
+                }
+                var paymentaccount =_tb_payment_accountsService.FindByClause(x => x.schoolcode == schoolcode && x.pid == PID);
+                var studentmodel = _tb_school_userService.FindByClause(x => x.school_id == schoolcode && x.student_id == studentid);
+                string ordernumber = DateTime.Now.ToString("yyyyMMddHHmmssffff") + new Random().Next(1000).ToString().PadLeft(4, '0');
+                var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                var config = builder.Build();
+                var PayItemPayCallBack = config.GetSection("PayItemPayCallBack");
+                var payCallBackURL = PayItemPayCallBack.GetSection("payCallBackURL").Value + "ThirdpartyAPIConfig/DirectlyAliJsPayCallBack";
+                var body = AliPayHelper.AliCreateOrders(paymentaccount.appid, paymentaccount.private_key, paymentaccount.alipay_public_key, studentmodel.ali_user_id, OrderName, Price, ordernumber, payCallBackURL);
+                //处理订单返回值状态
+                alipay_trade_create_Result modelResult = JsonConvert.DeserializeObject<alipay_trade_create_Result>(body);
+                if (modelResult.alipay_trade_create_response.code == "10000")
+                {
+                    //订单产生成功
+                    tb_payment_thirdparty_record model = new tb_payment_thirdparty_record();
+                    model.OrderName = OrderName;
+                    model.out_trade_no = modelResult.alipay_trade_create_response.out_trade_no;
+                    model.paystate = false;
+                    model.price = Convert.ToInt32(Price);
+                    model.schoolcode = schoolcode;
+                    model.aliuserid = studentmodel.ali_user_id;
+                    _tb_payment_thirdparty_recordService.Insert(model);
+                    string pay_url = "";
+                    if (IsGetPayURL.Equals("1"))
+                    {
+                        pay_url = "";
+                    }
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.SuccessCode,
+                        msg = "订单生成成功",
+                        data = new {
+                            schoolcode =schoolcode,
+                            studentid =studentid,
+                            out_trade_no =model.out_trade_no,
+                            pay_url = pay_url,
+                            OrderName = OrderName,
+                            Price = Price,
+                            trade_no = model.trade_no,
+                            aliuserid = model.aliuserid
+                        }
+                    });
+                }
+                else
+                {
+                    //订单产生失败
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.FailCode,
+                        msg = "订单生成失败"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = "创建订单发生异常错误"
+                });
+            }
+        }
+        #endregion
+
+        [HttpPost]
+        public IActionResult GetOrdersStatus([FromBody] JObject obj)
+        {
+            try
+            {
+                var schoolcode = obj["schoolcode"].ToString();
+                var PID = obj["PID"].ToString();
+                var out_trade_no = obj["out_trade_no"].ToString();
+                var sign = obj["sign"].ToString();
+                var schoolinfo = _tb_school_InfoService.FindByClause(x => x.School_Code == schoolcode);
+                var paymentaccount = _tb_payment_accountsService.FindByClause(x => x.schoolcode == schoolcode && x.pid == PID);
+                
+                if (schoolinfo == null)
+                {
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.FailCode,
+                        msg = JsonReturnMsg.GetFail
+                    });
+                }
+                string signs = MD5Helper.MD5Encrypt32(schoolinfo.School_Code + schoolinfo.publicKey);
+                if (sign != signs)
+                {
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.FailCode,
+                        msg = "md5验证失败！"
+                    });
+                }
+                var msg = AliPayHelper.GetOrdersStatus(out_trade_no, paymentaccount.appid, paymentaccount.private_key, paymentaccount.alipay_public_key);
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = "查询成功",
+                    data = new {
+                        ali_msg = msg
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = "创建订单发生异常错误"
+                });
+            }
+        }
+        /// <summary>
+        /// 设置维护时间
+        /// </summary>
+        /// <param name="endTime"></param>
+        /// <param name="appName"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetAppMaintain(string endTime,string appName)
+        {
+            try
+            {
+                var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                var config = builder.Build();
+                var PayItemPayCallBack = config.GetSection(appName);
+                var appid = PayItemPayCallBack.GetSection("AppId").Value;
+                tb_app_maintain model = new tb_app_maintain();
+                model.appid = appid;
+                model.endTime = Convert.ToDateTime(endTime);
+                if (_tb_app_maintainService.Any(x=>x.appid == appid))
+                {
+                    model = _tb_app_maintainService.FindByClause(x => x.appid == appid);
+                    model.endTime = Convert.ToDateTime(endTime);
+                    _tb_app_maintainService.Update(model);
+                }
+                else
+                {
+                    _tb_app_maintainService.Insert(model);
+                }
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = "维护已开启"
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = "创建订单发生异常错误"
+                });
+            }
+        }
+
+
+        /// <summary>
+        /// 设置维护时间
+        /// </summary>
+        /// <param name="endTime"></param>
+        /// <param name="school_id"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetAppMaintainSchool(string endTime, string school_id)
+        {
+            try
+            {
+               var school= _tb_school_InfoService.FindByClause(p => p.School_Code == school_id);
+                tb_app_maintain model = new tb_app_maintain();
+                model.appid = school_id;
+                model.endTime = Convert.ToDateTime(endTime);
+                if (_tb_app_maintainService.Any(x => x.appid == school_id))
+                {
+                    model = _tb_app_maintainService.FindByClause(x => x.appid == school_id);
+                    model.endTime = Convert.ToDateTime(endTime);
+                    _tb_app_maintainService.Update(model);
+                }
+                else
+                {
+                    _tb_app_maintainService.Insert(model);
+                }
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = "维护已开启"
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = "维护异常"
+                });
+            }
+        }
+
+        /// <summary>
+        /// 获取维护状态
+        /// </summary>
+        /// <param name="appid"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetAppMaintainStatus(string appid)
+        {
+            try
+            {
+                int status = 0;
+                var maintain = _tb_app_maintainService.FindByClause(x => x.appid == appid);
+                if (maintain == null)
+                {
+                    return Json(new
+                    {
+                        code = JsonReturnMsg.SuccessCode,
+                        data = status
+                    });
+                }
+                if (DateTime.Compare(maintain.endTime, DateTime.Now)>0)
+                {
+                    status = 1;
+                }
+                return Json(new
+                {
+                    code = JsonReturnMsg.SuccessCode,
+                    msg = "将维护至"+ maintain.endTime.ToString("yyyy-MM-dd HH:mm")+"左右",
+                    data = status
+                });
+            }
+            catch (Exception ex)
+            {
+                log.Error("错误:" + ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = "创建订单发生异常错误"
+                });
+            }
+        }
+        /// <summary>
+        /// 支付宝回调
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public IActionResult DirectlyAliJsPayCallBack()
+        {
+            try
+            {
+                IFormCollection form = Request.Form;
+                if (form != null)
+                {
+                    //if (Request.Form["trade_status"] == null && Request.QueryString.GetValues("trade_status").Length <= 0)
+                    //    return Json(null);
+                    if (form["trade_status"].ToString().ToLower() == "TRADE_SUCCESS".ToLower() || HttpContext.Request.Query["trade_status"].FirstOrDefault() == "TRADE_SUCCESS".ToLower())
+                    {//支付成功
+                     // _tb_school_userService.UpdateColumnsByConditon(a => new tb_school_user { department_id = depamentid, department = departmentName },
+                        _tb_payment_thirdparty_recordService.UpdateColumnsByConditon(x => new tb_payment_thirdparty_record { paystate = true, paytime = DateTime.Now }, t => t.out_trade_no == form["out_trade_no"].ToString());
+                    }
+                    return Json("Success");
+                }
+                return Json(null);
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex);
+                return Json(new
+                {
+                    code = JsonReturnMsg.FailCode,
+                    msg = JsonReturnMsg.UpdateFail
+                });
+            }
+        }
+    }
+}
+/// <summary>
+/// 学生是否领卡返回值
+/// </summary>
+public class IsGetSchoolCardReturn
+{
+    public int? card_state { get; set; }
+    public string card_url { get; set; }
+}
