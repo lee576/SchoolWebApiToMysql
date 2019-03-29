@@ -220,7 +220,7 @@ namespace Models.ViewModels
     public class Cashier_SN
     {
         public string trade_name { get; set; }
-        public string terminal_number { get; set; }
+        public string terminal_number { get;set }
 
     }
 
